@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -flto -shared  -o norch_C.cpython-38-x86_64-linux-gnu.so CMakeFiles/norch_C.dir/norch/ATen/tensor.cpp.o 

@@ -1,0 +1,3 @@
+/home/lln/Documentos/recreate_pytorch/foo/norch/build/CMakeFiles/norch_C.dir
+/home/lln/Documentos/recreate_pytorch/foo/norch/build/CMakeFiles/edit_cache.dir
+/home/lln/Documentos/recreate_pytorch/foo/norch/build/CMakeFiles/rebuild_cache.dir
