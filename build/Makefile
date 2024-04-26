@@ -5,7 +5,7 @@ CXX := g++
 CXXFLAGS := -Wall -Werror -fpic
 
 # Source files
-SRCS := ../src/tensor.cpp
+SRCS := ../csrc/tensor.cpp
 
 # Object files
 OBJS := $(SRCS:.cpp=.o)
