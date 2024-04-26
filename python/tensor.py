@@ -9,7 +9,9 @@ class CTensor(ctypes.Structure):
     ]
 
 class Tensor:
-    def __init__(self, data, shape):
+    def __init__(self, data):
+        data, shape = self.flatten(data)
+        print(data, shape)
         self.lib = ctypes.CDLL("../build/libtensor.so")  # Adjust the path to the shared library
         self.data = (ctypes.c_float * len(data))(*data)
         self.shape = shape
@@ -23,6 +25,14 @@ class Tensor:
             (ctypes.c_int * len(shape))(*shape),
             ctypes.c_int(len(shape))
         )
+
+    def flatten(self, nested_list):
+        flat_data = []
+        shape = [len(nested_list), len(nested_list[0])]
+        for sublist in nested_list:
+            for item in sublist:
+                flat_data.append(item)
+        return flat_data, shape
     
     def __getitem__(self, indices):
         if len(indices) != self.ndim:
