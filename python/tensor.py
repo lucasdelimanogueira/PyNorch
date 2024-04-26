@@ -46,9 +46,6 @@ class Tensor:
 
         return value
 
-    def __del__(self):
-        self.lib.free_tensor(self.tensor)
-
     def shape(self):
         return f"Tensor(shape={self.shape})"
 
