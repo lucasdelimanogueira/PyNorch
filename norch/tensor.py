@@ -82,7 +82,6 @@ if __name__ == "__main__":
     a = Tensor([[1, 2, 3], [1, 2, 3]])
     b = Tensor([[1, 2, 3], [1, 2, 3]])
 
-
     c = a + b
     fim = time.time()
 
