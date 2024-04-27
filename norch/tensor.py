@@ -12,21 +12,31 @@ class CTensor(ctypes.Structure):
 class Tensor:
     _C = ctypes.CDLL("../build/libtensor.so")
 
-    def __init__(self, data):
-        data, shape = self.flatten(data)
-          # Adjust the path to the shared library
-        self.data = (ctypes.c_float * len(data))(*data)
-        self.shape = shape
-        self.ndim = len(shape)
+    def __init__(self, data=None):
 
-        Tensor._C.create_tensor.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
-        Tensor._C.create_tensor.restype = ctypes.POINTER(CTensor)
+        if data != None:
+            data, shape = self.flatten(data)
+            # Adjust the path to the shared library
+            self.data_ctype = (ctypes.c_float * len(data))(*data)
+            self.shape_ctype = (ctypes.c_int * len(shape))(*shape)
+            self.ndim_ctype = ctypes.c_int(len(shape))
 
-        self.tensor = Tensor._C.create_tensor(
-            self.data,
-            (ctypes.c_int * len(shape))(*shape),
-            ctypes.c_int(len(shape))
-        )
+            self.shape = shape
+            self.ndim = len(shape)
+
+            Tensor._C.create_tensor.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
+            Tensor._C.create_tensor.restype = ctypes.POINTER(CTensor)
+
+            self.tensor = Tensor._C.create_tensor(
+                self.data_ctype,
+                self.shape_ctype,
+                self.ndim_ctype   
+            )
+        
+        else:
+            self.tensor = None,
+            self.shape = None,
+            self.ndim = None
 
     def flatten(self, nested_list):
         flat_data = []
@@ -68,11 +78,28 @@ class Tensor:
 
         result_tensor_ptr = Tensor._C.add_tensor(self.tensor, other.tensor)
 
-        result_data = [result_tensor_ptr.contents.data[i] for i in range(self.shape[0] * self.shape[1])]
-        result_shape = [result_tensor_ptr.contents.shape[i] for i in range(result_tensor_ptr.contents.ndim)]
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
 
-        return Tensor(result_data, result_shape)
+        return result_data
+    
+    def __sub__(self, other):
+        if self.shape != other.shape:
+            raise ValueError("Tensors must have the same shape for addition")
+        
+        Tensor._C.add_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.add_tensor.restype = ctypes.POINTER(CTensor)
 
+        result_tensor_ptr = Tensor._C.sub_tensor(self.tensor, other.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+
+        return result_data
 
 if __name__ == "__main__":
     from tensor import Tensor
@@ -82,7 +109,10 @@ if __name__ == "__main__":
     a = Tensor([[1, 2, 3], [1, 2, 3]])
     b = Tensor([[1, 2, 3], [1, 2, 3]])
 
-    c = a + b
+    c = a + b - b
+
+    print(c)
+    
     fim = time.time()
 
     print(fim-ini)
