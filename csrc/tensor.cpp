@@ -45,14 +45,14 @@ extern "C" {
         }
         printf("]\n");
 
-        printf("Data:\n[");
+        /*printf("Data:\n[");
         for (int i = 0; i < stride; i++) {
             printf("%.2f", tensor->data[i]);
             if (i < stride - 1) {
                 printf(", ");
             }
         }
-        printf("]\n\n\n");
+        printf("]\n\n\n");*/
         
         return tensor;
     }
@@ -81,24 +81,24 @@ extern "C" {
         }
 
         printf("Size: %d\n", tensor1->size);
-        printf("Data: [");
+        /*printf("Data: [");
         for (int i = 0; i < tensor1->size; i++) {
             printf("%.2f", tensor1->data[i]);
             if (i < tensor1->size - 1) {
                 printf(", ");
             }
         }
-        printf("]\n");
+        printf("]\n");*/
 
         printf("Size: %d\n", tensor2->size);
-        printf("Data: [");
+        /*printf("Data: [");
         for (int i = 0; i < tensor2->size; i++) {
             printf("%.2f", tensor2->data[i]);
             if (i < tensor2->size - 1) {
                 printf(", ");
             }
         }
-        printf("]\n");
+        printf("]\n");*/
 
         printf("Shapes : [");
         for (int i = 0; i < tensor1->ndim; i++) {

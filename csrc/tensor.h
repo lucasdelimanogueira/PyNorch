@@ -17,6 +17,7 @@ extern "C" {
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2);
     void reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim);
+    Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2);
 }
 
 #endif /* TENSOR_H */
