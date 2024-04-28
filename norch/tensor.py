@@ -39,12 +39,35 @@ class Tensor:
             self.ndim = None
 
     def flatten(self, nested_list):
-        flat_data = []
-        shape = [len(nested_list), len(nested_list[0])]
-        for sublist in nested_list:
-            for item in sublist:
-                flat_data.append(item)
+        def flatten_recursively(nested_list):
+            flat_data = []
+            shape = []
+            if isinstance(nested_list, list):
+                for sublist in nested_list:
+                    inner_data, inner_shape = flatten_recursively(sublist)
+                    flat_data.extend(inner_data)
+                shape.append(len(nested_list))
+                shape.extend(inner_shape)
+            else:
+                flat_data.append(nested_list)
+            return flat_data, shape
+        
+        flat_data, shape = flatten_recursively(nested_list)
         return flat_data, shape
+    
+    def reshape(self, new_shape):
+
+        new_shape_ctype = (ctypes.c_int * len(new_shape))(*new_shape)
+        new_ndim_ctype = ctypes.c_int(len(new_shape))
+        
+        Tensor._C.reshape_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
+        Tensor._C.reshape_tensor.restype = None
+        Tensor._C.reshape_tensor(self.tensor, new_shape_ctype, new_ndim_ctype)   
+
+        self.shape = new_shape
+        self.ndim = len(new_shape)
+
+        return self
     
     def __getitem__(self, indices):
         if len(indices) != self.ndim:
@@ -57,14 +80,32 @@ class Tensor:
         value = Tensor._C.get_item(self.tensor, indices)  
 
         return value 
-
+    
     def __str__(self):
-        result = ""
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                result += str(self[i, j]) + " "
-            result += "\n"
-        return result.strip()
+        def print_recursively(tensor, depth, index):
+            if depth == tensor.ndim - 1:
+                result = ""
+                for i in range(tensor.shape[-1]):
+                    index[-1] = i
+                    result += str(tensor[tuple(index)]) + ", "
+                return result.strip()
+            else:
+                result = ""
+                if depth > 0:
+                    result += "\n" + " " * ((depth - 1) * 4)
+                for i in range(tensor.shape[depth]):
+                    index[depth] = i
+                    result += "["
+                    result += print_recursively(tensor, depth + 1, index) + "],"
+                    if i < tensor.shape[depth] - 1:
+                        result += "\n" + " " * (depth * 4)
+                return result.strip(",")
+
+        index = [0] * self.ndim
+        result = "tensor(["
+        result += print_recursively(self, 0, index)
+        result += "])"
+        return result
 
     def __repr__(self):
         return self.__str__()
@@ -87,10 +128,10 @@ class Tensor:
     
     def __sub__(self, other):
         if self.shape != other.shape:
-            raise ValueError("Tensors must have the same shape for addition")
+            raise ValueError("Tensors must have the same shape for subtraction")
         
-        Tensor._C.add_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
-        Tensor._C.add_tensor.restype = ctypes.POINTER(CTensor)
+        Tensor._C.sub_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.sub_tensor.restype = ctypes.POINTER(CTensor)
 
         result_tensor_ptr = Tensor._C.sub_tensor(self.tensor, other.tensor)
 
@@ -100,18 +141,56 @@ class Tensor:
         result_data.ndim = self.ndim
 
         return result_data
+    
+    def __mul__(self, other):
+        if self.shape != other.shape:
+            raise ValueError("Tensors must have the same shape for element-wise multiplication")
+        
+        Tensor._C.elementwise_mul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.elementwise_mul_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.elementwise_mul_tensor(self.tensor, other.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+
+        return result_data
+    
+    def __matmul__(self, other):
+        if self.ndim != 2 or other.ndim != 2:
+            raise ValueError("Matrix multiplication requires 2D tensors")
+
+        if self.shape[1] != other.shape[0]:
+            raise ValueError("Incompatible shapes for matrix multiplication")
+
+        Tensor._C.matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.matmul_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.matmul_tensor(self.tensor, other.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = [self.shape[0], other.shape[1]]
+        result_data.ndim = 2
+
+        return result_data
 
 if __name__ == "__main__":
     from tensor import Tensor
     import time
 
     ini = time.time()
-    a = Tensor([[1, 2, 3], [1, 2, 3]])
-    b = Tensor([[1, 2, 3], [1, 2, 3]])
+    a = Tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]],[[13, 14, 15], [16, 17, 18], [19, 20, 21], [22, 23, 24]]])
+    print(a)
+    b = a.reshape([4, 3, 2])
+    #b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    #a = Tensor([[[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]]]])
+    #b = Tensor([[[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]]]])
+    #c = a @ b
 
-    c = a + b - b
-
-    print(c)
+    print("\n###########", b)
     
     fim = time.time()
 

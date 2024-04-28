@@ -15,6 +15,8 @@ extern "C" {
     Tensor* create_tensor(float* data, int* shape, int ndim);
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2);
+    Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2);
+    void reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim);
 }
 
 #endif /* TENSOR_H */
