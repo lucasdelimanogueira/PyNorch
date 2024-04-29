@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <cuda_runtime_api.h>
 #include "tensor.h"
 #include "cuda.h"
 #define THREADS_PER_BLOCK 128
@@ -76,14 +77,15 @@ extern "C" {
     void to_device(Tensor* tensor, char* device) {
         printf("Sending tensor to device: %s\n", device);
         #ifdef __CUDACC__
+
             if ((strcmp(device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
-                
+            
                 float* data_tmp;
 
                 cudaMalloc((void **)&data_tmp, tensor->size * sizeof(float));
                 cudaMemcpy(data_tmp, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
 
-                free(tensor_data);
+                free(tensor->data);
                 tensor->data = data_tmp;
                 tensor->device = device;
             }
