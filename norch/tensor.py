@@ -7,12 +7,13 @@ class CTensor(ctypes.Structure):
         ('shape', ctypes.POINTER(ctypes.c_int)),
         ('ndim', ctypes.c_int),
         ('size', ctypes.c_int),
+        ('device', ctypes.c_char_p)
     ]
 
 class Tensor:
     _C = ctypes.CDLL("../build/libtensor.so")
 
-    def __init__(self, data=None):
+    def __init__(self, data=None, device="cpu"):
 
         if data != None:
             data, shape = self.flatten(data)
@@ -20,23 +21,29 @@ class Tensor:
             self.data_ctype = (ctypes.c_float * len(data))(*data)
             self.shape_ctype = (ctypes.c_int * len(shape))(*shape)
             self.ndim_ctype = ctypes.c_int(len(shape))
+            self.device_ctype = device.encode('utf-8')
+
 
             self.shape = shape
             self.ndim = len(shape)
+            self.device = device
 
-            Tensor._C.create_tensor.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
+            Tensor._C.create_tensor.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.c_char_p]
             Tensor._C.create_tensor.restype = ctypes.POINTER(CTensor)
+            
 
             self.tensor = Tensor._C.create_tensor(
                 self.data_ctype,
                 self.shape_ctype,
-                self.ndim_ctype   
+                self.ndim_ctype,
+                self.device_ctype
             )
         
         else:
             self.tensor = None,
             self.shape = None,
-            self.ndim = None
+            self.ndim = None,
+            self.device = device
 
     def flatten(self, nested_list):
         def flatten_recursively(nested_list):
@@ -69,6 +76,14 @@ class Tensor:
 
         return self
     
+    def to(self, device):
+        self.device = device
+        self.device_ctype = device.encode('utf-8')
+
+        Tensor._C.to_device.argtypes = [ctypes.POINTER(CTensor), ctypes.c_char_p]
+        Tensor._C.to_device.restype = None
+        Tensor._C.to_device(self.tensor, self.device_ctype)
+
     def __getitem__(self, indices):
         if len(indices) != self.ndim:
             raise ValueError("Number of indices must match the number of dimensions")
@@ -177,6 +192,22 @@ class Tensor:
 
         return result_data
 
+    def __pow__(self, power):
+        
+        power = ctypes.c_float(power)
+
+        Tensor._C.pow_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
+        Tensor._C.pow_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.pow_tensor(self.tensor, power)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = 2
+
+        return result_data
+
 
 def matrix_sum(matrix1, matrix2):
     # Check if the matrices can be multiplied
@@ -193,7 +224,6 @@ def matrix_sum(matrix1, matrix2):
 
     return result
 
-
 if __name__ == "__main__":
     from tensor import Tensor
     import time
@@ -201,8 +231,10 @@ if __name__ == "__main__":
     import numpy as np
 
     
-    #a = Tensor([[[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]],[[13, 14, 15], [16, 17, 18], [19, 20, 21], [22, 23, 24]]])
-    #print(a)
+    a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    print(a ** 4)
+    
+    """#print(a)
     N = 1000
     a = Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
     b = Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
@@ -238,3 +270,4 @@ if __name__ == "__main__":
     fim = time.time()
     print(fim-ini)
 
+"""
