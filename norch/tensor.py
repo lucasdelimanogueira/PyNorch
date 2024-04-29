@@ -84,6 +84,8 @@ class Tensor:
         Tensor._C.to_device.restype = None
         Tensor._C.to_device(self.tensor, self.device_ctype)
 
+        return self
+
     def __getitem__(self, indices):
         if len(indices) != self.ndim:
             raise ValueError("Number of indices must match the number of dimensions")
