@@ -5,7 +5,7 @@
 #include <cuda_runtime_api.h>
 #include "tensor.h"
 #include "cuda.h"
-#define THREADS_PER_BLOCK 128
+#include "cpu.h"
 
 extern "C" {
 
@@ -74,37 +74,17 @@ extern "C" {
         return tensor->data[index];
     }
 
-    void to_device(Tensor* tensor, char* device) {
-        printf("Sending tensor to device: %s\n", device);
-        #ifdef __CUDACC__
+    void to_device(Tensor* tensor, char* target_device) {
+        printf("Sending tensor to device: %s\n", target_device);
 
-            if ((strcmp(device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
-            
-                float* data_tmp;
+        if ((strcmp(target_device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
+            cpu_to_cuda(tensor);
+        }
 
-                cudaMalloc((void **)&data_tmp, tensor->size * sizeof(float));
-                cudaMemcpy(data_tmp, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
-
-                free(tensor->data);
-                tensor->data = data_tmp;
-                tensor->device = device;
-            }
-
-            else if ((strcmp(device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
-                float* data_tmp = (float*)malloc(tensor->size * sizeof(float));
-
-                cudaMemcpy(data_tmp, tensor->data, tensor->size * sizeof(float), cudaMemcpyDeviceToHost);
-                cudaFree(tensor->data);
-
-                tensor->data = data_tmp;
-                tensor->device = device;
-            }
-        #else
-            printf("Warning: CUDA is not available. Cannot perform GPU operations.\n");
-        #endif
+        else if ((strcmp(target_device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
+            cuda_to_cpu(tensor);
+        }
     }
-
-
 
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2) {
         printf("Adding tensor\n");
@@ -172,44 +152,21 @@ extern "C" {
             shape[i] = tensor1->shape[i];
         }
         
-        #ifdef __CUDACC__
-            if (strcmp(tensor1->device, "cuda") != 0) {
+        if (strcmp(tensor1->device, "cuda") != 0) {
 
-                float* result_data;
-
-                cudaMalloc((void **)&result_data, tensor1->size * sizeof(float));
-
-                int number_of_blocks = (tensor1->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-                add_tensor_cuda<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor1->data, tensor2->data, result_data, tensor1->size);
-
-                cudaError_t error = cudaGetLastError();
-                if (error != cudaSuccess) {
-                    printf("CUDA error: %s\n", cudaGetErrorString(error));
-                    exit(-1);
-                }
-
-                cudaDeviceSynchronize();
-
-                return create_tensor(result_data, shape, ndim, device);
-            } 
-        #endif
-        
-        float* result_data = (float*)malloc(tensor1->size * sizeof(float));
-        if (result_data == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
-
-        for (int i = 0; i < tensor1->size; i++) {
-            result_data[i] = tensor1->data[i] + tensor2->data[i];
-        }
-        
-
-        return create_tensor(result_data, shape, ndim, device);
+            float* result_data;
+            add_tensor_cuda(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data;
+            add_tensor_cpu(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        }     
     }
 
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2) {
-        printf("Adding tensor\n");
+        printf("Subtracting tensor\n");
         if (tensor1->ndim != tensor2->ndim) {
             fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for subtraction\n", tensor1->ndim, tensor2->ndim);
             exit(1);
@@ -289,7 +246,7 @@ extern "C" {
     }
 
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2) {
-        printf("Adding tensor\n");
+        printf("Elementwise multiplying tensor\n");
         if (tensor1->ndim != tensor2->ndim) {
             fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for element-wise multiplication\n", tensor1->ndim, tensor2->ndim);
             exit(1);
