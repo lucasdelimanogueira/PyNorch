@@ -150,16 +150,20 @@ extern "C" {
                 exit(1);
             }
             shape[i] = tensor1->shape[i];
-        }
-        
-        if (strcmp(tensor1->device, "cuda") != 0) {
+        }        
+        if (strcmp(tensor1->device, "cuda") == 0) {
 
             float* result_data;
+            cudaMalloc((void **)&result_data, tensor1->size * sizeof(float));
             add_tensor_cuda(tensor1, tensor2, result_data);
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
-            float* result_data;
+            float* result_data = (float*)malloc(tensor1->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
             add_tensor_cpu(tensor1, tensor2, result_data);
             return create_tensor(result_data, shape, ndim, device);
         }     
