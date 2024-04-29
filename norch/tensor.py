@@ -78,7 +78,7 @@ class Tensor:
     
     def to(self, device):
         self.device = device
-        self.device_ctype = device.encode('utf-8')
+        self.device_ctype = self.device.encode('utf-8')
 
         Tensor._C.to_device.argtypes = [ctypes.POINTER(CTensor), ctypes.c_char_p]
         Tensor._C.to_device.restype = None
@@ -234,8 +234,13 @@ if __name__ == "__main__":
     import numpy as np
 
     
-    a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]).to("cuda")
-    print(a ** 2)
+    a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
+    b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
+    c = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
+
+    d = b+c
+    print(d)
+    #print(a ** 2)
     
     """#print(a)
     N = 1000
