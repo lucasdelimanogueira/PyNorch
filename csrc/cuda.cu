@@ -41,8 +41,7 @@ __global__ void add_tensor_cuda_kernel(float* data1, float* data2, float* result
 }
 
 __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data) {
-    cudaMalloc((void **)&result_data, tensor1->size * sizeof(float));
-
+    
     int number_of_blocks = (tensor1->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
     add_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor1->data, tensor2->data, result_data, tensor1->size);
 

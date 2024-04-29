@@ -234,9 +234,9 @@ if __name__ == "__main__":
     import numpy as np
 
     
-    a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
-    b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
-    c = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
+    a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]).to("cuda")
+    b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]).to("cuda")
+    c = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]).to("cuda")
 
     d = b+c
     print(d)
