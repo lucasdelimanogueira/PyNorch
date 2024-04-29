@@ -19,7 +19,7 @@ CU_OBJS = $(patsubst $(SRCDIR)/%.cu, $(BUILDDIR)/%.cu.o, $(CU_SRCS))
 
 # CUDA flags and libraries
 CUDAFLAGS = -arch=sm_75
-CUDALIBS = -lcudart
+CUDALIBS = -L/usr/local/cuda-10.2/lib64/ -lcudart -lcuda
 
 # Rule to build the target
 $(TARGET): $(OBJS) $(CU_OBJS)
