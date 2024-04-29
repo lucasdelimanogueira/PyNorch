@@ -206,6 +206,7 @@ class Tensor:
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
         result_data.shape = self.shape.copy()
+        result_data.device = self.device
         result_data.ndim = 2
 
         return result_data

@@ -100,7 +100,8 @@ extern "C" {
                 tensor->device = device;
             }
         #else
-            printf("Warning: CUDA is not available. Cannot perform GPU operations.\n");
+            fprintf(stderr, "ERROR: CUDA is not available. Cannot perform GPU operations.\n");
+            exit(0);
         #endif
     }
 

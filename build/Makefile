@@ -3,7 +3,7 @@ CC = g++
 NVCC = nvcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -std=c++11
+CFLAGS = -Wall -Wextra -std=c++11 -I/usr/local/cuda/include
 NVCCFLAGS = -std=c++11
 
 # Directories
@@ -19,7 +19,7 @@ CU_OBJS = $(patsubst $(SRCDIR)/%.cu, $(BUILDDIR)/%.cu.o, $(CU_SRCS))
 
 # CUDA flags and libraries
 CUDAFLAGS = -arch=sm_75
-CUDALIBS = -L/usr/local/cuda-10.2/lib64/ -lcudart -lcuda
+CUDALIBS = -L/usr/local/cuda -lcudart -lcuda
 
 # Rule to build the target
 $(TARGET): $(OBJS) $(CU_OBJS)
