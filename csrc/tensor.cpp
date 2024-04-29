@@ -74,7 +74,8 @@ extern "C" {
     }
 
     void to_device(Tensor* tensor, char* device) {
-        #ifdef __NVCC__
+        printf("Sending tensor to device: %s\n", device);
+        #ifdef __CUDACC__
             if ((strcmp(device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
                 
                 float* data_tmp;
@@ -84,6 +85,7 @@ extern "C" {
 
                 free(tensor_data);
                 tensor->data = data_tmp;
+                tensor->device = device;
             }
 
             else if ((strcmp(device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
@@ -93,7 +95,10 @@ extern "C" {
                 cudaFree(tensor->data);
 
                 tensor->data = data_tmp;
+                tensor->device = device;
             }
+        #else
+            printf("Warning: CUDA is not available. Cannot perform GPU operations.\n");
         #endif
     }
 
@@ -107,7 +112,7 @@ extern "C" {
         }
 
         if (strcmp(tensor1->device, tensor2->device) != 0) {
-            fprintf(stderr, "Tensors must be on the same device\n");
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
             exit(1);
         }
 
@@ -165,7 +170,7 @@ extern "C" {
             shape[i] = tensor1->shape[i];
         }
         
-        #ifdef __NVCC__
+        #ifdef __CUDACC__
             if (strcmp(tensor1->device, "cuda") != 0) {
 
                 float* result_data;
@@ -289,7 +294,7 @@ extern "C" {
         }
 
         if (strcmp(tensor1->device, tensor2->device) != 0) {
-            fprintf(stderr, "Tensors must be on the same device\n");
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
             exit(1);
         }
 
@@ -369,7 +374,7 @@ extern "C" {
         }
 
         if (strcmp(tensor1->device, tensor2->device) != 0) {
-            fprintf(stderr, "Tensors must be on the same device\n");
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
             exit(1);
         }
 
@@ -497,4 +502,3 @@ extern "C" {
         }
     }
 }
-
