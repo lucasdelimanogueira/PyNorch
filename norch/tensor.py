@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
     
     a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
-    print(a ** 4)
+    print(a ** 2)
     
     """#print(a)
     N = 1000
