@@ -209,7 +209,7 @@ extern "C" {
         }
 
         if (strcmp(tensor1->device, tensor2->device) != 0) {
-            fprintf(stderr, "Tensors must be on the same device\n");
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", &tensor1->device, &tensor2->device);
             exit(1);
         }
 
