@@ -163,21 +163,45 @@ class Tensor:
         return result_data
     
     def __mul__(self, other):
-        if self.shape != other.shape:
-            raise ValueError("Tensors must have the same shape for element-wise multiplication")
-        
-        Tensor._C.elementwise_mul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
-        Tensor._C.elementwise_mul_tensor.restype = ctypes.POINTER(CTensor)
+        if isinstance(other, (int, float)):
+            result_data = Tensor()
+            result_data.shape = self.shape.copy()
+            result_data.ndim = self.ndim
+            result_data.device = self.device
+            
+            Tensor._C.scalar_mul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
+            Tensor._C.scalar_mul_tensor.restype = ctypes.POINTER(CTensor)
 
-        result_tensor_ptr = Tensor._C.elementwise_mul_tensor(self.tensor, other.tensor)
+            result_data.tensor = Tensor._C.scalar_mul_tensor(self.tensor, ctypes.c_float(other))
 
-        result_data = Tensor()
-        result_data.tensor = result_tensor_ptr
-        result_data.shape = self.shape.copy()
-        result_data.ndim = self.ndim
-        result_data.device = self.device
+            return result_data
+        elif isinstance(other, Tensor):
+            if self.shape != other.shape:
+                raise ValueError("Tensors must have the same shape for element-wise multiplication")
 
-        return result_data
+            Tensor._C.elementwise_mul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.elementwise_mul_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.elementwise_mul_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = self.shape.copy()
+            result_data.ndim = self.ndim
+            result_data.device = self.device
+
+            return result_data
+        else:
+            raise TypeError("Unsupported operand type(s) for *: '{}' and '{}'".format(type(self), type(other)))
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __neg__(self):
+        return self.__mul__(-1)  
+
+    def __pos__(self):
+        return self  
     
     def __matmul__(self, other):
         if self.ndim != 2 or other.ndim != 2:
@@ -212,6 +236,20 @@ class Tensor:
         result_data.tensor = result_tensor_ptr
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
+        result_data.device = self.device
+
+        return result_data
+    
+    def sum(self):
+        Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.sum_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.sum_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = [1]
+        result_data.ndim = 1
         result_data.device = self.device
 
         return result_data
