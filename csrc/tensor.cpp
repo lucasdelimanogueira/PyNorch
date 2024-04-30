@@ -304,12 +304,40 @@ extern "C" {
         return create_tensor(result_data, shape, ndim, device);
     }
 
-    void pow_tensor(Tensor* tensor, float power) {
+    Tensor* pow_tensor(Tensor* tensor, float power) {
+        char* device = (char*)malloc(strlen(tensor->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+        int ndim = tensor->ndim;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+
+        for (int i = 0; i < ndim; i++) {
+            shape[i] = tensor->shape[i];
+        }
+
         if (strcmp(tensor->device, "cuda") == 0) {
-            pow_tensor_cuda(tensor, power);
+
+            float* result_data;
+            cudaMalloc((void **)&result_data, tensor->size * sizeof(float));
+            pow_tensor_cuda(tensor, power, result_data);
+            return create_tensor(result_data, shape, ndim, device);
         } 
         else {
-            pow_tensor_cpu(tensor, power);
+            float* result_data = (float*)malloc(tensor->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            pow_tensor_cpu(tensor, power, result_data);
+            return create_tensor(result_data, shape, ndim, device);
         }
     }
 

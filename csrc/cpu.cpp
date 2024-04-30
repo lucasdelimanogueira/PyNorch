@@ -25,9 +25,9 @@ void elementwise_mul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_
     }
 }
 
-void pow_tensor_cpu(Tensor* tensor, float power) {
+void pow_tensor_cpu(Tensor* tensor, float power, float* result_data) {
     
     for (int i = 0; i < tensor->size; i++) {
-        tensor->data[i] = powf(tensor->data[i], power);
+        result_data[i] = powf(tensor->data[i], power);
     }
 }

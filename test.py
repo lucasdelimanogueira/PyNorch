@@ -28,7 +28,9 @@ if __name__ == "__main__":
     #c = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
 
     #d = b-c
-    print(a ** 2)
+
+    b = a ** 2
+    print(b)
     #print(a ** 2)
     
     """#print(a)
