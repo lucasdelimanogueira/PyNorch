@@ -24,6 +24,8 @@ extern "C" {
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* pow_tensor(Tensor* tensor, float power);
     void to_device(Tensor* tensor, char* device);
+    Tensor* ones_like_tensor(Tensor* tensor);
+    Tensor* zeros_like_tensor(Tensor* tensor);
 }
 
 #endif /* TENSOR_H */

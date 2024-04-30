@@ -25,4 +25,11 @@
     __global__ void pow_tensor_cuda_kernel(float* data, float power, float* result_data, int size);
     __host__ void pow_tensor_cuda(Tensor* tensor, float power, float* result_data);
 
+    __global__ void ones_like_tensor_cuda_kernel(float* data, float* result_data, int size);
+    __host__ void ones_like_tensor_cuda(Tensor* tensor, float* result_data);
+
+    __global__ void zeros_like_tensor_cuda_kernel(float* data, float* result_data, int size);
+    __host__ void zeros_like_tensor_cuda(Tensor* tensor, float* result_data);
+
+
 #endif /* CUDA_KERNEL_H_ */

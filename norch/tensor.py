@@ -1,5 +1,6 @@
 import ctypes
 import os
+from .autograd.functions import *
 
 class CTensor(ctypes.Structure):
     _fields_ = [
@@ -15,7 +16,7 @@ class Tensor:
     os.path.abspath(os.curdir)
     _C = ctypes.CDLL(os.path.join(os.path.abspath(os.curdir), "build/libtensor.so"))
 
-    def __init__(self, data=None, device="cpu"):
+    def __init__(self, data=None, device="cpu", requires_grad=False):
 
         if data != None:
             data, shape = self.flatten(data)
@@ -28,6 +29,10 @@ class Tensor:
             self.shape = shape
             self.ndim = len(shape)
             self.device = device
+
+            self.requires_grad = requires_grad
+            self.grad = None
+            self.grad_fn = None
 
             Tensor._C.create_tensor.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.c_char_p]
             Tensor._C.create_tensor.restype = ctypes.POINTER(CTensor)
@@ -45,6 +50,10 @@ class Tensor:
             self.shape = None,
             self.ndim = None,
             self.device = device
+            self.requires_grad = None
+            self.grad = None
+            self.grad_fn = None
+
 
     def flatten(self, nested_list):
         def flatten_recursively(nested_list):
@@ -62,6 +71,38 @@ class Tensor:
         
         flat_data, shape = flatten_recursively(nested_list)
         return flat_data, shape
+    
+    def ones_like(self):
+        
+        Tensor._C.ones_like_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.ones_like_tensor.restype = ctypes.POINTER(CTensor)
+        Tensor._C.ones_like_tensor(self.tensor)   
+
+        result_tensor_ptr = Tensor._C.ones_like_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        
+        return result_data
+    
+    def zeros_like(self):
+        
+        Tensor._C.zeros_like_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.zeros_like_tensor.restype = ctypes.POINTER(CTensor)
+        Tensor._C.zeros_like_tensor(self.tensor)   
+
+        result_tensor_ptr = Tensor._C.ones_like_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        
+        return result_data
     
     def reshape(self, new_shape):
 
@@ -86,6 +127,30 @@ class Tensor:
         Tensor._C.to_device(self.tensor, self.device_ctype)
 
         return self
+    
+    def backward(self, gradient=None):
+        if not self.requires_grad:
+            return
+        
+        if gradient is None:
+            gradient = self.ones_like()
+        
+        if self.grad is None:
+            self.grad = gradient
+        else:
+            self.grad += gradient
+
+        if self.grad_fn is not None:
+            grads = self.grad_fn.backward(gradient)
+            if len(grads) == 1:
+                self.grad = grads[0]
+            else:
+                for tensor, grad in zip(self.grad_fn.tensors, grads):
+                    tensor.backward(grad)
+
+    
+    def zero_grad(self):
+        self.grad = None
 
     def __getitem__(self, indices):
         if len(indices) != self.ndim:
@@ -122,7 +187,7 @@ class Tensor:
         index = [0] * self.ndim
         result = "tensor(["
         result += print_recursively(self, 0, index)
-        result += f"""], device="{self.device}")"""
+        result += f"""], device="{self.device}", requires_grad={self.requires_grad})"""
         return result
 
     def __repr__(self):
@@ -142,6 +207,10 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+        
+        result_data.requires_grad = self.requires_grad or other.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = AddBackward(self, other)
 
         return result_data
     
@@ -251,5 +320,7 @@ class Tensor:
         result_data.shape = [1]
         result_data.ndim = 1
         result_data.device = self.device
+
+        
 
         return result_data
