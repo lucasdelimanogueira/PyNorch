@@ -16,7 +16,7 @@ def matrix_sum(matrix1, matrix2):
 
 if __name__ == "__main__":
     import norch
-    a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]]).to("cuda")
     b = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
     import time
     import random
