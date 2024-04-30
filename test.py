@@ -17,7 +17,7 @@ def matrix_sum(matrix1, matrix2):
 if __name__ == "__main__":
     import norch
     a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)#.to("cuda")
-    b = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)
+    b = norch.Tensor([[1, 400, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)
     import time
     import random
     import numpy as np
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    c = (a + b)
+    c = a.sum()
     c.backward()
     print(a.grad)
     print(b.grad)
