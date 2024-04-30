@@ -61,3 +61,17 @@ void sum_tensor_cpu(Tensor* tensor, float* result_data) {
 
     *result_data = sum;
 }
+
+void ones_like_tensor_cpu(Tensor* tensor, float* result_data) {
+    
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = 1.0;
+    }
+}
+
+void zeros_like_tensor_cpu(Tensor* tensor, float* result_data) {
+    
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = 0.0;
+    }
+}
