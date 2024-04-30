@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wextra -std=c++11
 NVCCFLAGS = -std=c++11
 
 # Directories
-SRCDIR = ../csrc
+SRCDIR = ../norch/csrc
 BUILDDIR = ../build
 TARGET = ../build/libtensor.so
 
