@@ -66,12 +66,19 @@ extern "C" {
     }
 
     float get_item(Tensor* tensor, int* indices) {
-
         int index = 0;
         for (int i = 0; i < tensor->ndim; i++) {
             index += indices[i] * tensor->strides[i];
         }
-        return tensor->data[index];
+
+        float result;
+        if (strcmp(tensor->device, "cuda") == 0) {
+            cudaMemcpy(&result, tensor->data + index, sizeof(float), cudaMemcpyDeviceToHost);
+        } else {
+            result = tensor->data[index];
+        }
+
+        return result;
     }
 
     void to_device(Tensor* tensor, char* target_device) {
