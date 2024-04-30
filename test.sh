@@ -1,5 +1,4 @@
 cd build
 make
 cd ..
-cd norch
-python3 tensor.py
+python3 test.py

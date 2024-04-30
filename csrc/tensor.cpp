@@ -20,7 +20,7 @@ extern "C" {
         tensor->data = data;
         tensor->shape = shape;
         tensor->ndim = ndim;
-        
+
         tensor->device = (char*)malloc(strlen(device) + 1);
         if (device != NULL) {
             strcpy(tensor->device, device);
@@ -101,7 +101,6 @@ extern "C" {
     }
 
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2) {
-        printf("Adding tensor\n");
         if (tensor1->ndim != tensor2->ndim) {
             fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for addition\n", tensor1->ndim, tensor2->ndim);
             exit(1);
@@ -125,44 +124,6 @@ extern "C" {
             fprintf(stderr, "Memory allocation failed\n");
             exit(1);
         }
-
-        printf("Size: %d\n", tensor1->size);
-        /*printf("Data: [");
-        for (int i = 0; i < tensor1->size; i++) {
-            printf("%.2f", tensor1->data[i]);
-            if (i < tensor1->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");*/
-
-        printf("Size: %d\n", tensor2->size);
-        /*printf("Data: [");
-        for (int i = 0; i < tensor2->size; i++) {
-            printf("%.2f", tensor2->data[i]);
-            if (i < tensor2->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");*/
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor1->ndim; i++) {
-            printf("%d", tensor1->shape[i]);
-            if (i < tensor1->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor2->ndim; i++) {
-            printf("%d", tensor2->shape[i]);
-            if (i < tensor2->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
 
         for (int i = 0; i < ndim; i++) {
             if (tensor1->shape[i] != tensor2->shape[i]) {
@@ -190,7 +151,6 @@ extern "C" {
     }
 
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2) {
-        printf("Subtracting tensor\n");
         if (tensor1->ndim != tensor2->ndim) {
             fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for subtraction\n", tensor1->ndim, tensor2->ndim);
             exit(1);
@@ -201,52 +161,19 @@ extern "C" {
             exit(1);
         }
 
-        char* device = tensor1->device;
-
+        char* device = (char*)malloc(strlen(tensor1->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor1->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
         int ndim = tensor1->ndim;
         int* shape = (int*)malloc(ndim * sizeof(int));
         if (shape == NULL) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(1);
         }
-
-        printf("Size: %d\n", tensor1->size);
-        printf("Data: [");
-        for (int i = 0; i < tensor1->size; i++) {
-            printf("%.2f", tensor1->data[i]);
-            if (i < tensor1->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Size: %d\n", tensor2->size);
-        printf("Data: [");
-        for (int i = 0; i < tensor2->size; i++) {
-            printf("%.2f", tensor2->data[i]);
-            if (i < tensor2->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor1->ndim; i++) {
-            printf("%d", tensor1->shape[i]);
-            if (i < tensor1->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor2->ndim; i++) {
-            printf("%d", tensor2->shape[i]);
-            if (i < tensor2->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
 
         for (int i = 0; i < ndim; i++) {
             if (tensor1->shape[i] != tensor2->shape[i]) {
@@ -256,21 +183,25 @@ extern "C" {
             shape[i] = tensor1->shape[i];
         }
 
-        float* result_data = (float*)malloc(tensor1->size * sizeof(float));
-        if (result_data == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
+        if (strcmp(tensor1->device, "cuda") == 0) {
 
-        for (int i = 0; i < tensor1->size; i++) {
-            result_data[i] = tensor1->data[i] - tensor2->data[i];
+            float* result_data;
+            cudaMalloc((void **)&result_data, tensor1->size * sizeof(float));
+            sub_tensor_cuda(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(tensor1->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            sub_tensor_cpu(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
         }
-
-        return create_tensor(result_data, shape, ndim, device);
     }
 
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2) {
-        printf("Elementwise multiplying tensor\n");
         if (tensor1->ndim != tensor2->ndim) {
             fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for element-wise multiplication\n", tensor1->ndim, tensor2->ndim);
             exit(1);
@@ -281,52 +212,19 @@ extern "C" {
             exit(1);
         }
 
-        char* device = tensor1->device;
-
+        char* device = (char*)malloc(strlen(tensor1->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor1->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
         int ndim = tensor1->ndim;
         int* shape = (int*)malloc(ndim * sizeof(int));
         if (shape == NULL) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(1);
         }
-
-        printf("Size: %d\n", tensor1->size);
-        printf("Data: [");
-        for (int i = 0; i < tensor1->size; i++) {
-            printf("%.2f", tensor1->data[i]);
-            if (i < tensor1->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Size: %d\n", tensor2->size);
-        printf("Data: [");
-        for (int i = 0; i < tensor2->size; i++) {
-            printf("%.2f", tensor2->data[i]);
-            if (i < tensor2->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor1->ndim; i++) {
-            printf("%d", tensor1->shape[i]);
-            if (i < tensor1->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor2->ndim; i++) {
-            printf("%d", tensor2->shape[i]);
-            if (i < tensor2->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
 
         for (int i = 0; i < ndim; i++) {
             if (tensor1->shape[i] != tensor2->shape[i]) {
@@ -336,17 +234,22 @@ extern "C" {
             shape[i] = tensor1->shape[i];
         }
 
-        float* result_data = (float*)malloc(tensor1->size * sizeof(float));
-        if (result_data == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
+        if (strcmp(tensor1->device, "cuda") == 0) {
 
-        for (int i = 0; i < tensor1->size; i++) {
-            result_data[i] = tensor1->data[i] * tensor2->data[i];
+            float* result_data;
+            cudaMalloc((void **)&result_data, tensor1->size * sizeof(float));
+            elementwise_mul_tensor_cuda(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(tensor1->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            elementwise_mul_tensor_cpu(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
         }
-
-        return create_tensor(result_data, shape, ndim, device);
     }
 
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
@@ -401,50 +304,13 @@ extern "C" {
         return create_tensor(result_data, shape, ndim, device);
     }
 
-    Tensor* pow_tensor(Tensor* tensor, float power) {
-        printf("Powering tensor\n");
-        char* device = tensor->device;
-        int ndim = tensor->ndim;
-        int* shape = (int*)malloc(ndim * sizeof(int));
-        if (shape == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
+    void pow_tensor(Tensor* tensor, float power) {
+        if (strcmp(tensor->device, "cuda") == 0) {
+            pow_tensor_cuda(tensor, power);
+        } 
+        else {
+            pow_tensor_cpu(tensor, power);
         }
-
-        printf("Size: %d\n", tensor->size);
-        printf("Data: [");
-        for (int i = 0; i < tensor->size; i++) {
-            printf("%.2f", tensor->data[i]);
-            if (i < tensor->size - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Shapes : [");
-        for (int i = 0; i < tensor->ndim; i++) {
-            printf("%d", tensor->shape[i]);
-            if (i < tensor->ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        for (int i = 0; i < ndim; i++) {
-            shape[i] = tensor->shape[i];
-        }
-
-        float* result_data = (float*)malloc(tensor->size * sizeof(float));
-        if (result_data == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
-
-        for (int i = 0; i < tensor->size; i++) {
-            result_data[i] = powf(tensor->data[i], power);
-        }
-
-        return create_tensor(result_data, shape, ndim, device);
     }
 
     void reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim) {
