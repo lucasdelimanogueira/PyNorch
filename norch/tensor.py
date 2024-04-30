@@ -23,7 +23,6 @@ class Tensor:
             self.ndim_ctype = ctypes.c_int(len(shape))
             self.device_ctype = device.encode('utf-8')
 
-
             self.shape = shape
             self.ndim = len(shape)
             self.device = device
@@ -121,7 +120,7 @@ class Tensor:
         index = [0] * self.ndim
         result = "tensor(["
         result += print_recursively(self, 0, index)
-        result += "])"
+        result += f"""], device="{self.device}")"""
         return result
 
     def __repr__(self):
@@ -140,6 +139,7 @@ class Tensor:
         result_data.tensor = result_tensor_ptr
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
+        result_data.device = self.device
 
         return result_data
     
@@ -156,6 +156,7 @@ class Tensor:
         result_data.tensor = result_tensor_ptr
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
+        result_data.device = self.device
 
         return result_data
     
@@ -172,6 +173,7 @@ class Tensor:
         result_data.tensor = result_tensor_ptr
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
+        result_data.device = self.device
 
         return result_data
     
@@ -191,6 +193,7 @@ class Tensor:
         result_data.tensor = result_tensor_ptr
         result_data.shape = [self.shape[0], other.shape[1]]
         result_data.ndim = 2
+        result_data.device = self.device
 
         return result_data
 

@@ -20,7 +20,14 @@ extern "C" {
         tensor->data = data;
         tensor->shape = shape;
         tensor->ndim = ndim;
-        tensor->device = device;
+        
+        tensor->device = (char*)malloc(strlen(device) + 1);
+        if (device != NULL) {
+            strcpy(tensor->device, device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
 
         tensor->size = 1;
         for (int i = 0; i < ndim; i++) {
@@ -105,7 +112,13 @@ extern "C" {
             exit(1);
         }
 
-        char* device = tensor1->device;
+        char* device = (char*)malloc(strlen(tensor1->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor1->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
         int ndim = tensor1->ndim;
         int* shape = (int*)malloc(ndim * sizeof(int));
         if (shape == NULL) {
