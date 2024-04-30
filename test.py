@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    b = a ** 2
+    b = a @ a
     print(b)
     #print(a ** 2)
     
