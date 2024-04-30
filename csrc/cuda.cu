@@ -97,17 +97,17 @@ __host__ void elementwise_mul_tensor_cuda(Tensor* tensor1, Tensor* tensor2, floa
     cudaDeviceSynchronize();
 }
 
-__global__ void pow_tensor_cuda_kernel(float* data, float power, int size) {
+__global__ void pow_tensor_cuda_kernel(float* data, float power, float* result_data, int size) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i < size) {
-        data[i] = powf(data[i], power);
+        result_data[i] = powf(data[i], power);
     }
 }
 
-__host__ void pow_tensor_cuda(Tensor* tensor, float power) {
+__host__ void pow_tensor_cuda(Tensor* tensor, float power, float* result_data) {
     
     int number_of_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    pow_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, power, tensor->size);
+    pow_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, power, result_data, tensor->size);
 
     cudaError_t error = cudaGetLastError();
     if (error != cudaSuccess) {
