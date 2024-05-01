@@ -302,22 +302,30 @@ class Tensor:
         result_data.ndim = 2
         result_data.device = self.device
 
+        result_data.requires_grad = self.requires_grad or other.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = MatmulBackward(self, other)
+
         return result_data
 
     def __pow__(self, power):
         
-        power = ctypes.c_float(power)
+        power_ctypes = ctypes.c_float(power)
 
         Tensor._C.pow_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
         Tensor._C.pow_tensor.restype = ctypes.POINTER(CTensor)
 
-        result_tensor_ptr = Tensor._C.pow_tensor(self.tensor, power)
+        result_tensor_ptr = Tensor._C.pow_tensor(self.tensor, power_ctypes)
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = PowBackward(self, power)
 
         return result_data
     
@@ -336,5 +344,23 @@ class Tensor:
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = SumBackward(self)
+
+        return result_data
+    
+    @property
+    def T(self):
+        if self.ndim != 2:
+            raise ValueError("Transpose requires 2D tensors")
+
+        Tensor._C.transpose_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.transpose_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.transpose_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = [self.shape[1], self.shape[0]]
+        result_data.ndim = 2
+        result_data.device = self.device
 
         return result_data

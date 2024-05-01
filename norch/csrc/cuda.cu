@@ -188,8 +188,8 @@ __host__ void matmul_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result
     int cols2 = tensor2->shape[1];
 
     dim3 threadsPerBlock(16, 16);
-    dim3 numBlocks((cols2 + threadsPerBlock.x - 1) / threadsPerBlock.x, (rows1 + threadsPerBlock.y - 1) / threadsPerBlock.y);
-    matmul_tensor_cuda_kernel<<<numBlocks, threadsPerBlock>>>(tensor1->data, tensor2->data, result_data, rows1, cols1, cols2);
+    dim3 number_of_blocks((cols2 + threadsPerBlock.x - 1) / threadsPerBlock.x, (rows1 + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    matmul_tensor_cuda_kernel<<<number_of_blocks, threadsPerBlock>>>(tensor1->data, tensor2->data, result_data, rows1, cols1, cols2);
 
 
     cudaError_t error = cudaGetLastError();
@@ -257,6 +257,34 @@ __host__ void zeros_like_tensor_cuda(Tensor* tensor, float* result_data) {
     
     int number_of_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
     zeros_like_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
+
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(error));
+        exit(-1);
+    }
+
+    cudaDeviceSynchronize();
+}
+
+__global__ void transpose_tensor_cuda_kernel(float* data, float* result_data, int rows, int cols) {
+    int tid_x = blockIdx.x * blockDim.x + threadIdx.x;
+    int tid_y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if (tid_x < cols && tid_y < rows) {
+        result_data[tid_x * rows + tid_y] = data[tid_y * cols + tid_x];
+    }
+}
+
+__host__ void transpose_tensor_cuda(Tensor* tensor, float* result_data) {
+    
+    int rows = tensor->shape[0];
+    int cols = tensor->shape[1];
+
+    dim3 threadsPerBlock(16, 16);
+    dim3 number_of_blocks((cols + threadsPerBlock.x - 1) / threadsPerBlock.x, (rows + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    transpose_tensor_cuda_kernel<<<number_of_blocks, threadsPerBlock>>>(tensor->data, result_data, rows, cols);
+
 
     cudaError_t error = cudaGetLastError();
     if (error != cudaSuccess) {
