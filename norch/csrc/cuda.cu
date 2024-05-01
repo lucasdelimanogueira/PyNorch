@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define THREADS_PER_BLOCK 128
-
 __host__ void cpu_to_cuda(Tensor* tensor) {
     
     float* data_tmp;
@@ -57,38 +55,59 @@ __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_da
     cudaDeviceSynchronize();
 }
 
-_global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size) {
+__global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size) {
     extern __shared__ float sdata[];
 
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    // Each thread loads one element into shared memory
-    if (i < size) {
-        sdata[tid] = data[i];
-    } else {
-        sdata[tid] = 0.0f;
-    }
+    sdata[tid] = (i < size) ? data[i] : 0;
     __syncthreads();
 
-    // Reduce within block using shared memory
     for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s && i + s < size) {
+        if (tid < s) {
             sdata[tid] += sdata[tid + s];
         }
         __syncthreads();
     }
 
-    // Write the result for this block to global memory
     if (tid == 0) {
         result_data[blockIdx.x] = sdata[0];
     }
 }
 
-__host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
-    
-    int number_of_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    sum_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
+__global__ void aux_sum_block_kernel(float* result_data, int size) {
+    extern __shared__ float sdata[];
+
+    unsigned int tid = threadIdx.x;
+
+    sdata[tid] = (tid < size) ? result_data[tid] : 0;
+    __syncthreads();
+
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if (tid == 0) {
+        result_data[0] = sdata[0];
+    }
+}
+
+__host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int number_of_blocks) {
+
+    sum_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(float)>>>(tensor->data, result_data, tensor->size);
+
+    int remaining = number_of_blocks;
+    int levelSize = number_of_blocks;
+    while (remaining > 1) {
+        int threads = (remaining + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+        sum_block<<<1, threads, threads * sizeof(float)>>>(result_data, remaining);
+        remaining = (remaining + threadsPerBlock - 1) / threadsPerBlock;
+        levelSize = remaining;
+    }
 
     cudaError_t error = cudaGetLastError();
     if (error != cudaSuccess) {
