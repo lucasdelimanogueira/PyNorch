@@ -57,7 +57,7 @@ __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_da
     cudaDeviceSynchronize();
 }
 
-__global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size) {
+_global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size) {
     extern __shared__ float sdata[];
 
     unsigned int tid = threadIdx.x;
@@ -73,7 +73,7 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
 
     // Reduce within block using shared memory
     for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
+        if (tid < s && i + s < size) {
             sdata[tid] += sdata[tid + s];
         }
         __syncthreads();

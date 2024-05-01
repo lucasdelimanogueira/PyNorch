@@ -20,7 +20,6 @@ class Tensor:
 
         if data != None:
             data, shape = self.flatten(data)
-            # Adjust the path to the shared library
             self.data_ctype = (ctypes.c_float * len(data))(*data)
             self.shape_ctype = (ctypes.c_int * len(shape))(*shape)
             self.ndim_ctype = ctypes.c_int(len(shape))
