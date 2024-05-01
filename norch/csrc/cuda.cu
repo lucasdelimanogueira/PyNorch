@@ -314,4 +314,26 @@ __host__ void transpose_tensor_cuda(Tensor* tensor, float* result_data) {
     cudaDeviceSynchronize();
 }
 
+__global__ void assign_tensor_cuda_kernel(float* data, float* result_data, int size) {
+    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < size) {
+        result_data[i] = data[i];
+    }
+}
+
+__host__ void assign_tensor_cuda(Tensor* tensor, float* result_data) {
+    
+    int number_of_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    assign_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
+
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(error));
+        exit(-1);
+    }
+
+    cudaDeviceSynchronize();
+}
+
 

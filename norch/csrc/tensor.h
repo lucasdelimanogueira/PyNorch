@@ -22,7 +22,7 @@ extern "C" {
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* scalar_mul_tensor(Tensor* tensor, float scalar);
-    void reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim);
+    Tensor* reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim);
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* pow_tensor(Tensor* tensor, float power);
     void to_device(Tensor* tensor, char* device);

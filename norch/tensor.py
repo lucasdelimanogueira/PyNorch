@@ -93,7 +93,7 @@ class Tensor:
         Tensor._C.zeros_like_tensor.restype = ctypes.POINTER(CTensor)
         Tensor._C.zeros_like_tensor(self.tensor)   
 
-        result_tensor_ptr = Tensor._C.ones_like_tensor(self.tensor)
+        result_tensor_ptr = Tensor._C.zeros_like_tensor(self.tensor)
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
@@ -103,17 +103,24 @@ class Tensor:
         
         return result_data
     
-    def reshape(self, new_shape):
+    def reshape(self, new_shape, requires_grad=None):
 
         new_shape_ctype = (ctypes.c_int * len(new_shape))(*new_shape)
         new_ndim_ctype = ctypes.c_int(len(new_shape))
         
         Tensor._C.reshape_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(ctypes.c_int), ctypes.c_int]
-        Tensor._C.reshape_tensor.restype = None
-        Tensor._C.reshape_tensor(self.tensor, new_shape_ctype, new_ndim_ctype)   
+        Tensor._C.reshape_tensor.restype = ctypes.POINTER(CTensor)
+        result_tensor_ptr = Tensor._C.reshape_tensor(self.tensor, new_shape_ctype, new_ndim_ctype)   
 
-        self.shape = new_shape
-        self.ndim = len(new_shape)
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = new_shape.copy()
+        result_data.ndim = len(new_shape)
+        result_data.device = self.device
+
+        result_data.requires_grad = self.requires_grad
+        if requires_grad:
+            self.grad_fn = ReshapeBackward(self)
 
         return self
     

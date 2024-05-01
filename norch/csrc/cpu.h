@@ -13,5 +13,6 @@ void scalar_mul_tensor_cpu(Tensor* tensor, float scalar, float* result_data);
 void ones_like_tensor_cpu(Tensor* tensor, float* result_data);
 void zeros_like_tensor_cpu(Tensor* tensor, float* result_data);
 void transpose_tensor_cpu(Tensor* tensor, float* result_data);
+void assign_tensor_cpu(Tensor* tensor, float* result_data);
 
 #endif /* CPU_H */
