@@ -133,22 +133,22 @@ class Tensor:
             return
         
         if gradient is None:
-            gradient = self.ones_like()
-        
+            if self.shape == [1]:
+                gradient = Tensor([1])
+            else:
+                raise RuntimeError("Gradient argument must be specified for non-scalar tensors.")
+
         if self.grad is None:
             self.grad = gradient
+
         else:
             self.grad += gradient
 
-        if self.grad_fn is not None:
+        if self.grad_fn is not None: # not a leaf
             grads = self.grad_fn.backward(gradient)
-            if len(grads) == 1:
-                self.grad = grads[0]
-            else:
-                for tensor, grad in zip(self.grad_fn.tensors, grads):
-                    tensor.backward(grad)
+            for tensor, grad in zip(self.grad_fn.input, grads):
+                tensor.backward(grad)
 
-    
     def zero_grad(self):
         self.grad = None
 
@@ -229,6 +229,10 @@ class Tensor:
         result_data.ndim = self.ndim
         result_data.device = self.device
 
+        result_data.requires_grad = self.requires_grad or other.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = SubBackward(self, other)
+
         return result_data
     
     def __mul__(self, other):
@@ -242,6 +246,10 @@ class Tensor:
             Tensor._C.scalar_mul_tensor.restype = ctypes.POINTER(CTensor)
 
             result_data.tensor = Tensor._C.scalar_mul_tensor(self.tensor, ctypes.c_float(other))
+
+            result_data.requires_grad = self.requires_grad
+            if result_data.requires_grad:
+                result_data.grad_fn = ScalarMulBackward(self, other)
 
             return result_data
         elif isinstance(other, Tensor):
@@ -258,6 +266,10 @@ class Tensor:
             result_data.shape = self.shape.copy()
             result_data.ndim = self.ndim
             result_data.device = self.device
+
+            result_data.requires_grad = self.requires_grad or other.requires_grad
+            if result_data.requires_grad:
+                result_data.grad_fn = ElementwiseMulBackward(self, other)
 
             return result_data
         else:
@@ -321,6 +333,8 @@ class Tensor:
         result_data.ndim = 1
         result_data.device = self.device
 
-        
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = SumBackward(self)
 
         return result_data
