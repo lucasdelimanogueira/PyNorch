@@ -27,12 +27,13 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)#.to("cuda")
-    b = norch.Tensor([[1, 400, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)
+    a = norch.Tensor([[1, 2], [1, 2], [1, 2]], requires_grad=True)#.to("cuda")
+    b = norch.Tensor([[1, 400, 3], [1, 2, 3]], requires_grad=True)
 
-    c = (a ** 3)
+    c = (b @ a) * 5
     d = c.sum()
     d.backward()
+
     print(a.grad)
     
     """#print(a)

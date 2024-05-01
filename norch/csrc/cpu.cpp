@@ -75,3 +75,14 @@ void zeros_like_tensor_cpu(Tensor* tensor, float* result_data) {
         result_data[i] = 0.0;
     }
 }
+
+void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
+    int rows = tensor->shape[0];
+    int cols = tensor->shape[1];
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            result_data[j * rows + i] = tensor->data[i * cols + j];
+        }
+    }
+}
