@@ -171,8 +171,9 @@ extern "C" {
         if (strcmp(tensor->device, "cuda") == 0) {
 
             float* result_data;
-            cudaMalloc((void **)&result_data, 1 * sizeof(float));
-            sum_tensor_cuda(tensor, result_data);
+            int num_of_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+            cudaMalloc((void **)&num_of_blocks, 1 * sizeof(float));
+            sum_tensor_cuda(tensor, result_data, int num_of_blocks);
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
