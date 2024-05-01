@@ -133,27 +133,22 @@ class Tensor:
             return
         
         if gradient is None:
-            if self.shape != [1]:
+            if self.shape == [1]:
+                gradient = Tensor([1])
+            else:
                 raise RuntimeError("Gradient argument must be specified for non-scalar tensors.")
-            gradient = self.ones_like()
-        
-        if self.shape != [1]:
-            raise RuntimeError("Only scalar tensors can be used to trigger backward propagation.")
-        
+
         if self.grad is None:
             self.grad = gradient
+
         else:
             self.grad += gradient
 
-        if self.grad_fn is not None:
+        if self.grad_fn is not None: # not a leaf
             grads = self.grad_fn.backward(gradient)
-            if len(grads) == 1:
-                self.grad = grads[0]
-            else:
-                for tensor, grad in zip(self.grad_fn.tensors, grads):
-                    tensor.backward(grad)
+            for tensor, grad in zip(self.grad_fn.input, grads):
+                tensor.backward(grad)
 
-    
     def zero_grad(self):
         self.grad = None
 

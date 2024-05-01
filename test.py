@@ -29,10 +29,11 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    c = a.sum()
-    c.backward()
-    print(a.grad)
-    print(b.grad)
+    c = a*b
+
+    d = c.sum()
+    d.backward()
+    print(c.grad)
     #print(a ** 2)
     
     """#print(a)
