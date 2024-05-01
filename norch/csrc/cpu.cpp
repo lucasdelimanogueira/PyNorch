@@ -86,3 +86,10 @@ void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
         }
     }
 }
+
+void assign_tensor_cpu(Tensor* tensor, float* result_data) {
+
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = tensor->data[i];
+    }
+}

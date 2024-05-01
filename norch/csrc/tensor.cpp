@@ -425,7 +425,15 @@ extern "C" {
         }
     }
 
-    void reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim) {
+    Tensor* reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim) {
+        char* device = (char*)malloc(strlen(tensor->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
         // Calculate the total number of elements in the new shape
         int new_size = 1;
         for (int i = 0; i < new_ndim; i++) {
@@ -438,28 +446,21 @@ extern "C" {
             exit(1);
         }
 
-        // Update the shape
-        tensor->shape = (int*)malloc(new_ndim * sizeof(int));
-        if (tensor->shape == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
-        for (int i = 0; i < new_ndim; i++) {
-            tensor->shape[i] = new_shape[i];
-        }
-        tensor->ndim = new_ndim;
+        if (strcmp(tensor->device, "cuda") == 0) {
 
-        // Update the strides
-        tensor->strides = (int*)malloc(new_ndim * sizeof(int));
-        if (tensor->strides == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
-
-        int stride = 1;
-        for (int i = new_ndim - 1; i >= 0; i--) {
-            tensor->strides[i] = stride;
-            stride *= new_shape[i];
+            float* result_data;
+            cudaMalloc((void **)&result_data, tensor->size * sizeof(float));
+            assign_tensor_cuda(tensor, result_data);
+            return create_tensor(result_data, new_shape, new_ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(tensor->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            assign_tensor_cpu(tensor, result_data);
+            return create_tensor(result_data, new_shape, new_ndim, device);
         }
     }
 
