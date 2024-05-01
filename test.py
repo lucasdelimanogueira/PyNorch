@@ -16,8 +16,6 @@ def matrix_sum(matrix1, matrix2):
 
 if __name__ == "__main__":
     import norch
-    a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)#.to("cuda")
-    b = norch.Tensor([[1, 400, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)
     import time
     import random
     import numpy as np
@@ -29,12 +27,13 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    c = a*b
+    a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)#.to("cuda")
+    b = norch.Tensor([[1, 400, 3], [1, 2, 3], [1, 2, 3]], requires_grad=True)
 
+    c = (a ** 3)
     d = c.sum()
     d.backward()
-    print(c.grad)
-    #print(a ** 2)
+    print(a.grad)
     
     """#print(a)
     N = 1000

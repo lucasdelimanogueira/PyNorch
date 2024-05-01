@@ -28,6 +28,15 @@ class ElementwiseMulBackward:
     def backward(self, gradient):
         return [gradient * self.input[1], gradient * self.input[0]]
     
+class PowBackward:
+    def __init__(self, x, power):
+        self.input = [x]
+        self.power = power
+
+    def backward(self, gradient):
+        print(self.input[0], "@@@")
+        return [(gradient * self.power) * (self.input[0]) ** (self.power - 1)]
+       
 class SumBackward:
     def __init__(self, x):
         self.input = [x]
