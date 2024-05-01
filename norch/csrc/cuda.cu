@@ -185,7 +185,7 @@ __host__ void scalar_mul_tensor_cuda(Tensor* tensor, float scalar, float* result
     cudaDeviceSynchronize();
 }
 
-__global__ void matmul_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int rows1, int cols1, int cols2) {    
+/*__global__ void matmul_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int rows1, int cols1, int cols2) {    
 
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -198,7 +198,54 @@ __global__ void matmul_tensor_cuda_kernel(float* data1, float* data2, float* res
         result_data[row * cols2 + col] = sum;
     }
 
+}*/
+
+__global__ void matmul_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int rows1, int cols1, int cols2) {    
+
+    // Shared memory for tiles
+    __shared__ float tile1[TILE_SIZE][TILE_SIZE];
+    __shared__ float tile2[TILE_SIZE][TILE_SIZE];
+
+    // Thread indices
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+
+    // Output position
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    float sum = 0.0;
+
+    // Iterate over tiles
+    for (int i = 0; i < (cols1 + TILE_SIZE - 1) / TILE_SIZE; ++i) {
+
+        // Load tiles into shared memory
+        if (row < rows1 && i * TILE_SIZE + tx < cols1)
+            tile1[ty][tx] = data1[row * cols1 + i * TILE_SIZE + tx];
+        else
+            tile1[ty][tx] = 0.0;
+
+        if (col < cols2 && i * TILE_SIZE + ty < cols1)
+            tile2[ty][tx] = data2[(i * TILE_SIZE + ty) * cols2 + col];
+        else
+            tile2[ty][tx] = 0.0;
+
+        // Synchronize threads
+        __syncthreads();
+
+        // Accumulate sum
+        for (int k = 0; k < TILE_SIZE; ++k)
+            sum += tile1[ty][k] * tile2[k][tx];
+
+        // Synchronize threads
+        __syncthreads();
+    }
+
+    // Write result to global memory
+    if (row < rows1 && col < cols2)
+        result_data[row * cols2 + col] = sum;
 }
+
 
 __host__ void matmul_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     

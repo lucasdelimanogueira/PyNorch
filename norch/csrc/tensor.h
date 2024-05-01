@@ -2,6 +2,7 @@
 #define TENSOR_H
 
 #define THREADS_PER_BLOCK 128
+#define TILE_SIZE 16
 
 typedef struct {
     float* data;
