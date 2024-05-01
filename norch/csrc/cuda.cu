@@ -76,38 +76,39 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
     }
 }
 
-__global__ void aux_sum_block_kernel(float* result_data, int size) {
-    extern __shared__ float sdata[];
+__global__ void sum_tensor_cuda_kernel(float* data, float* result_data) {
 
-    unsigned int tid = threadIdx.x;
+    __shared__ int sdata[THREADS_PER_BLOCK];
 
-    sdata[tid] = (tid < size) ? result_data[tid] : 0;
+    // each thread loads one element from global to shared mem
+    // note use of 1D thread indices (only) in this kernel
+    int i = blockIdx.x*blockDim.x + threadIdx.x;
+
+    sdata[threadIdx.x] = data[i];
+
     __syncthreads();
+    // do reduction in shared mem
+    for (int s=1; s < blockDim.x; s *=2)
+    {
+        int index = 2 * s * threadIdx.x;;
 
-    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            sdata[tid] += sdata[tid + s];
+        if (index < blockDim.x)
+        {
+            sdata[index] += sdata[index + s];
         }
         __syncthreads();
     }
 
-    if (tid == 0) {
-        result_data[0] = sdata[0];
-    }
+    // write result for this block to global mem
+    if (threadIdx.x == 0)
+        atomicAdd(result_data, sdata[0]);
 }
 
-__host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int number_of_blocks) {
 
-    sum_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(float)>>>(tensor->data, result_data, tensor->size);
+__host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
 
-    int remaining = number_of_blocks;
-    int levelSize;
-    while (remaining > 1) {
-        int threads = (remaining + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        aux_sum_block_kernel<<<1, threads, threads * sizeof(float)>>>(result_data, remaining);
-        remaining = (remaining + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        levelSize = remaining;
-    }
+    number_of_blocks = tensor->size / THREADS_PER_BLOCK;
+    sum_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
 
     cudaError_t error = cudaGetLastError();
     if (error != cudaSuccess) {
