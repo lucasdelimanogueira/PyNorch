@@ -104,8 +104,8 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int number_of_
     int levelSize = number_of_blocks;
     while (remaining > 1) {
         int threads = (remaining + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        sum_block<<<1, threads, threads * sizeof(float)>>>(result_data, remaining);
-        remaining = (remaining + threadsPerBlock - 1) / threadsPerBlock;
+        aux_sum_block_kernel<<<1, threads, threads * sizeof(float)>>>(result_data, remaining);
+        remaining = (remaining + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
         levelSize = remaining;
     }
 

@@ -30,11 +30,12 @@ if __name__ == "__main__":
     a = norch.Tensor([[1, 2], [1, 2], [1, 2]], requires_grad=True)#.to("cuda")
     b = norch.Tensor([[1, 400, 3], [1, 2, 3]], requires_grad=True)
 
-    c = (b @ a) * 5
-    d = c.sum()
-    d.backward()
+    print(a.sum())
+    #c = (b @ a) * 5
+    #d = c.sum()
+    #d.backward()
 
-    print(a.grad)
+    #print(a.grad)
     
     """#print(a)
     N = 1000
