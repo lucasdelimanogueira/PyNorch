@@ -85,34 +85,6 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
     }
 }
 
-
-__global__ void aux_final_sum_kernel(float* result_data, int size) {
-    __shared__ float partial_sum[SHMEM_SIZE];
-
-    int tid = threadIdx.x;
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    partial_sum[tid] = (i < size) ? result_data[i] : 0;
-
-    __syncthreads();
-
-    // Perform final reduction
-    for (int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            partial_sum[tid] += partial_sum[tid + s];
-        }
-        __syncthreads();
-    }
-
-    // Write final result to global memory
-    if (tid == 0 && blockIdx.x == 0) {
-        result_data[0] = partial_sum[0];
-    }
-}
-
-
-
-
 __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
     cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
 
@@ -124,7 +96,7 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
     // If necessary, perform multiple levels of reduction
     while (num_blocks > 1) {
         int num_blocks_next = (num_blocks + THREADS_PER_BLOCK_SUM - 1) / THREADS_PER_BLOCK_SUM;
-        aux_final_sum_kernel<<<num_blocks_next, THREADS_PER_BLOCK_SUM>>>(result_data, num_blocks);
+        sum_tensor_cuda_kernel<<<num_blocks_next, THREADS_PER_BLOCK_SUM>>>(result_data, result_data, num_blocks);
         num_blocks = num_blocks_next;
     }
 
