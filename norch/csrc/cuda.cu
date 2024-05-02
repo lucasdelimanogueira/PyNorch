@@ -4,6 +4,7 @@
 #include <math.h>
 
 #define THREADS_PER_BLOCK 128
+#define THREADS_PER_BLOCK_SUM 1024
 #define TILE_SIZE 32
 
 __host__ void cpu_to_cuda(Tensor* tensor) {
@@ -60,7 +61,7 @@ __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_da
 
 
 __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size) {
-    __shared__ float partial_sum[THREADS_PER_BLOCK];
+    __shared__ float partial_sum[THREADS_PER_BLOCK_SUM];
 
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -85,7 +86,7 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
 
 
 __global__ void aux_final_sum_kernel(float* result_data, int size) {
-    __shared__ float partial_sum[THREADS_PER_BLOCK];
+    __shared__ float partial_sum[THREADS_PER_BLOCK_SUM];
 
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -114,15 +115,15 @@ __global__ void aux_final_sum_kernel(float* result_data, int size) {
 __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
     cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
 
-    int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    int num_blocks = (tensor->size + THREADS_PER_BLOCK_SUM - 1) / THREADS_PER_BLOCK_SUM;
 
     // First-level reduction
-    sum_tensor_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
+    sum_tensor_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK_SUM>>>(tensor->data, result_data, tensor->size);
 
     // If necessary, perform multiple levels of reduction
     while (num_blocks > 1) {
-        int num_blocks_next = (num_blocks + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        aux_final_sum_kernel<<<num_blocks_next, THREADS_PER_BLOCK>>>(result_data, num_blocks);
+        int num_blocks_next = (num_blocks + THREADS_PER_BLOCK_SUM - 1) / THREADS_PER_BLOCK_SUM;
+        aux_final_sum_kernel<<<num_blocks_next, THREADS_PER_BLOCK_SUM>>>(result_data, num_blocks);
         num_blocks = num_blocks_next;
     }
 
