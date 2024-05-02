@@ -10,7 +10,7 @@
 extern "C" {
 
     Tensor* create_tensor(float* data, int* shape, int ndim, char* device) {
-
+        
         printf("Creating tensor\n");
         Tensor* tensor = (Tensor*)malloc(sizeof(Tensor));
         if (tensor == NULL) {
@@ -172,7 +172,6 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
-            result_data[0] = 0;
             sum_tensor_cuda(tensor, result_data);
             return create_tensor(result_data, shape, ndim, device);
         } 
