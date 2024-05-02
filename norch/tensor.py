@@ -291,8 +291,22 @@ class Tensor:
         return self  
     
     def __matmul__(self, other):
-        if other.ndim == 3:
-            #batched 3D matmul
+        if self.ndim < 3 and other.ndim == 3:
+            #broadcasted 2D x 3D matmul
+
+            Tensor._C.broadcasted_batched_matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.broadcasted_batched_matmul_tensor.restype = ctypes.POINTER(CTensor)
+            
+            result_tensor_ptr = Tensor._C.broadcasted_batched_matmul_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = [other.shape[0], self.shape[0], other.shape[2]]
+            result_data.ndim = 3
+            result_data.device = self.device
+
+        elif self.ndim == 3 and other.ndim == 3:
+            #broadcasted 3D x 3D matmul
 
             Tensor._C.batched_matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.batched_matmul_tensor.restype = ctypes.POINTER(CTensor)
@@ -301,7 +315,7 @@ class Tensor:
 
             result_data = Tensor()
             result_data.tensor = result_tensor_ptr
-            result_data.shape = [other.shape[0], self.shape[0], other.shape[2]]
+            result_data.shape = [other.shape[0], self.shape[1], other.shape[2]]
             result_data.ndim = 3
             result_data.device = self.device
             
