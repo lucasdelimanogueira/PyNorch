@@ -5,7 +5,7 @@
 
 #define THREADS_PER_BLOCK 128
 #define TILE_SIZE 32
-#define SHMEM_SIZE THREADS_PER_BLOCK_SUM * sizeof(float)
+#define SHMEM_SIZE THREADS_PER_BLOCK * sizeof(float)
 
 __host__ void cpu_to_cuda(Tensor* tensor) {
     
