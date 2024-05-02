@@ -1,9 +1,6 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 
-#define THREADS_PER_BLOCK 128
-#define TILE_SIZE 32
-
 typedef struct {
     float* data;
     int* strides;
