@@ -5,7 +5,6 @@
 
 #define THREADS_PER_BLOCK 128
 #define TILE_SIZE 32
-#define SHMEM_SIZE THREADS_PER_BLOCK * sizeof(float)
 
 __host__ void cpu_to_cuda(Tensor* tensor) {
     
@@ -61,7 +60,7 @@ __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_da
 
 
 __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size) {
-    __shared__ float partial_sum[SHMEM_SIZE];
+    __shared__ float partial_sum[THREADS_PER_BLOCK * sizeof(float)];
 
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x + threadIdx.x;

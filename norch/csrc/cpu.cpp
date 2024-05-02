@@ -45,6 +45,26 @@ void matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     }
 }
 
+
+void batched_matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
+
+    int tensor2_offset = tensor2->shape[1] * tensor2->shape[2];
+    int result_data_offset = tensor1->shape[0] * tensor2->shape[2];
+
+    for (int batch = 0; batch < tensor2->shape[0]; batch++) {
+    
+        for (int i = 0; i < tensor1->shape[0]; i++) {
+            for (int j = 0; j < tensor2->shape[2]; j++) {
+                float sum = 0.0;
+                for (int k = 0; k < tensor1->shape[1]; k++) {
+                    sum += tensor1->data[i * tensor1->shape[1] + k] * tensor2->data[batch*tensor2_offset + (k * tensor2->shape[2] + j)];
+                }
+                result_data[(batch * result_data_offset) + (i * tensor2->shape[2] + j)] = sum;
+            }
+        }
+    }
+} 
+
 void pow_tensor_cpu(Tensor* tensor, float power, float* result_data) {
     
     for (int i = 0; i < tensor->size; i++) {

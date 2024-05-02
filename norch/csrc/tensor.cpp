@@ -327,9 +327,10 @@ extern "C" {
     }
 
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
+        //MxN @ NxP = MxP
         // Check if tensors have compatible shapes for matrix multiplication
         if (tensor1->shape[1] != tensor2->shape[0]) {
-            fprintf(stderr, "Incompatible shapes for matrix multiplication\n");
+            fprintf(stderr, "Incompatible shapes for matrix multiplication %dx%d and %dx%d\n", tensor1->shape[0], tensor1->shape[1], tensor2->shape[0], tensor2->shape[1]);
             exit(1);
         }
 
@@ -386,6 +387,69 @@ extern "C" {
             return create_tensor(result_data, shape, ndim, device);
         }
     }
+
+    Tensor* batched_matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
+        //MxN @ BATCHxNxP = BATCHxMxP
+        // Check if tensors have compatible shapes for matrix multiplication
+        if (tensor1->shape[1] != tensor2->shape[1]) {
+            fprintf(stderr, "Incompatible shapes for matrix multiplication %dx%d and %dx%d\n", tensor1->shape[0], tensor1->shape[1], tensor2->shape[0], tensor2->shape[1]);
+            exit(1);
+        }
+
+        if (strcmp(tensor1->device, tensor2->device) != 0) {
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
+            exit(1);
+        }
+
+        char* device = (char*)malloc(strlen(tensor1->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor1->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        int ndim = 3;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        
+        shape[0] = tensor2->shape[0];;
+        shape[1] = tensor1->shape[0];
+        shape[2] = tensor2->shape[2];  
+
+        int size = 1;
+        for (int i = 0; i < ndim; i++) {
+            size *= shape[i];
+        }
+
+        float* result_data = (float*)malloc(size * sizeof(float));
+        if (result_data == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+
+        if (strcmp(tensor1->device, "cuda") == 0) {
+
+            float* result_data;
+            cudaMalloc((void **)&result_data, size * sizeof(float));
+            matmul_tensor_cuda(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            batched_matmul_tensor_cpu(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        }
+
+    }
+
 
     Tensor* pow_tensor(Tensor* tensor, float power) {
         char* device = (char*)malloc(strlen(tensor->device) + 1);

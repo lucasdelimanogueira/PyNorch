@@ -291,22 +291,38 @@ class Tensor:
         return self  
     
     def __matmul__(self, other):
-        if self.ndim != 2 or other.ndim != 2:
-            raise ValueError("Matrix multiplication requires 2D tensors")
+        if other.ndim == 3:
+            #batched 3D matmul
 
-        if self.shape[1] != other.shape[0]:
-            raise ValueError("Incompatible shapes for matrix multiplication")
+            Tensor._C.batched_matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.batched_matmul_tensor.restype = ctypes.POINTER(CTensor)
+            
+            result_tensor_ptr = Tensor._C.batched_matmul_tensor(self.tensor, other.tensor)
 
-        Tensor._C.matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
-        Tensor._C.matmul_tensor.restype = ctypes.POINTER(CTensor)
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = [other.shape[0], self.shape[0], other.shape[2]]
+            result_data.ndim = 3
+            result_data.device = self.device
+            
+        else:
+            #2D matmul
+            if self.ndim != 2 or other.ndim != 2:
+                raise ValueError("Matrix multiplication requires 2D tensors")
 
-        result_tensor_ptr = Tensor._C.matmul_tensor(self.tensor, other.tensor)
+            if self.shape[1] != other.shape[0]:
+                raise ValueError("Incompatible shapes for matrix multiplication")
 
-        result_data = Tensor()
-        result_data.tensor = result_tensor_ptr
-        result_data.shape = [self.shape[0], other.shape[1]]
-        result_data.ndim = 2
-        result_data.device = self.device
+            Tensor._C.matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.matmul_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.matmul_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = [self.shape[0], other.shape[1]]
+            result_data.ndim = 2
+            result_data.device = self.device
 
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:

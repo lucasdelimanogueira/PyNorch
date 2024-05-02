@@ -20,8 +20,25 @@ if __name__ == "__main__":
     import random
     import numpy as np
 
+    a = norch.Tensor([
+        [[1.234, 2.123], [3.635, 4.456], [5.678, 6.789]],
+        [[7.890, 8.901], [9.012, 1.234], [2.345, 3.456]],
+        [[4.567, 5.678], [6.789, 7.890], [8.901, 9.012]],
+        [[1.234, 2.345], [3.456, 4.567], [5.678, 6.789]],
+        [[7.890, 8.901], [9.012, 1.234], [2.345, 3.456]]
+    ])
+
+    b = norch.Tensor([
+        [1.234, 2.123, 1.5],
+        [5.678, 6.789, 1.293],
+        [3.635, 4.456, 1.0202],
+        [7.890, 8.901, 1.91],
+    ])
+
+    result = b @ a
+    print(result)
     
-    #a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
+    #a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
     #b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
     #c = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
 
@@ -37,7 +54,6 @@ if __name__ == "__main__":
     print(a.grad)"""
     
     """#print(a)
-    """
     N = 10
     a = norch.Tensor([[1 for _ in range(N)] for _ in range(N)])
     #b = norch.Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
@@ -56,7 +72,7 @@ if __name__ == "__main__":
     print("\n\n")
 
     """
-    
+    """
     a = [[random.uniform(0, 1) for _ in range(N)] for _ in range(N)]
     b = [[random.uniform(0, 1) for _ in range(N)] for _ in range(N)]
     ini = time.time()
