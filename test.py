@@ -27,33 +27,35 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    a = norch.Tensor([[1, 2], [1, 2], [1, 2]], requires_grad=True)#.to("cuda")
+    """a = norch.Tensor([[1, 2], [1, 2], [1, 2]], requires_grad=True)#.to("cuda")
     b = norch.Tensor([[1, 400, 3], [1, 2, 3]], requires_grad=True)
 
     c = (a@b).reshape([9])
     d = c.sum()
     d.backward()
 
-    print(a.grad)
+    print(a.grad)"""
     
     """#print(a)
-    N = 1000
-    a = Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
-    b = Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
+    """
+    N = 10
+    a = norch.Tensor([[1 for _ in range(N)] for _ in range(N)])
+    #b = norch.Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
     #b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
     #a = Tensor([[[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]]]])
     #b = Tensor([[[[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]], [[1, 2, 3], [1, 2, 3], [1, 2, 3], [1, 2, 3]]]])
     ini = time.time()
-    c = a + b
+    c = a.sum()
 
     print("\n#####2######")
     
     fim = time.time()
 
     print(fim-ini)
-
+    print(c)
     print("\n\n")
 
+    """
     
     a = [[random.uniform(0, 1) for _ in range(N)] for _ in range(N)]
     b = [[random.uniform(0, 1) for _ in range(N)] for _ in range(N)]

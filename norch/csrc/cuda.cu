@@ -90,6 +90,8 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data) {
 
 __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
 
+    cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
+
     int number_of_blocks = (int)ceil(tensor->size / THREADS_PER_BLOCK);
     sum_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data);
     sum_tensor_cuda_kernel<<<1, THREADS_PER_BLOCK>>>(result_data, result_data);
