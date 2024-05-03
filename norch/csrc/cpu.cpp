@@ -127,6 +127,7 @@ void zeros_like_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }*/
 
+
 void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
     int* shape = tensor->shape;
     int ndim = tensor->ndim;
@@ -146,7 +147,6 @@ void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
         }
         result_data[idx_result] = tensor->data[idx_source];
 
-        // Update indices
         indices[ndim - 1]++;
         for (int dim = ndim - 1; dim > 0; dim--) {
             if (indices[dim] == shape[dim]) {

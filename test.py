@@ -58,9 +58,9 @@ if __name__ == "__main__":
     b = norch.Tensor([
         [1.234, 2.123, 1.5]])
 
-    print(a.shape)
-    result = a.T
-    print(result.shape)
+    #print(a.shape)
+    b = a.reshape([2,3,5])
+    print(b.shape)
     #c = result.sum()
     #c.backward()
     #print(a.grad)

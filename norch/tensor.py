@@ -122,7 +122,7 @@ class Tensor:
         if requires_grad:
             self.grad_fn = ReshapeBackward(self)
 
-        return self
+        return result_data
     
     def to(self, device):
         self.device = device
@@ -392,7 +392,7 @@ class Tensor:
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
-        result_data.shape = self.shape[::-1]
+        result_data.shape = self.shape.copy()[::-1]
         result_data.ndim = self.ndim
         result_data.device = self.device
 
