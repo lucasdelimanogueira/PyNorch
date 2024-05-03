@@ -565,14 +565,25 @@ extern "C" {
             exit(-1);
         }
 
+        int ndim = new_ndim;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+
+        for (int i = 0; i < ndim; i++) {
+            shape[i] = new_shape[i];
+        }
+
         // Calculate the total number of elements in the new shape
-        int new_size = 1;
+        int size = 1;
         for (int i = 0; i < new_ndim; i++) {
-            new_size *= new_shape[i];
+            size *= shape[i];
         }
 
         // Check if the total number of elements matches the current tensor's size
-        if (new_size != tensor->size) {
+        if (size != tensor->size) {
             fprintf(stderr, "Cannot reshape tensor. Total number of elements in new shape does not match the current size of the tensor.\n");
             exit(1);
         }
@@ -582,7 +593,7 @@ extern "C" {
             float* result_data;
             cudaMalloc((void **)&result_data, tensor->size * sizeof(float));
             assign_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, new_shape, new_ndim, device);
+            return create_tensor(result_data, shape, ndim, device);
         } 
         else {
             float* result_data = (float*)malloc(tensor->size * sizeof(float));
@@ -591,7 +602,7 @@ extern "C" {
                 exit(1);
             }
             assign_tensor_cpu(tensor, result_data);
-            return create_tensor(result_data, new_shape, new_ndim, device);
+            return create_tensor(result_data, shape, ndim, device);
         }
     }
 
