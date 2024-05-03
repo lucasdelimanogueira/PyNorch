@@ -116,13 +116,43 @@ void zeros_like_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }
 
-void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
+/*void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
     int rows = tensor->shape[0];
     int cols = tensor->shape[1];
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             result_data[j * rows + i] = tensor->data[i * cols + j];
+        }
+    }
+}*/
+
+void transpose_tensor_cpu(Tensor* tensor, float* result_data) {
+    int* shape = tensor->shape;
+    int ndim = tensor->ndim;
+    int* strides = (int*)malloc(ndim * sizeof(int));
+    int* indices = (int*)calloc(ndim, sizeof(int));
+
+    strides[ndim - 1] = 1;
+    for (int i = ndim - 2; i >= 0; i--) {
+        strides[i] = strides[i + 1] * shape[i + 1];
+    }
+
+    int idx_result;
+    for (int idx_source = 0; idx_source < tensor->size; idx_source++) {
+        idx_result = 0;
+        for (int dim = 0; dim < ndim; dim++) {
+            idx_result += indices[dim] * strides[dim];
+        }
+        result_data[idx_result] = tensor->data[idx_source];
+
+        // Update indices
+        indices[ndim - 1]++;
+        for (int dim = ndim - 1; dim > 0; dim--) {
+            if (indices[dim] == shape[dim]) {
+                indices[dim] = 0;
+                indices[dim - 1]++;
+            }
         }
     }
 }

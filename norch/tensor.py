@@ -385,9 +385,6 @@ class Tensor:
     
     @property
     def T(self):
-        if self.ndim != 2:
-            raise ValueError("Transpose requires 2D tensors")
-
         Tensor._C.transpose_tensor.argtypes = [ctypes.POINTER(CTensor)]
         Tensor._C.transpose_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -395,8 +392,8 @@ class Tensor:
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
-        result_data.shape = [self.shape[1], self.shape[0]]
-        result_data.ndim = 2
+        result_data.shape = self.shape[::-1]
+        result_data.ndim = self.ndim
         result_data.device = self.device
 
         return result_data
