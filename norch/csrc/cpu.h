@@ -14,7 +14,10 @@ void pow_tensor_cpu(Tensor* tensor, float power, float* result_data);
 void scalar_mul_tensor_cpu(Tensor* tensor, float scalar, float* result_data);
 void ones_like_tensor_cpu(Tensor* tensor, float* result_data);
 void zeros_like_tensor_cpu(Tensor* tensor, float* result_data);
-void transpose_tensor_cpu(Tensor* tensor, float* result_data);
+void transpose_1D_tensor_cpu(Tensor* tensor, float* result_data);
+void transpose_2D_tensor_cpu(Tensor* tensor, float* result_data);
+void transpose_3D_tensor_cpu(Tensor* tensor, float* result_data);
+void transpose_axes_cpu(Tensor* tensor, float* result_data, int axis1, int axis2, int* new_shape);
 void assign_tensor_cpu(Tensor* tensor, float* result_data);
 
 #endif /* CPU_H */

@@ -33,7 +33,7 @@ class MatmulBackward:
 
     def backward(self, gradient):
         x, y = self.input
-        return [gradient @ y.T, x.T @ gradient]
+        return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
         
 class PowBackward:
     def __init__(self, x, power):

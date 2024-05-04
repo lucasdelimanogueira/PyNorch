@@ -60,6 +60,15 @@ extern "C" {
         }
         printf("]\n");
 
+        printf("Strides: [");
+        for (int i = 0; i < ndim; i++) {
+            printf("%d", tensor->strides[i]);
+            if (i < ndim - 1) {
+                printf(", ");
+            }
+        }
+        printf("]\n");
+
         /*printf("Data:\n[");
         for (int i = 0; i < stride; i++) {
             printf("%.2f", tensor->data[i]);
@@ -715,8 +724,112 @@ extern "C" {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
-            transpose_tensor_cpu(tensor, result_data);
+            switch (ndim) {
+                case 1:
+                    transpose_1D_tensor_cpu(tensor, result_data);
+                    break;
+                case 2:
+                    transpose_2D_tensor_cpu(tensor, result_data);
+                    break;
+                case 3:
+                    transpose_3D_tensor_cpu(tensor, result_data);
+                    break;
+                default:
+                    fprintf(stderr, "Transpose only supports tensors up to 3 dimensions.\n");
+                    exit(-1);
+            }
             return create_tensor(result_data, shape, ndim, device);
         }
     }
-}
+
+    Tensor* transpose_axes_tensor(Tensor* tensor, int axis1, int axis2) {
+        char* device = (char*)malloc(strlen(tensor->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        int ndim = tensor->ndim;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        for (int i = 0; i < ndim; i++) {
+            shape[i] = tensor->shape[i];
+        }
+
+        shape[axis1] = tensor->shape[axis2];
+        shape[axis2] = tensor->shape[axis1];
+
+        int size = tensor->size;
+
+        if (strcmp(tensor->device, "cuda") == 0) {
+
+            float* result_data;
+            cudaMalloc((void **)&result_data, size * sizeof(float));
+            //transpose_axes_cuda(tensor, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            //transpose_axes_cpu(tensor, result_data, axis1, axis2, shape);
+            assign_tensor_cpu(tensor, result_data);
+            
+            Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+            for (int i = 0; i < ndim; i++) {
+                new_tensor->strides[i] = tensor->strides[i];
+            }
+            new_tensor->strides[axis1] = tensor->strides[axis2];
+            new_tensor->strides[axis2] = tensor->strides[axis1];
+            make_contiguous(new_tensor);
+            return new_tensor;
+        }
+    }
+
+    void make_contiguous(Tensor* tensor) {
+        float* new_data = (float*)malloc(tensor->size * sizeof(float));
+        if (new_data == NULL) {
+            // Handle memory allocation failure
+            return;
+        }
+
+        int* new_strides = (int*)malloc(tensor->ndim * sizeof(int));
+        if (new_strides == NULL) {
+            free(new_data);
+            // Handle memory allocation failure
+            return;
+        }
+
+        // Calculate new strides assuming C-contiguous order
+        int stride = 1;
+        for (int i = tensor->ndim - 1; i >= 0; i--) {
+            new_strides[i] = stride;
+            stride *= tensor->shape[i];
+        }
+
+        // Rearrange data
+        for (int i = 0; i < tensor->size; i++) {
+            int index = 0;
+            int offset = i;
+            for (int j = 0; j < tensor->ndim; j++) {
+                index += (offset / new_strides[j]) * tensor->strides[j];
+                offset %= new_strides[j];
+            }
+            new_data[i] = tensor->data[index];
+        }
+
+        // Free old data and update tensor properties
+        free(tensor->data);
+        free(tensor->strides);
+        tensor->data = new_data;
+        tensor->strides = new_strides;
+        }
+    }

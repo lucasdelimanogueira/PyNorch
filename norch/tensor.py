@@ -383,6 +383,28 @@ class Tensor:
 
         return result_data
     
+    def transpose(self, axis1, axis2):
+        if axis1 < 0:
+            axis1 = self.ndim + axis1
+        if axis2 < 0:
+            axis2 = self.ndim + axis2
+
+        Tensor._C.transpose_axes_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_int]
+        Tensor._C.transpose_axes_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.transpose_axes_tensor(self.tensor, axis1, axis2)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.shape[axis1] = self.shape[axis2]
+        result_data.shape[axis2] = self.shape[axis1]
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+
+        return result_data
+
+    
     @property
     def T(self):
         Tensor._C.transpose_tensor.argtypes = [ctypes.POINTER(CTensor)]
