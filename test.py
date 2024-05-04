@@ -20,7 +20,7 @@ if __name__ == "__main__":
     import random
     import numpy as np
 
-    a = norch.Tensor([
+    """a = norch.Tensor([
         [[1.234, 2.123], [3.635, 4.456], [5.678, 6.789]],
         [[7.890, 8.901], [9.012, 1.234], [2.345, 3.456]],
         [[4.567, 5.678], [6.789, 7.890], [8.901, 9.012]],
@@ -61,8 +61,11 @@ if __name__ == "__main__":
     #print(a.shape, b.shape)
     #b = norch.Tensor([
     #    [1.234, 2.123, 1.5]])
-    #result = b @ a
+    result = b @ a
+    result = result.sum()
+    result.backward()
 
+    print(a.grad)"""
 
     #### testar transpose axes!!!! make it contiguous
 
@@ -70,7 +73,7 @@ if __name__ == "__main__":
                         [[7, 8], [9, 10], [11, 12]],
                         [[13, 14], [15, 16], [17, 18]],
                         [[19, 20], [21, 22], [23, 24]],
-                        [[25, 26], [27, 28], [29, 30]]])
+                        [[25, 26], [27, 28], [29, 30]]], requires_grad=True)
 
     # Reshape tensor1 to 2x3x5
     reshaped_tensor = tensor1.transpose(1, 0)
@@ -87,7 +90,10 @@ if __name__ == "__main__":
 
     # Multiply reshaped_tensor by tensor2
     result = tensor2 @ reshaped_tensor
-    print(result)
+
+    result = result.sum()
+    result.backward()
+    print(tensor1.grad)
 
     #print(a.shape, b.shape, result.shape)
     #c = result.sum()

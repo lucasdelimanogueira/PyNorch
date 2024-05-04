@@ -402,6 +402,10 @@ class Tensor:
         result_data.ndim = self.ndim
         result_data.device = self.device
 
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = TransposeBackward(self, axis1, axis2)
+
         return result_data
 
     
