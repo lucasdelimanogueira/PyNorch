@@ -20,8 +20,88 @@ if __name__ == "__main__":
     import random
     import numpy as np
 
+    """a = norch.Tensor([
+        [[1.234, 2.123], [3.635, 4.456], [5.678, 6.789]],
+        [[7.890, 8.901], [9.012, 1.234], [2.345, 3.456]],
+        [[4.567, 5.678], [6.789, 7.890], [8.901, 9.012]],
+        [[1.234, 2.345], [3.456, 4.567], [5.678, 6.789]],
+        [[7.890, 8.901], [9.012, 1.234], [2.345, 3.456]]
+    ], requires_grad=True)
+
+    b = norch.Tensor([[
+        [1.234, 2.123, 1.5],
+        [5.678, 6.789, 1.293],
+        [3.635, 4.456, 1.0202],
+        [7.890, 8.901, 1.91],
+    ],[
+        [1.234, 2.123, 1.5],
+        [5.678, 6.789, 1.293],
+        [3.635, 4.456, 1.0202],
+        [7.890, 8.901, 1.91],
+    ],[
+        [1.234, 2.123, 1.5],
+        [5.678, 6.789, 1.293],
+        [3.635, 4.456, 1.0202],
+        [7.890, 8.901, 1.91],
+    ],[
+        [1.234, 2.123, 1.5],
+        [5.678, 6.789, 1.293],
+        [3.635, 4.456, 1.0202],
+        [7.890, 8.901, 1.91],
+    ],[
+        [1.234, 2.123, 1.5],
+        [5.678, 6.789, 1.293],
+        [3.635, 4.456, 1.0202],
+        [7.890, 8.901, 1.91],
+    ]])
+
+    #print(a.T)
+    #print(a.T.shape)
+    #[5, 3, 2] [4, 3] [5, 4, 2]
+    #print(a.shape, b.shape)
+    #b = norch.Tensor([
+    #    [1.234, 2.123, 1.5]])
+    result = b @ a
+    result = result.sum()
+    result.backward()
+
+    print(a.grad)"""
+
+    #### testar transpose axes!!!! make it contiguous
+
+    tensor1 = norch.Tensor([[[1, 2], [3, 4], [5, 6]],
+                        [[7, 8], [9, 10], [11, 12]],
+                        [[13, 14], [15, 16], [17, 18]],
+                        [[19, 20], [21, 22], [23, 24]],
+                        [[25, 26], [27, 28], [29, 30]]], requires_grad=True)
+
+    # Reshape tensor1 to 2x3x5
+    reshaped_tensor = tensor1.transpose(1, 0)
+
+    # Create a 5x4 tensor
+    tensor2 = norch.Tensor([[1, 2, 3],
+                            [5, 6, 7],
+                            [9, 10, 11],
+                            [13, 14, 15],
+                            [17, 18, 19]])
+
+    tensor2 = tensor2.transpose(1,0)
     
-    #a = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
+
+    # Multiply reshaped_tensor by tensor2
+    result = tensor2 @ reshaped_tensor
+
+    result = result.sum()
+    result.backward()
+    print(tensor1.grad)
+
+    #print(a.shape, b.shape, result.shape)
+    #c = result.sum()
+    #c.backward()
+    #print(a.grad)
+    #print(a.transpose(2,1))
+    
+    #a = norch.Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
     #b = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
     #c = Tensor([[1, 2, 3], [1, 2, 3], [1, 2, 3]])#.to("cuda")
 
@@ -37,7 +117,6 @@ if __name__ == "__main__":
     print(a.grad)"""
     
     """#print(a)
-    """
     N = 10
     a = norch.Tensor([[1 for _ in range(N)] for _ in range(N)])
     #b = norch.Tensor([[random.uniform(0, 1) for _ in range(N)] for _ in range(N)])
@@ -56,7 +135,7 @@ if __name__ == "__main__":
     print("\n\n")
 
     """
-    
+    """
     a = [[random.uniform(0, 1) for _ in range(N)] for _ in range(N)]
     b = [[random.uniform(0, 1) for _ in range(N)] for _ in range(N)]
     ini = time.time()

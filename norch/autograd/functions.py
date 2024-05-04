@@ -33,10 +33,8 @@ class MatmulBackward:
 
     def backward(self, gradient):
         x, y = self.input
-        return [gradient @ y.T, x.T @ gradient]
+        return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
         
-
-    
 class PowBackward:
     def __init__(self, x, power):
         self.input = [x]
@@ -59,3 +57,12 @@ class ReshapeBackward:
 
     def backward(self, gradient):
         return [gradient.reshape(self.input[0].shape)]
+    
+class TransposeBackward:
+    def __init__(self, x, axis1, axis2):
+        self.input = [x]
+        self.axis1 = axis1
+        self.axis2 = axis2
+
+    def backward(self, gradient):
+        return [gradient.transpose(self.axis2, self.axis1)]

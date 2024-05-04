@@ -122,7 +122,7 @@ class Tensor:
         if requires_grad:
             self.grad_fn = ReshapeBackward(self)
 
-        return self
+        return result_data
     
     def to(self, device):
         self.device = device
@@ -291,22 +291,52 @@ class Tensor:
         return self  
     
     def __matmul__(self, other):
-        if self.ndim != 2 or other.ndim != 2:
-            raise ValueError("Matrix multiplication requires 2D tensors")
+        if self.ndim < 3 and other.ndim == 3:
+            #broadcasted 2D x 3D matmul
 
-        if self.shape[1] != other.shape[0]:
-            raise ValueError("Incompatible shapes for matrix multiplication")
+            Tensor._C.broadcasted_batched_matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.broadcasted_batched_matmul_tensor.restype = ctypes.POINTER(CTensor)
+            
+            result_tensor_ptr = Tensor._C.broadcasted_batched_matmul_tensor(self.tensor, other.tensor)
 
-        Tensor._C.matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
-        Tensor._C.matmul_tensor.restype = ctypes.POINTER(CTensor)
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = [other.shape[0], self.shape[0], other.shape[2]]
+            result_data.ndim = 3
+            result_data.device = self.device
 
-        result_tensor_ptr = Tensor._C.matmul_tensor(self.tensor, other.tensor)
+        elif self.ndim == 3 and other.ndim == 3:
+            #broadcasted 3D x 3D matmul
 
-        result_data = Tensor()
-        result_data.tensor = result_tensor_ptr
-        result_data.shape = [self.shape[0], other.shape[1]]
-        result_data.ndim = 2
-        result_data.device = self.device
+            Tensor._C.batched_matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.batched_matmul_tensor.restype = ctypes.POINTER(CTensor)
+            
+            result_tensor_ptr = Tensor._C.batched_matmul_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = [other.shape[0], self.shape[1], other.shape[2]]
+            result_data.ndim = 3
+            result_data.device = self.device
+            
+        else:
+            #2D matmul
+            if self.ndim != 2 or other.ndim != 2:
+                raise ValueError("Matrix multiplication requires 2D tensors")
+
+            if self.shape[1] != other.shape[0]:
+                raise ValueError("Incompatible shapes for matrix multiplication")
+
+            Tensor._C.matmul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.matmul_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.matmul_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = [self.shape[0], other.shape[1]]
+            result_data.ndim = 2
+            result_data.device = self.device
 
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
@@ -353,11 +383,34 @@ class Tensor:
 
         return result_data
     
+    def transpose(self, axis1, axis2):
+        if axis1 < 0:
+            axis1 = self.ndim + axis1
+        if axis2 < 0:
+            axis2 = self.ndim + axis2
+
+        Tensor._C.transpose_axes_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_int]
+        Tensor._C.transpose_axes_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.transpose_axes_tensor(self.tensor, axis1, axis2)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.shape[axis1] = self.shape[axis2]
+        result_data.shape[axis2] = self.shape[axis1]
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = TransposeBackward(self, axis1, axis2)
+
+        return result_data
+
+    
     @property
     def T(self):
-        if self.ndim != 2:
-            raise ValueError("Transpose requires 2D tensors")
-
         Tensor._C.transpose_tensor.argtypes = [ctypes.POINTER(CTensor)]
         Tensor._C.transpose_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -365,8 +418,8 @@ class Tensor:
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
-        result_data.shape = [self.shape[1], self.shape[0]]
-        result_data.ndim = 2
+        result_data.shape = self.shape.copy()[::-1]
+        result_data.ndim = self.ndim
         result_data.device = self.device
 
         return result_data

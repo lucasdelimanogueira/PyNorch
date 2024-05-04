@@ -26,6 +26,9 @@ extern "C" {
     void to_device(Tensor* tensor, char* device);
     Tensor* ones_like_tensor(Tensor* tensor);
     Tensor* zeros_like_tensor(Tensor* tensor);
+    Tensor* transpose_tensor(Tensor* tensor);
+    Tensor* transpose_axes_tensor(Tensor* tensor, int axis1, int axis2);
+    void make_contiguous(Tensor* tensor);
 }
 
 #endif /* TENSOR_H */

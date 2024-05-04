@@ -60,6 +60,15 @@ extern "C" {
         }
         printf("]\n");
 
+        printf("Strides: [");
+        for (int i = 0; i < ndim; i++) {
+            printf("%d", tensor->strides[i]);
+            if (i < ndim - 1) {
+                printf(", ");
+            }
+        }
+        printf("]\n");
+
         /*printf("Data:\n[");
         for (int i = 0; i < stride; i++) {
             printf("%.2f", tensor->data[i]);
@@ -327,9 +336,10 @@ extern "C" {
     }
 
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
+        //MxN @ NxP = MxP
         // Check if tensors have compatible shapes for matrix multiplication
         if (tensor1->shape[1] != tensor2->shape[0]) {
-            fprintf(stderr, "Incompatible shapes for matrix multiplication\n");
+            fprintf(stderr, "Incompatible shapes for matrix multiplication %dx%d and %dx%d\n", tensor1->shape[0], tensor1->shape[1], tensor2->shape[0], tensor2->shape[1]);
             exit(1);
         }
 
@@ -387,6 +397,137 @@ extern "C" {
         }
     }
 
+    Tensor* broadcasted_batched_matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
+        //MxN @ BATCHxNxP = BATCHxMxP
+        // Check if tensors have compatible shapes for matrix multiplication
+        if (tensor1->shape[1] != tensor2->shape[1]) {
+            fprintf(stderr, "Incompatible shapes for broadcasted batched matrix multiplication %dx%d and %dx%dx%d\n", tensor1->shape[0], tensor1->shape[1], tensor2->shape[0], tensor2->shape[1], tensor2->shape[2]);
+            exit(1);
+        }
+
+        if (strcmp(tensor1->device, tensor2->device) != 0) {
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
+            exit(1);
+        }
+
+        char* device = (char*)malloc(strlen(tensor1->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor1->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        int ndim = 3;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        
+        shape[0] = tensor2->shape[0];;
+        shape[1] = tensor1->shape[0];
+        shape[2] = tensor2->shape[2];  
+
+        int size = 1;
+        for (int i = 0; i < ndim; i++) {
+            size *= shape[i];
+        }
+
+        float* result_data = (float*)malloc(size * sizeof(float));
+        if (result_data == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+
+        if (strcmp(tensor1->device, "cuda") == 0) {
+
+            float* result_data;
+            cudaMalloc((void **)&result_data, size * sizeof(float));
+            ////broadcasted_batched_matmul_tensor_cuda(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            broadcasted_batched_matmul_tensor_cpu(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        }
+
+    }
+
+    Tensor* batched_matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
+        //BATCHxMxN @ BATCHxNxP = BATCHxMxP
+        // Check if tensors have compatible shapes for matrix multiplication
+
+        if (tensor1->shape[0] != tensor2->shape[0]) {
+            fprintf(stderr, "Tensors must have same batch dimension for batch matmul %d and %d\n", tensor1->shape[0], tensor2->shape[0]);
+            exit(1);
+        }
+
+        if (tensor1->shape[2] != tensor2->shape[1]) {
+            fprintf(stderr, "Incompatible shapes for matrix multiplication %dx%d and %dx%d\n", tensor1->shape[0], tensor1->shape[1], tensor2->shape[0], tensor2->shape[1]);
+            exit(1);
+        }
+        
+        if (strcmp(tensor1->device, tensor2->device) != 0) {
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
+            exit(1);
+        }
+
+        char* device = (char*)malloc(strlen(tensor1->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor1->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        int ndim = 3;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        
+        shape[0] = tensor2->shape[0];;
+        shape[1] = tensor1->shape[1];
+        shape[2] = tensor2->shape[2];  
+
+        int size = 1;
+        for (int i = 0; i < ndim; i++) {
+            size *= shape[i];
+        }
+
+        float* result_data = (float*)malloc(size * sizeof(float));
+        if (result_data == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+
+        if (strcmp(tensor1->device, "cuda") == 0) {
+
+            float* result_data;
+            cudaMalloc((void **)&result_data, size * sizeof(float));
+            //batched_matmul_tensor_cuda(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            batched_matmul_tensor_cpu(tensor1, tensor2, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        }
+
+    }
+
+
     Tensor* pow_tensor(Tensor* tensor, float power) {
         char* device = (char*)malloc(strlen(tensor->device) + 1);
         if (device != NULL) {
@@ -433,14 +574,25 @@ extern "C" {
             exit(-1);
         }
 
+        int ndim = new_ndim;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+
+        for (int i = 0; i < ndim; i++) {
+            shape[i] = new_shape[i];
+        }
+
         // Calculate the total number of elements in the new shape
-        int new_size = 1;
+        int size = 1;
         for (int i = 0; i < new_ndim; i++) {
-            new_size *= new_shape[i];
+            size *= shape[i];
         }
 
         // Check if the total number of elements matches the current tensor's size
-        if (new_size != tensor->size) {
+        if (size != tensor->size) {
             fprintf(stderr, "Cannot reshape tensor. Total number of elements in new shape does not match the current size of the tensor.\n");
             exit(1);
         }
@@ -450,7 +602,7 @@ extern "C" {
             float* result_data;
             cudaMalloc((void **)&result_data, tensor->size * sizeof(float));
             assign_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, new_shape, new_ndim, device);
+            return create_tensor(result_data, shape, ndim, device);
         } 
         else {
             float* result_data = (float*)malloc(tensor->size * sizeof(float));
@@ -459,7 +611,7 @@ extern "C" {
                 exit(1);
             }
             assign_tensor_cpu(tensor, result_data);
-            return create_tensor(result_data, new_shape, new_ndim, device);
+            return create_tensor(result_data, shape, ndim, device);
         }
     }
 
@@ -572,8 +724,112 @@ extern "C" {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
-            transpose_tensor_cpu(tensor, result_data);
+            switch (ndim) {
+                case 1:
+                    transpose_1D_tensor_cpu(tensor, result_data);
+                    break;
+                case 2:
+                    transpose_2D_tensor_cpu(tensor, result_data);
+                    break;
+                case 3:
+                    transpose_3D_tensor_cpu(tensor, result_data);
+                    break;
+                default:
+                    fprintf(stderr, "Transpose only supports tensors up to 3 dimensions.\n");
+                    exit(-1);
+            }
             return create_tensor(result_data, shape, ndim, device);
         }
     }
-}
+
+    Tensor* transpose_axes_tensor(Tensor* tensor, int axis1, int axis2) {
+        char* device = (char*)malloc(strlen(tensor->device) + 1);
+        if (device != NULL) {
+            strcpy(device, tensor->device);
+        } else {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        int ndim = tensor->ndim;
+        int* shape = (int*)malloc(ndim * sizeof(int));
+        if (shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(-1);
+        }
+
+        for (int i = 0; i < ndim; i++) {
+            shape[i] = tensor->shape[i];
+        }
+
+        shape[axis1] = tensor->shape[axis2];
+        shape[axis2] = tensor->shape[axis1];
+
+        int size = tensor->size;
+
+        if (strcmp(tensor->device, "cuda") == 0) {
+
+            float* result_data;
+            cudaMalloc((void **)&result_data, size * sizeof(float));
+            //transpose_axes_cuda(tensor, result_data);
+            return create_tensor(result_data, shape, ndim, device);
+        } 
+        else {
+            float* result_data = (float*)malloc(size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            //transpose_axes_cpu(tensor, result_data, axis1, axis2, shape);
+            assign_tensor_cpu(tensor, result_data);
+            
+            Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+            for (int i = 0; i < ndim; i++) {
+                new_tensor->strides[i] = tensor->strides[i];
+            }
+            new_tensor->strides[axis1] = tensor->strides[axis2];
+            new_tensor->strides[axis2] = tensor->strides[axis1];
+            make_contiguous(new_tensor);
+            return new_tensor;
+        }
+    }
+
+    void make_contiguous(Tensor* tensor) {
+        float* new_data = (float*)malloc(tensor->size * sizeof(float));
+        if (new_data == NULL) {
+            // Handle memory allocation failure
+            return;
+        }
+
+        int* new_strides = (int*)malloc(tensor->ndim * sizeof(int));
+        if (new_strides == NULL) {
+            free(new_data);
+            // Handle memory allocation failure
+            return;
+        }
+
+        // Calculate new strides assuming C-contiguous order
+        int stride = 1;
+        for (int i = tensor->ndim - 1; i >= 0; i--) {
+            new_strides[i] = stride;
+            stride *= tensor->shape[i];
+        }
+
+        // Rearrange data
+        for (int i = 0; i < tensor->size; i++) {
+            int index = 0;
+            int offset = i;
+            for (int j = 0; j < tensor->ndim; j++) {
+                index += (offset / new_strides[j]) * tensor->strides[j];
+                offset %= new_strides[j];
+            }
+            new_data[i] = tensor->data[index];
+        }
+
+        // Free old data and update tensor properties
+        free(tensor->data);
+        free(tensor->strides);
+        tensor->data = new_data;
+        tensor->strides = new_strides;
+        }
+    }
