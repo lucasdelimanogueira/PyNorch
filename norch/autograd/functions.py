@@ -64,13 +64,12 @@ class PowBackward:
 
     
 class LogBackward:
-    def __init__(self, input_tensor):
-        self.input_tensor = input_tensor
+    def __init__(self, x):
+        self.input = [x]
 
     def backward(self, gradient):
-        input_tensor = self.input_tensor
 
-        grad_input = gradient / input_tensor
+        grad_input = gradient / self.input[0]
 
         return [grad_input]
        

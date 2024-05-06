@@ -9,6 +9,7 @@ void sub_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void elementwise_mul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void scalar_div_tensor_cpu(float scalar, Tensor* tensor, float* result_data);
 void tensor_div_scalar_cpu(Tensor* tensor, float scalar, float* result_data);
+void tensor_div_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void broadcasted_batched_matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void batched_matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);

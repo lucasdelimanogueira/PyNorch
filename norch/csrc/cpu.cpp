@@ -47,6 +47,13 @@ void tensor_div_scalar_cpu(Tensor* tensor, float scalar, float* result_data) {
     }
 }
 
+void tensor_div_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
+    
+    for (int i = 0; i < tensor1->size; i++) {
+        result_data[i] = tensor1->data[i] / tensor2->data[i];
+    }
+}
+
 void matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     
     for (int i = 0; i < tensor1->shape[0]; i++) {

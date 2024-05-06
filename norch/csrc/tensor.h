@@ -22,6 +22,7 @@ extern "C" {
     Tensor* scalar_mul_tensor(Tensor* tensor, float scalar);
     Tensor* scalar_div_tensor(float scalar, Tensor* tensor);
     Tensor* tensor_div_scalar(Tensor* tensor, float scalar);
+    Tensor* tensor_div_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim);
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* tensor_pow_scalar(Tensor* tensor, float exponent);
