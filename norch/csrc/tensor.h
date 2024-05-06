@@ -20,9 +20,13 @@ extern "C" {
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* scalar_mul_tensor(Tensor* tensor, float scalar);
+    Tensor* scalar_div_tensor(float scalar, Tensor* tensor);
+    Tensor* tensor_div_scalar(Tensor* tensor, float scalar);
     Tensor* reshape_tensor(Tensor* tensor, int* new_shape, int new_ndim);
     Tensor* matmul_tensor(Tensor* tensor1, Tensor* tensor2);
-    Tensor* pow_tensor(Tensor* tensor, float power);
+    Tensor* tensor_pow_scalar(Tensor* tensor, float exponent);
+    Tensor* scalar_pow_tensor(float base, Tensor* tensor);
+    Tensor* log_tensor(Tensor* tensor);
     void to_device(Tensor* tensor, char* device);
     Tensor* ones_like_tensor(Tensor* tensor);
     Tensor* zeros_like_tensor(Tensor* tensor);

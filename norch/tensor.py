@@ -344,14 +344,93 @@ class Tensor:
 
         return result_data
 
-    def __pow__(self, power):
+    def __pow__(self, other):
+        if isinstance(other, (int, float)):
+            other = float(other)
+            Tensor._C.tensor_pow_scalar.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
+            Tensor._C.tensor_pow_scalar.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.tensor_pow_scalar(self.tensor, ctypes.c_float(other))
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = self.shape.copy()
+            result_data.ndim = self.ndim
+            result_data.device = self.device
+            
+            result_data.requires_grad = self.requires_grad
+            if result_data.requires_grad:
+                result_data.grad_fn = PowBackward(self, other)
+
+        elif isinstance(self, (int, float)):
+            self = float(self)
+            Tensor._C.scalar_pow_tensor.argtypes = [ctypes.c_float, ctypes.POINTER(CTensor)]
+            Tensor._C.scalar_pow_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.scalar_pow_tensor(ctypes.c_float(self), other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = other.shape.copy()
+            result_data.ndim = other.ndim
+            result_data.device = other.device
+            
+            result_data.requires_grad = other.requires_grad
+            if result_data.requires_grad:
+                result_data.grad_fn = PowBackward(other, self)
         
-        power_ctypes = ctypes.c_float(power)
+        else: 
+            raise ValueError("Tensor to tensor power is not supported")
+        
+        return result_data
 
-        Tensor._C.pow_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
-        Tensor._C.pow_tensor.restype = ctypes.POINTER(CTensor)
+    def __truediv__(self, other):
+        other = float(other)
+        Tensor._C.tensor_div_scalar.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
+        Tensor._C.tensor_div_scalar.restype = ctypes.POINTER(CTensor)
 
-        result_tensor_ptr = Tensor._C.pow_tensor(self.tensor, power_ctypes)
+        result_tensor_ptr = Tensor._C.tensor_div_scalar(other.tensor, ctypes.c_float(self))
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = DivisionBackward(self, other)
+
+        return result_data
+        
+        
+    
+    def __rtruediv__(self, other):
+        other = float(other)
+
+        Tensor._C.scalar_div_tensor.argtypes = [ctypes.c_float, ctypes.POINTER(CTensor)]
+        Tensor._C.scalar_div_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.scalar_div_tensor(ctypes.c_float(other), self.tensor)        
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = DivisionBackward(other, self)
+
+        return result_data
+
+    
+    def log(self):
+        Tensor._C.log_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.log_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.log_tensor(self.tensor)
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
@@ -361,7 +440,7 @@ class Tensor:
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
-            result_data.grad_fn = PowBackward(self, power)
+            result_data.grad_fn = LogBackward(self)
 
         return result_data
     

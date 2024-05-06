@@ -18,6 +18,7 @@ void sub_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     }
 }
 
+
 void elementwise_mul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     
     for (int i = 0; i < tensor1->size; i++) {
@@ -29,6 +30,20 @@ void scalar_mul_tensor_cpu(Tensor* tensor, float scalar, float* result_data) {
     
     for (int i = 0; i < tensor->size; i++) {
         result_data[i] = scalar * tensor->data[i];
+    }
+}
+
+void scalar_div_tensor_cpu(float scalar, Tensor* tensor, float* result_data) {
+    
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = scalar / tensor->data[i];
+    }
+}
+
+void tensor_div_scalar_cpu(Tensor* tensor, float scalar, float* result_data) {
+    
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = tensor->data[i] / scalar;
     }
 }
 
@@ -85,10 +100,23 @@ void batched_matmul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_d
     }
 } 
 
-void pow_tensor_cpu(Tensor* tensor, float power, float* result_data) {
+void scalar_pow_tensor_cpu(float base, Tensor* tensor, float* result_data) {
     
     for (int i = 0; i < tensor->size; i++) {
-        result_data[i] = powf(tensor->data[i], power);
+        result_data[i] = powf(base, tensor->data[i]);
+    }
+}
+
+void tensor_pow_scalar_cpu(Tensor* tensor, float exponent, float* result_data) {
+    
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = powf(tensor->data[i], exponent);
+    }
+}
+
+void log_tensor_cpu(Tensor* tensor, float* result_data) {
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = logf(tensor->data[i]);
     }
 }
 
