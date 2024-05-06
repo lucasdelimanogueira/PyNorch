@@ -75,7 +75,7 @@ if __name__ == "__main__":
                         [[19, 20], [21, 22], [23, 24]],
                         [[25, 26], [27, 28], [29, 30]]], requires_grad=True)
     
-    result = 2 ** tensor1
+    result =  (-10) - tensor1
     result = result.sum()
     result.backward()
     print(tensor1.grad)

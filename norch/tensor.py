@@ -224,10 +224,34 @@ class Tensor:
 
         return result_data
     
+    def __radd__(self, other):
+        if isinstance(other, (int, float)):
+            other = other * self.ones_like()
+        
+        if self.shape != other.shape:
+            raise ValueError("Tensors must have the same shape for addition")
+        
+        Tensor._C.add_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.add_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.add_tensor(other.tensor, self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        
+        result_data.requires_grad = self.requires_grad or other.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = AddBackward(other, self)
+
+        return result_data
+    
     def __sub__(self, other):
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
-            
+
         if self.shape != other.shape:
             raise ValueError("Tensors must have the same shape for subtraction")
         
@@ -245,6 +269,30 @@ class Tensor:
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = SubBackward(self, other)
+
+        return result_data
+    
+    def __rsub__(self, other):
+        if isinstance(other, (int, float)):
+            other = other * self.ones_like()
+
+        if self.shape != other.shape:
+            raise ValueError("Tensors must have the same shape for subtraction")
+        
+        Tensor._C.sub_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.sub_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.sub_tensor(other.tensor, self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+
+        result_data.requires_grad = self.requires_grad or other.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = SubBackward(other, self)
 
         return result_data
     
