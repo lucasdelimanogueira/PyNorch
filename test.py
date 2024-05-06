@@ -93,17 +93,18 @@ if __name__ == "__main__":
 
     target_list = [[0.1 for _ in range(2)]]
     target = norch.Tensor(target_list).T
-
-    for epoch in range(2):
+    
+    for epoch in range(5):
         output = modelo(input)
         loss = criterion(output, target)
-        #print('FORA ANTES: ', modelo.layer1.bias, '\n')
         optimizer.zero_grad()
+        #print('FORA ANTES: ', modelo.layer1.bias, '\n')
+
         #print(modelo.layer1.weight.grad)        
         loss.backward()
         #print(modelo.layer1.weight.grad)
         optimizer.step()
-        #print('FORA DEPOIS: ', modelo.layer1.bias.data, '\n')
+        #print('FORA DEPOIS: ', modelo.layer1.bias, '\n')
 
         #print("\n\n")
         #print(modelo.layer1.weight.grad)

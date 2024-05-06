@@ -35,7 +35,7 @@ class Module(ABC):
     def parameters(self):
         for name, value in inspect.getmembers(self):
             if isinstance(value, Parameter):
-                yield value
+                yield self, name, value
             elif isinstance(value, Module):
                 yield from value.parameters()
 

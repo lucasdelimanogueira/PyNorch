@@ -18,5 +18,5 @@ class Optimizer(ABC):
         raise NotImplementedError
     
     def zero_grad(self):
-        for parameter in self.parameters:
+        for module, name, parameter in self.parameters:
             parameter.zero_grad()
