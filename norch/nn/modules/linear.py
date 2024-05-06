@@ -10,7 +10,6 @@ class Linear(Module):
         self.bias = Parameter(shape=[self.output_dim, 1])
 
     def forward(self, x):
-        print(self.weight.shape, x.shape, self.bias.shape, "@@@@@@\n\n\n\n")
         z = self.weight @ x + self.bias
         return z
 

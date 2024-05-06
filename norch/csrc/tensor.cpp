@@ -11,7 +11,6 @@ extern "C" {
 
     Tensor* create_tensor(float* data, int* shape, int ndim, char* device) {
         
-        printf("Creating tensor\n");
         Tensor* tensor = (Tensor*)malloc(sizeof(Tensor));
         if (tensor == NULL) {
             fprintf(stderr, "Memory allocation failed\n");
@@ -44,39 +43,6 @@ extern "C" {
             tensor->strides[i] = stride;
             stride *= shape[i];
         }
-
-        printf("Tensor created successfully\n");
-        printf("Tensor information:\n");
-        printf("Number of dimensions: %d\n", tensor->ndim);
-        printf("Number size: %d\n", tensor->size);
-        printf("Device: %s\n", tensor->device);
-
-        printf("Shape: [");
-        for (int i = 0; i < ndim; i++) {
-            printf("%d", tensor->shape[i]);
-            if (i < ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        printf("Strides: [");
-        for (int i = 0; i < ndim; i++) {
-            printf("%d", tensor->strides[i]);
-            if (i < ndim - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n");
-
-        /*printf("Data:\n[");
-        for (int i = 0; i < stride; i++) {
-            printf("%.2f", tensor->data[i]);
-            if (i < stride - 1) {
-                printf(", ");
-            }
-        }
-        printf("]\n\n\n");*/
         
         return tensor;
     }
@@ -98,8 +64,6 @@ extern "C" {
     }
 
     void to_device(Tensor* tensor, char* target_device) {
-        printf("Sending tensor to device: %s\n", target_device);
-
         if ((strcmp(target_device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
             cpu_to_cuda(tensor);
         }

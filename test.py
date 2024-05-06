@@ -73,22 +73,43 @@ if __name__ == "__main__":
         def __init__(self):
             super(MeuModulo, self).__init__()
 
-            self.layer1 = nn.Linear(10, 100)
-            self.layer2 = nn.Linear(100, 2)
+            self.layer1 = nn.Linear(10, 2)
+            #self.layer2 = nn.Linear(5, 2)
             self.sigmoid = nn.Sigmoid()
 
         def forward(self, x):
             out = self.layer1(x)
-            out = self.layer2(out)
             out = self.sigmoid(out)
+            #out = self.layer2(out)
+            #out = self.sigmoid(out)
 
             return out
         
     modelo = MeuModulo()
-    input_list = [[0.01 for _ in range(10)]]
+    input_list = [[0.05 for _ in range(10)]]
     input = norch.Tensor(input_list).T
-    output = modelo(input)
-    print(output)
+    criterion = nn.MSELoss()
+    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.5)
+
+    target_list = [[0.1 for _ in range(2)]]
+    target = norch.Tensor(target_list).T
+
+    for epoch in range(2):
+        output = modelo(input)
+        loss = criterion(output, target)
+        #print('FORA ANTES: ', modelo.layer1.bias, '\n')
+        optimizer.zero_grad()
+        #print(modelo.layer1.weight.grad)        
+        loss.backward()
+        #print(modelo.layer1.weight.grad)
+        optimizer.step()
+        #print('FORA DEPOIS: ', modelo.layer1.bias.data, '\n')
+
+        #print("\n\n")
+        #print(modelo.layer1.weight.grad)
+
+        #print(modelo.layer1.weight[0,0])
+        print(loss)
 
     exit()
 

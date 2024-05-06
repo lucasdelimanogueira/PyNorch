@@ -16,6 +16,9 @@ class Module(ABC):
         self._grads = OrderedDict()
         self.training = True
 
+    def forward(self, *inputs, **kwargs):
+        raise NotImplementedError
+
     def __call__(self, *inputs, **kwargs):
         return self.forward(*inputs, **kwargs)
 
@@ -35,6 +38,17 @@ class Module(ABC):
                 yield value
             elif isinstance(value, Module):
                 yield from value.parameters()
+
+    def modules(self):
+        yield from self._modules.values()
+
+    def gradients(self):
+        for module in self.modules():
+            yield module._grads
+
+    def zero_grad(self):
+        for parameter in self.parameters():
+            parameter.zero_grad()
 
     def to(self, device):
         for parameter in self.parameters():
