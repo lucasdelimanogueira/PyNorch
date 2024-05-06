@@ -1,4 +1,4 @@
-from module import Module
+from .module import Module
 import math
 
 class Activation(Module):

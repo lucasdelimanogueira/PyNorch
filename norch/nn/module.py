@@ -1,4 +1,4 @@
-from parameter import Parameter
+from .parameter import Parameter
 from collections import OrderedDict
 from abc import ABC
 import pickle
@@ -79,3 +79,11 @@ class Module(ABC):
     
     def get_name(self):
         return self.__class__.__name__
+    
+    def __setattr__(self, key, value):
+        self.__dict__[key] = value
+
+        if isinstance(value, Module):
+            self._modules[key] = value
+        elif isinstance(value, Parameter):
+            self._params[key] = value

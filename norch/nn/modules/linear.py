@@ -1,15 +1,16 @@
-from module import Module
-from parameter import Parameter
+from ..module import Module
+from ..parameter import Parameter
 
 class Linear(Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.weight = Parameter(shape=[self.input_dim, self.output_dim])
+        self.weight = Parameter(shape=[self.output_dim, self.input_dim])
         self.bias = Parameter(shape=[self.output_dim, 1])
 
     def forward(self, x):
+        print(self.weight.shape, x.shape, self.bias.shape, "@@@@@@\n\n\n\n")
         z = self.weight @ x + self.bias
         return z
 

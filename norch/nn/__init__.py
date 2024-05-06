@@ -1,2 +1,2 @@
 from .modules import *
-from .activations import *
+from .activation import *
