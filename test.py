@@ -67,19 +67,67 @@ if __name__ == "__main__":
 
     print(a.grad)"""
 
+    import norch.nn as nn
+
+    class MeuModulo(nn.Module):
+        def __init__(self):
+            super(MeuModulo, self).__init__()
+
+            self.layer1 = nn.Linear(10, 2)
+            #self.layer2 = nn.Linear(5, 2)
+            self.sigmoid = nn.Sigmoid()
+
+        def forward(self, x):
+            out = self.layer1(x)
+            out = self.sigmoid(out)
+            #out = self.layer2(out)
+            #out = self.sigmoid(out)
+
+            return out
+        
+    modelo = MeuModulo()
+    input_list = [[0.05 for _ in range(10)]]
+    input = norch.Tensor(input_list).T
+    criterion = nn.MSELoss()
+    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.5)
+
+    target_list = [[0.1 for _ in range(2)]]
+    target = norch.Tensor(target_list).T
+    
+    for epoch in range(5):
+        output = modelo(input)
+        loss = criterion(output, target)
+        optimizer.zero_grad()
+        #print('FORA ANTES: ', modelo.layer1.bias, '\n')
+
+        #print(modelo.layer1.weight.grad)        
+        loss.backward()
+        #print(modelo.layer1.weight.grad)
+        optimizer.step()
+        #print('FORA DEPOIS: ', modelo.layer1.bias, '\n')
+
+        #print("\n\n")
+        #print(modelo.layer1.weight.grad)
+
+        #print(modelo.layer1.weight[0,0])
+        print(loss)
+
+    exit()
+
     #### testar transpose axes!!!! make it contiguous
 
-    tensor1 = norch.Tensor([[[1, 2], [3, 4], [5, 6]],
+    """tensor1 = norch.Tensor([[[1, 2], [3, 4], [5, 6]],
                         [[7, 8], [9, 10], [11, 12]],
                         [[13, 14], [15, 16], [17, 18]],
                         [[19, 20], [21, 22], [23, 24]],
-                        [[25, 26], [27, 28], [29, 30]]], requires_grad=True)
+                        [[25, 26], [27, 28], [29, 0.030]]], requires_grad=True)
     
-    result =  (-10) - tensor1
+    op = nn.Sigmoid()
+    result = op(tensor1)
     result = result.sum()
     result.backward()
     print(tensor1.grad)
-    exit()
+    exit()"""
 
     # Reshape tensor1 to 2x3x5
     reshaped_tensor = tensor1.transpose(1, 0)
