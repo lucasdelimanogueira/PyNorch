@@ -164,9 +164,7 @@ class Tensor:
                         visited.add(tensor)
 
     def zero_grad(self):
-        tmp = self.zeros_like()
-        self.detach()
-        self.grad = tmp
+        self.grad = None
 
     def __getitem__(self, indices):
         if len(indices) != self.ndim:

@@ -93,24 +93,22 @@ if __name__ == "__main__":
             return out
         
     modelo = MeuModulo()
-    input_list = [[0.05 for _ in range(5)]]
+    input_list = [[0.5 for _ in range(5)]]
     input = norch.Tensor(input_list).T
     criterion = nn.MSELoss()
-    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.1)
+    optimizer = norch.optim.SGD(modelo.parameters(), lr=1)
 
-    target_list = [[0.1 for _ in range(2)]]
+    target_list = [[random.random() for _ in range(2)]]
     target = norch.Tensor(target_list).T
-    
-    for epoch in range(50):
-        cpu_percent = psutil.cpu_percent(interval=1)
-        memory_usage = psutil.virtual_memory()
+
+    for epoch in range(10):
         output = modelo(input)
         loss = criterion(output, target)
         optimizer.zero_grad()
 
         loss.backward()
+        #print('fora grad', modelo.layer1.weight.grad, "\n\n")
         optimizer.step()
-
         print(loss)
 
 

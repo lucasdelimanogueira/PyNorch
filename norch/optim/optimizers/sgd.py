@@ -9,13 +9,15 @@ class SGD(Optimizer):
         self._cache = {'velocity': [p.zeros_like() for (_, _, p) in self.parameters]}
 
     def step(self):
-        for i, (module, name, parameter) in enumerate(self.parameters):
+        for i, (module, name, _) in enumerate(self.parameters):
+            parameter = getattr(module, name)
+
             velocity = self._cache['velocity'][i]
 
             velocity = self.momentum * velocity - self.lr * parameter.grad
 
-            parameter += velocity
+            updated_parameter = parameter + velocity
 
-            setattr(module, name, parameter)
+            setattr(module, name, updated_parameter)
 
             self._cache['velocity'][i] = velocity
