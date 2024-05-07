@@ -51,9 +51,11 @@ class Module(ABC):
             parameter.zero_grad()
 
     def to(self, device):
-        for parameter in self.parameters():
+        for _, _, parameter in self.parameters():
             parameter.to(device)
 
+        return self
+    
     def state_dict(self):
         state = OrderedDict()
         for i, param in enumerate(self.parameters()):
