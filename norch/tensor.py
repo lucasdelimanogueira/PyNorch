@@ -591,4 +591,4 @@ class Tensor:
         self.grad = None
         self.grad_fn = None
 
-        return self
+        return self        
