@@ -80,28 +80,32 @@ if __name__ == "__main__":
         def __init__(self):
             super(MeuModulo, self).__init__()
 
-            self.layer1 = nn.Linear(5, 2)
-            #self.layer2 = nn.Linear(5, 2)
-            self.sigmoid = nn.Sigmoid()
+            self.layer1 = nn.Linear(100, 1000)
+            self.sigmoid1 = nn.Sigmoid()
+            self.layer2 = nn.Linear(1000, 2)
+            self.sigmoid2 = nn.Sigmoid()
 
         def forward(self, x):
             out = self.layer1(x)
-            out = self.sigmoid(out)
-            #out = self.layer2(out)
-            #out = self.sigmoid(out)
+            out = self.sigmoid1(out)
+            out = self.layer2(out)
+            out = self.sigmoid2(out)
 
             return out
         
     modelo = MeuModulo()
-    input_list = [[0.5 for _ in range(5)]]
+    input_list = [[0.5 for _ in range(100)]]
     input = norch.Tensor(input_list).T
     criterion = nn.MSELoss()
-    optimizer = norch.optim.SGD(modelo.parameters(), lr=1)
+    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.5)
 
     target_list = [[random.random() for _ in range(2)]]
     target = norch.Tensor(target_list).T
 
-    for epoch in range(10):
+    print(modelo)
+
+    ini = time.time()
+    for epoch in range(30):
         output = modelo(input)
         loss = criterion(output, target)
         optimizer.zero_grad()
@@ -109,7 +113,9 @@ if __name__ == "__main__":
         loss.backward()
         #print('fora grad', modelo.layer1.weight.grad, "\n\n")
         optimizer.step()
-        print(loss)
+
+    fim = time.time()
+    print(fim - ini)
 
 
     #### testar transpose axes!!!! make it contiguous

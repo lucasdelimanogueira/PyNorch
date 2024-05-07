@@ -144,6 +144,7 @@ class Tensor:
             else:
                 raise RuntimeError("Gradient argument must be specified for non-scalar tensors.")
 
+
         stack = [(self, gradient)]
         visited = set()
     
