@@ -22,7 +22,7 @@ if __name__ == "__main__":
     import psutil
     from norch.utils import utils
 
-
+    """
 
     a = norch.Tensor([
         [[1.234, 2.123], [3.635, 4.456], [5.678, 6.789]],
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     print(utils.torch_compare(a, b))
 
-    exit()
+    exit()"""
 
     """
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     print(a.grad)"""
 
-    import norch.nn as nn
+    """import norch.nn as nn
 
     cpu_percent = psutil.cpu_percent(interval=1)
     print(f"CPU Usage: {cpu_percent}%")
@@ -139,7 +139,7 @@ if __name__ == "__main__":
         #print(loss)
 
     fim = time.time()
-    print(fim - ini)
+    print(fim - ini)"""
 
 
     #### testar transpose axes!!!! make it contiguous
@@ -192,15 +192,14 @@ if __name__ == "__main__":
 
     #d = b-c
 
-    """a = norch.Tensor([[1, 2], [1, 2], [1, 2]], requires_grad=True)#.to("cuda")
-    b = norch.Tensor([[1, 400, 3], [1, 2, 3]], requires_grad=True)
-
-    c = (a@b).reshape([9])
+    a = norch.Tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], requires_grad=True)#.to("cuda")
+    b = norch.Tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], requires_grad=True)
+    t = b.reshape([2,4])
+    c = (t @ a)
     d = c.sum()
     d.backward()
 
-    print(a.grad)"""
-    
+    print(a.grad)
     """#print(a)
     N = 10
     a = norch.Tensor([[1 for _ in range(N)] for _ in range(N)])
