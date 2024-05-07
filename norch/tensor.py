@@ -103,7 +103,7 @@ class Tensor:
         
         return result_data
     
-    def reshape(self, new_shape, requires_grad=None):
+    def reshape(self, new_shape):
 
         new_shape_ctype = (ctypes.c_int * len(new_shape))(*new_shape)
         new_ndim_ctype = ctypes.c_int(len(new_shape))
@@ -119,8 +119,8 @@ class Tensor:
         result_data.device = self.device
 
         result_data.requires_grad = self.requires_grad
-        if requires_grad:
-            self.grad_fn = ReshapeBackward(self)
+        if result_data.requires_grad:
+            result_data.grad_fn = ReshapeBackward(self)
 
         return result_data
     
@@ -584,6 +584,8 @@ class Tensor:
         result_data.device = self.device
         
         result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = TBackward(self)
 
         return result_data
     
@@ -591,4 +593,4 @@ class Tensor:
         self.grad = None
         self.grad_fn = None
 
-        return self
+        return self        

@@ -97,6 +97,14 @@ class TransposeBackward:
     def backward(self, gradient):
         return [gradient.transpose(self.axis2, self.axis1)]
     
+class TBackward:
+    def __init__(self, x):
+        self.input = [x]
+
+    def backward(self, gradient):
+        return [gradient.T]
+
+    
 class DivisionBackward:
     def __init__(self, x, y):
         self.input = [x, y]
