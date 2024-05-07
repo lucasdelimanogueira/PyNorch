@@ -2,6 +2,7 @@ import unittest
 import norch
 from norch import utils
 import torch
+import sys
 
 class TestTensorOperations(unittest.TestCase):
     def test_creation_and_conversion(self):
@@ -228,6 +229,34 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]])
         torch_expected = ((torch_tensor1 + torch_tensor2) / scalar) @ torch_tensor1
         torch_expected = torch_expected.reshape(new_shape)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_scalar_power_tensor(self):
+        """
+        Test scalar power of a tensor: scalar ** tensor
+        """
+        scalar = 3
+        norch_tensor = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]])
+        norch_result = scalar ** norch_tensor
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]])
+        torch_expected = scalar ** torch_tensor
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_tensor_power_scalar(self):
+        """
+        Test tensor power of a scalar: tensor ** scalar
+        """
+        scalar = 3
+        norch_tensor = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]])
+        norch_result = norch_tensor ** scalar
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]])
+        torch_expected = torch_tensor ** scalar
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 

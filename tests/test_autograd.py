@@ -2,9 +2,12 @@ import unittest
 import norch
 from norch import utils
 import torch
+import os
 
 class TestTensorAutograd(unittest.TestCase):
-
+    def setUp(self):
+        self.device = os.environ.get('device', 'cpu')
+        
     def test_addition(self):
         """
         Test autograd from addition two tensors: tensor1 + tensor2
@@ -248,61 +251,68 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor_grad_T = utils.to_torch(norch_tensor_T.grad)
 
         torch_tensor_T = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-        torch_result_T = torch_tensor_T.T.sum()
+        torch_result_T = torch_tensor_T.mT.sum()
         torch_result_T.backward()
         torch_tensor_grad_T = torch_tensor_T.grad
 
         self.assertTrue(utils.compare_torch(norch_tensor_grad_T, torch_tensor_grad_T))
 
-def test_reshape_then_matmul(self):
-    """
-    Test autograd from reshaping a tensor then performing matrix multiplication: matmul(tensor1.reshape(shape), tensor2)
-    """
-    norch_tensor_reshape_matmul = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-    new_shape = (2, 4)
-    norch_result_reshape_matmul = norch.matmul(norch_tensor_reshape_matmul.reshape(new_shape), norch_tensor_reshape_matmul).sum()
-    norch_result_reshape_matmul.backward()
-    norch_tensor_grad_reshape_matmul = utils.to_torch(norch_tensor_reshape_matmul.grad)
+    def test_reshape_then_matmul(self):
+        """
+        Test autograd from reshaping a tensor then performing matrix multiplication: matmul(tensor1.reshape(shape), tensor2)
+        """
+        norch_tensor_reshape_matmul = norch.Tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], requires_grad=True)
+        new_shape = [2, 4]
+        norch_result_reshape_matmul = (norch_tensor_reshape_matmul.reshape(new_shape) @ norch_tensor_reshape_matmul).sum()
+        norch_result_reshape_matmul.backward()
+        norch_tensor_grad_reshape_matmul = utils.to_torch(norch_tensor_reshape_matmul.grad)
 
-    torch_tensor_reshape_matmul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], dtype=torch.float32, requires_grad=True)
-    torch_result_reshape_matmul = torch.matmul(torch_tensor_reshape_matmul.reshape(new_shape), torch_tensor_reshape_matmul).sum()
-    torch_result_reshape_matmul.backward()
-    torch_tensor_grad_reshape_matmul = torch_tensor_reshape_matmul.grad
-
-    self.assertTrue(utils.compare_torch(norch_tensor_grad_reshape_matmul, torch_tensor_grad_reshape_matmul))
-
-
-def test_T_then_matmul(self):
-    """
-    Test autograd from transposing a tensor then performing matrix multiplication: matmul(tensor.T, tensor)
-    """
-    norch_tensor_T_matmul = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-    norch_result_T_matmul = norch.matmul(norch_tensor_T_matmul.T, norch_tensor_T_matmul).sum()
-    norch_result_T_matmul.backward()
-    norch_tensor_grad_T_matmul = utils.to_torch(norch_tensor_T_matmul.grad)
-
-    torch_tensor_T_matmul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], dtype=torch.float32, requires_grad=True)
-    torch_result_T_matmul = torch.matmul(torch_tensor_T_matmul.T, torch_tensor_T_matmul).sum()
-    torch_result_T_matmul.backward()
-    torch_tensor_grad_T_matmul = torch_tensor_T_matmul.grad
-
-    self.assertTrue(utils.compare_torch(norch_tensor_grad_T_matmul, torch_tensor_grad_T_matmul))
+        torch_tensor_reshape_matmul = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
+        torch_result_reshape_matmul = torch.matmul(torch_tensor_reshape_matmul.reshape(new_shape), torch_tensor_reshape_matmul).sum()
+        torch_result_reshape_matmul.backward()
+        torch_tensor_grad_reshape_matmul = torch_tensor_reshape_matmul.grad
+        
+        
+        print(norch_tensor_grad_reshape_matmul)
+        print(torch_tensor_grad_reshape_matmul)
+        print("\n\n\n\n@@")
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_reshape_matmul, torch_tensor_grad_reshape_matmul))
 
 
-def test_transpose_axes_then_matmul(self):
-    """
-    Test autograd from transposing a tensor with specific axes then performing matrix multiplication: matmul(tensor.transpose(axis1, axis2), tensor)
-    """
-    norch_tensor_transpose_matmul = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-    axis1, axis2 = 0, 2
-    norch_result_transpose_matmul = norch.matmul(norch_tensor_transpose_matmul.transpose(axis1, axis2), norch_tensor_transpose_matmul).sum()
-    norch_result_transpose_matmul.backward()
-    norch_tensor_grad_transpose_matmul = utils.to_torch(norch_tensor_transpose_matmul.grad)
+    def test_T_then_matmul(self):
+        """
+        Test autograd from transposing a tensor then performing matrix multiplication: matmul(tensor.T, tensor)
+        """
+        norch_tensor_T_matmul = norch.Tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], requires_grad=True)
+        norch_result_T_matmul = (norch_tensor_T_matmul.T @ norch_tensor_T_matmul).sum()
+        norch_result_T_matmul.backward()
+        norch_tensor_grad_T_matmul = utils.to_torch(norch_tensor_T_matmul.grad)
 
-    torch_tensor_transpose_matmul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], dtype=torch.float32, requires_grad=True)
-    torch_result_transpose_matmul = torch.matmul(torch_tensor_transpose_matmul.transpose(axis1, axis2), torch_tensor_transpose_matmul).sum()
-    torch_result_transpose_matmul.backward()
-    torch_tensor_grad_transpose_matmul = torch_tensor_transpose_matmul.grad
+        torch_tensor_T_matmul = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
+        torch_result_T_matmul = torch.matmul(torch_tensor_T_matmul.T, torch_tensor_T_matmul).sum()
+        torch_result_T_matmul.backward()
+        torch_tensor_grad_T_matmul = torch_tensor_T_matmul.grad
 
-    self.assertTrue(utils.compare_torch(norch_tensor_grad_transpose_matmul, torch_tensor_grad_transpose_matmul))
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_T_matmul, torch_tensor_grad_T_matmul))
 
+
+    def test_transpose_axes_then_matmul(self):
+        """
+        Test autograd from transposing a tensor with specific axes then performing matrix multiplication: matmul(tensor.transpose(axis1, axis2), tensor)
+        """
+        norch_tensor_transpose_matmul = norch.Tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], requires_grad=True)
+        axis1, axis2 = 0, 1
+        norch_result_transpose_matmul = (norch_tensor_transpose_matmul.transpose(axis1, axis2) @ norch_tensor_transpose_matmul).sum()
+        norch_result_transpose_matmul.backward()
+        norch_tensor_grad_transpose_matmul = utils.to_torch(norch_tensor_transpose_matmul.grad)
+
+        torch_tensor_transpose_matmul = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
+        torch_result_transpose_matmul = torch.matmul(torch_tensor_transpose_matmul.transpose(axis1, axis2), torch_tensor_transpose_matmul).sum()
+        torch_result_transpose_matmul.backward()
+        torch_tensor_grad_transpose_matmul = torch_tensor_transpose_matmul.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_transpose_matmul, torch_tensor_grad_transpose_matmul))
+
+if __name__ == '__main__':
+    unittest.main()
