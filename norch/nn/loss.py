@@ -22,4 +22,4 @@ class MSELoss(Loss):
         assert labels.shape == predictions.shape, \
             "Labels and predictions shape does not match: {} and {}".format(labels.shape, predictions.shape)
         
-        return ((predictions - labels) **2).sum()
+        return ((predictions - labels) ** 2).sum() / predictions.numel
