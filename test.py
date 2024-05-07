@@ -19,6 +19,7 @@ if __name__ == "__main__":
     import time
     import random
     import numpy as np
+    import psutil
 
     """a = norch.Tensor([
         [[1.234, 2.123], [3.635, 4.456], [5.678, 6.789]],
@@ -69,11 +70,17 @@ if __name__ == "__main__":
 
     import norch.nn as nn
 
+    cpu_percent = psutil.cpu_percent(interval=1)
+    print(f"CPU Usage: {cpu_percent}%")
+    memory_usage = psutil.virtual_memory()
+    print(f"Memory Usage: {memory_usage.percent}%")  
+    
+
     class MeuModulo(nn.Module):
         def __init__(self):
             super(MeuModulo, self).__init__()
 
-            self.layer1 = nn.Linear(10, 2)
+            self.layer1 = nn.Linear(5, 2)
             #self.layer2 = nn.Linear(5, 2)
             self.sigmoid = nn.Sigmoid()
 
@@ -86,33 +93,24 @@ if __name__ == "__main__":
             return out
         
     modelo = MeuModulo()
-    input_list = [[0.05 for _ in range(10)]]
+    input_list = [[0.5 for _ in range(5)]]
     input = norch.Tensor(input_list).T
     criterion = nn.MSELoss()
-    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.5)
+    optimizer = norch.optim.SGD(modelo.parameters(), lr=1)
 
-    target_list = [[0.1 for _ in range(2)]]
+    target_list = [[random.random() for _ in range(2)]]
     target = norch.Tensor(target_list).T
-    
-    for epoch in range(5):
+
+    for epoch in range(10):
         output = modelo(input)
         loss = criterion(output, target)
         optimizer.zero_grad()
-        #print('FORA ANTES: ', modelo.layer1.bias, '\n')
 
-        #print(modelo.layer1.weight.grad)        
         loss.backward()
-        #print(modelo.layer1.weight.grad)
+        #print('fora grad', modelo.layer1.weight.grad, "\n\n")
         optimizer.step()
-        #print('FORA DEPOIS: ', modelo.layer1.bias, '\n')
-
-        #print("\n\n")
-        #print(modelo.layer1.weight.grad)
-
-        #print(modelo.layer1.weight[0,0])
         print(loss)
 
-    exit()
 
     #### testar transpose axes!!!! make it contiguous
 
@@ -122,15 +120,20 @@ if __name__ == "__main__":
                         [[19, 20], [21, 22], [23, 24]],
                         [[25, 26], [27, 28], [29, 0.030]]], requires_grad=True)
     
-    op = nn.Sigmoid()
-    result = op(tensor1)
-    result = result.sum()
+    #op = nn.Sigmoid()
+    tensor2 = 
+    result = tensor1.sum()
+    
     result.backward()
     print(tensor1.grad)
     exit()"""
 
     # Reshape tensor1 to 2x3x5
-    reshaped_tensor = tensor1.transpose(1, 0)
+    """tensor1 = norch.Tensor([[[1, 2], [3, 4], [5, 6]],
+                        [[7, 8], [9, 10], [11, 12]],
+                        [[13, 14], [15, 16], [17, 18]],
+                        [[19, 20], [21, 22], [23, 24]],
+                        [[25, 26], [27, 28], [29, 0.030]]], requires_grad=True)
 
     # Create a 5x4 tensor
     tensor2 = norch.Tensor([[1, 2, 3],
@@ -138,16 +141,14 @@ if __name__ == "__main__":
                             [9, 10, 11],
                             [13, 14, 15],
                             [17, 18, 19]])
-
-    tensor2 = tensor2.transpose(1,0)
     
 
     # Multiply reshaped_tensor by tensor2
-    result = tensor2 @ reshaped_tensor
+    result = tensor2 @ tensor1
 
     result = result.sum()
     result.backward()
-    print(tensor1.grad)
+    print(tensor1.grad)"""
 
     #print(a.shape, b.shape, result.shape)
     #c = result.sum()

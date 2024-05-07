@@ -47,13 +47,15 @@ class Module(ABC):
             yield module._grads
 
     def zero_grad(self):
-        for parameter in self.parameters():
+        for _, _, parameter in self.parameters():
             parameter.zero_grad()
 
     def to(self, device):
-        for parameter in self.parameters():
+        for _, _, parameter in self.parameters():
             parameter.to(device)
 
+        return self
+    
     def state_dict(self):
         state = OrderedDict()
         for i, param in enumerate(self.parameters()):

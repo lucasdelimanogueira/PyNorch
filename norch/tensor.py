@@ -137,24 +137,31 @@ class Tensor:
     def backward(self, gradient=None):
         if not self.requires_grad:
             return
-        
+                
         if gradient is None:
             if self.shape == [1]:
                 gradient = Tensor([1])
             else:
                 raise RuntimeError("Gradient argument must be specified for non-scalar tensors.")
 
-        if self.grad is None:
-            self.grad = gradient
+        stack = [(self, gradient)]
+        visited = set()
+    
+        while stack:
+            tensor, grad = stack.pop()
+            
+            if tensor.grad is None:
+                tensor.grad = grad
+            else:
+                tensor.grad += grad
 
-        else:
-            self.grad += gradient
-
-        if self.grad_fn is not None: # not a leaf
-            grads = self.grad_fn.backward(gradient)
-            for tensor, grad in zip(self.grad_fn.input, grads):
-                if isinstance(tensor, Tensor):
-                    tensor.backward(grad)
+            # Propagate gradients to inputs if not a leaf tensor
+            if tensor.grad_fn is not None:
+                grads = tensor.grad_fn.backward(grad)
+                for tensor, grad in zip(tensor.grad_fn.input, grads):
+                    if isinstance(tensor, Tensor) and tensor not in visited:
+                        stack.append((tensor, grad))
+                        visited.add(tensor)
 
     def zero_grad(self):
         self.grad = None
@@ -570,5 +577,13 @@ class Tensor:
         result_data.shape = self.shape.copy()[::-1]
         result_data.ndim = self.ndim
         result_data.device = self.device
+        
+        result_data.requires_grad = self.requires_grad
 
         return result_data
+    
+    def detach(self):
+        self.grad = None
+        self.grad_fn = None
+
+        return self
