@@ -1,5 +1,6 @@
 from ..optimizer import Optimizer
 from norch.tensor import Tensor
+import time
 
 class SGD(Optimizer):
     def __init__(self, parameters, lr=1e-1, momentum=0):
@@ -21,3 +22,6 @@ class SGD(Optimizer):
             setattr(module, name, updated_parameter)
 
             self._cache['velocity'][i] = velocity
+
+            parameter.detach()
+            velocity.detach()

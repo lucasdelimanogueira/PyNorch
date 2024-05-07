@@ -97,7 +97,7 @@ if __name__ == "__main__":
     input_list = [[0.5 for _ in range(100)]]
     input = norch.Tensor(input_list).T
     criterion = nn.MSELoss()
-    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.5)
+    optimizer = norch.optim.SGD(modelo.parameters(), lr=0.05)
 
     target_list = [[random.random() for _ in range(2)]]
     target = norch.Tensor(target_list).T
@@ -113,6 +113,7 @@ if __name__ == "__main__":
         loss.backward()
         #print('fora grad', modelo.layer1.weight.grad, "\n\n")
         optimizer.step()
+        print(loss)
 
     fim = time.time()
     print(fim - ini)

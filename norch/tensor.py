@@ -167,6 +167,10 @@ class Tensor:
     def zero_grad(self):
         self.grad = None
 
+    def detach(self):
+        self.grad = None
+        self.grad_fn = None
+
     def __getitem__(self, indices):
         if len(indices) != self.ndim:
             raise ValueError("Number of indices must match the number of dimensions")
