@@ -181,6 +181,57 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_reshape_then_matmul(self):
+        """
+        Test reshaping a tensor followed by matrix multiplication: (tensor.reshape(shape) @ other_tensor)
+        """
+        norch_tensor = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]])
+        new_shape = [2, 4]
+        norch_reshaped = norch_tensor.reshape(new_shape)
+        
+        norch_result = norch_reshaped @ norch_tensor
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]])
+        torch_expected = torch_tensor.reshape(new_shape) @ torch_tensor
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
+    def test_transpose_then_matmul(self):
+        """
+        Test transposing a tensor followed by matrix multiplication: (tensor.transpose(dim1, dim2) @ other_tensor)
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+        dim1, dim2 = 0, 2
+        norch_result = norch_tensor.transpose(dim1, dim2) @ norch_tensor
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+        torch_expected = torch_tensor.transpose(dim1, dim2) @ torch_tensor
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_add_div_matmul_then_reshape(self):
+        """
+        Test a combination of operations: (tensor.sum() + other_tensor) / scalar @ another_tensor followed by reshape
+        """
+        norch_tensor1 = norch.Tensor([[[1., 2], [3, -4]], [[5, 6], [7, 8]]])
+        norch_tensor2 = norch.Tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]])
+        scalar = 2
+        new_shape = [2, 4]
+        norch_result = ((norch_tensor1 + norch_tensor2) / scalar) @ norch_tensor1
+        norch_result = norch_result.reshape(new_shape)
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor1 = torch.tensor([[[1., 2], [3, -4]], [[5, 6], [7, 8]]])
+        torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]])
+        torch_expected = ((torch_tensor1 + torch_tensor2) / scalar) @ torch_tensor1
+        torch_expected = torch_expected.reshape(new_shape)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
 
 if __name__ == '__main__':
     unittest.main()
