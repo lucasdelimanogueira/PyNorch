@@ -29,6 +29,10 @@ class Tensor:
             self.ndim = len(shape)
             self.device = device
 
+            self.numel = 1
+            for s in self.shape:
+                self.numel *= s
+
             self.requires_grad = requires_grad
             self.grad = None
             self.grad_fn = None
@@ -84,6 +88,7 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
         
         return result_data
     
@@ -100,7 +105,8 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
-        
+        result_data.numel = self.numel
+
         return result_data
     
     def reshape(self, new_shape):
@@ -117,6 +123,7 @@ class Tensor:
         result_data.shape = new_shape.copy()
         result_data.ndim = len(new_shape)
         result_data.device = self.device
+        result_data.numel = self.numel
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
@@ -229,7 +236,8 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
-        
+        result_data.numel = self.numel
+
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = AddBackward(self, other)
@@ -253,7 +261,8 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
-        
+        result_data.numel = self.numel
+
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = AddBackward(other, self)
@@ -277,6 +286,7 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
 
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
@@ -301,6 +311,7 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
 
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
@@ -314,7 +325,8 @@ class Tensor:
             result_data.shape = self.shape.copy()
             result_data.ndim = self.ndim
             result_data.device = self.device
-            
+            result_data.numel = self.numel
+
             Tensor._C.scalar_mul_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_float]
             Tensor._C.scalar_mul_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -339,6 +351,7 @@ class Tensor:
             result_data.shape = self.shape.copy()
             result_data.ndim = self.ndim
             result_data.device = self.device
+            result_data.numel = self.numel
 
             result_data.requires_grad = self.requires_grad or other.requires_grad
             if result_data.requires_grad:
@@ -371,6 +384,10 @@ class Tensor:
             result_data.shape = [other.shape[0], self.shape[0], other.shape[2]]
             result_data.ndim = 3
             result_data.device = self.device
+            result_data.numel = 1
+            for s in result_data.shape:
+                result_data.numel *= s
+
 
         elif self.ndim == 3 and other.ndim == 3:
             #broadcasted 3D x 3D matmul
@@ -385,7 +402,8 @@ class Tensor:
             result_data.shape = [other.shape[0], self.shape[1], other.shape[2]]
             result_data.ndim = 3
             result_data.device = self.device
-            
+            for s in result_data.shape:
+                result_data.numel *= s
         else:
             #2D matmul
             if self.ndim != 2 or other.ndim != 2:
@@ -404,6 +422,8 @@ class Tensor:
             result_data.shape = [self.shape[0], other.shape[1]]
             result_data.ndim = 2
             result_data.device = self.device
+            for s in result_data.shape:
+                result_data.numel *= s
 
         result_data.requires_grad = self.requires_grad or other.requires_grad
         if result_data.requires_grad:
@@ -423,7 +443,8 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
-        
+        result_data.numel = self.numel
+
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = PowBackward(self, other)
@@ -442,7 +463,8 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
-        
+        result_data.numel = self.numel
+
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = PowBackward(other, self)
@@ -462,7 +484,8 @@ class Tensor:
             result_data.shape = self.shape.copy()
             result_data.ndim = self.ndim
             result_data.device = self.device
-
+            result_data.numel = self.numel
+            
             result_data.requires_grad = self.requires_grad
             if result_data.requires_grad:
                 result_data.grad_fn = DivisionBackward(self, other)
@@ -478,6 +501,7 @@ class Tensor:
             result_data.shape = self.shape.copy()
             result_data.ndim = self.ndim
             result_data.device = self.device
+            result_data.numel = self.numel
 
             result_data.requires_grad = self.requires_grad or other.requires_grad
             if result_data.requires_grad:
@@ -500,6 +524,7 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
@@ -519,6 +544,7 @@ class Tensor:
         result_data.shape = self.shape.copy()
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
@@ -537,6 +563,7 @@ class Tensor:
         result_data.shape = [1]
         result_data.ndim = 1
         result_data.device = self.device
+        result_data.numel = 1
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
@@ -562,6 +589,7 @@ class Tensor:
         result_data.shape[axis2] = self.shape[axis1]
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
@@ -582,6 +610,7 @@ class Tensor:
         result_data.shape = self.shape.copy()[::-1]
         result_data.ndim = self.ndim
         result_data.device = self.device
+        result_data.numel = self.numel
         
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
