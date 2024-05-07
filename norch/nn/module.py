@@ -52,6 +52,7 @@ class Module(ABC):
 
     def to(self, device):
         for _, _, parameter in self.parameters():
+            print(type(parameter))
             parameter.to(device)
 
         return self
