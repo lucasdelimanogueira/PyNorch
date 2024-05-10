@@ -4,7 +4,7 @@ from norch import utils
 import torch
 import os
 
-class TestNNModule(unittest.TestCase):
+class TestNNModuleLoss(unittest.TestCase):
 
     def setUp(self):
         self.device = os.environ.get('device')
@@ -40,8 +40,15 @@ class TestNNModule(unittest.TestCase):
         labels_torch = torch.tensor([4, 3, 2.1, 1])
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)        
         
-        print(loss_torch_result, loss_torch_expected)
         self.assertTrue(utils.compare_torch(loss_torch_result, loss_torch_expected))
+
+
+class TestNNModuleActivationFn(unittest.TestCase):
+
+    def setUp(self):
+        self.device = os.environ.get('device')
+        if self.device is None or self.device != 'cuda':
+            self.device = 'cpu'
 
     def test_sigmoid_activation(self):
         """
@@ -79,6 +86,3 @@ class TestNNModule(unittest.TestCase):
         sigmoid_torch_expected = sigmoid_fn_torch.forward(x)
 
         self.assertTrue(utils.compare_torch(sigmoid_torch_result, sigmoid_torch_expected))
-
-
-        

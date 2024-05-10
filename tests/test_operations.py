@@ -267,6 +267,58 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_tensor_sin(self):
+        """
+        Test sine function on tensor
+        """
+        norch_tensor = norch.Tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
+        norch_result = norch_tensor.sin()
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
+        torch_expected = torch.sin(torch_tensor)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_tensor_cos(self):
+        """
+        Test cosine function on tensor
+        """
+        norch_tensor = norch.Tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
+        norch_result = norch_tensor.cos()
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
+        torch_expected = torch.cos(torch_tensor)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
+    def test_zeros_like(self):
+        """
+        Test creating a tensor of zeros with the same shape as another tensor.
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_zeros = norch_tensor.zeros_like()
+        torch_zeros_result = utils.to_torch(norch_zeros)
+
+        torch_tensor_expected = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_zeros_expected = torch.zeros_like(torch_tensor_expected)
+
+        self.assertTrue(utils.compare_torch(torch_zeros_result, torch_zeros_expected))
+
+    def test_ones_like(self):
+        """
+        Test creating a tensor of ones with the same shape as another tensor.
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_ones = norch_tensor.ones_like()
+        torch_ones_result = utils.to_torch(norch_ones)
+
+        torch_tensor_expected = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_ones_expected = torch.ones_like(torch_tensor_expected)
+
+        self.assertTrue(utils.compare_torch(torch_ones_result, torch_ones_expected))
 
 
 if __name__ == '__main__':

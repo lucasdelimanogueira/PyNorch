@@ -24,5 +24,7 @@ void transpose_2D_tensor_cpu(Tensor* tensor, float* result_data);
 void transpose_3D_tensor_cpu(Tensor* tensor, float* result_data);
 void transpose_axes_cpu(Tensor* tensor, float* result_data, int axis1, int axis2, int* new_shape);
 void assign_tensor_cpu(Tensor* tensor, float* result_data);
+void sin_tensor_cpu(Tensor* tensor, float* result_data);
+void cos_tensor_cpu(Tensor* tensor, float* result_data);
 
 #endif /* CPU_H */

@@ -189,3 +189,15 @@ void assign_tensor_cpu(Tensor* tensor, float* result_data) {
         result_data[i] = tensor->data[i];
     }
 }
+
+void sin_tensor_cpu(Tensor* tensor, float* result_data) {
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = sinf(tensor->data[i]);
+    }
+}
+
+void cos_tensor_cpu(Tensor* tensor, float* result_data) {
+    for (int i = 0; i < tensor->size; i++) {
+        result_data[i] = cosf(tensor->data[i]);
+    }
+}

@@ -128,7 +128,6 @@ class TestTensorAutograd(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(norch_tensor_grad_power_st, torch_tensor_grad_power_st))
     
-    
     def test_power_tensor_scalar(self):
         """
         Test autograd from tensor raised to scalar: tensor ** scalar
@@ -207,6 +206,39 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor1_grad_elemwise_mul, torch_tensor1_grad_elemwise_mul))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad_elemwise_mul, torch_tensor2_grad_elemwise_mul))
 
+    def test_sin_tensor(self):
+        """
+        Test autograd from sin operation: sin(tensor)
+        """
+        norch_sin_tensor = norch.Tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True).to(self.device)
+        norch_result_sin_tensor = (norch_sin_tensor.sin()).sum()
+        norch_result_sin_tensor.backward()
+        torch_result_sin_tensor_grad = utils.to_torch(norch_sin_tensor.grad)
+
+        torch_sin_tensor = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True).to(self.device)
+        torch_expected_sin_tensor = (torch.sin(torch_sin_tensor)).sum()
+        torch_expected_sin_tensor.backward()
+        torch_expected_sin_tensor_grad = torch_sin_tensor.grad
+
+        self.assertTrue(utils.compare_torch(torch_result_sin_tensor_grad, torch_expected_sin_tensor_grad))
+    
+    def test_cos_tensor(self):
+        """
+        Test autograd from cosine operation: cos(tensor)
+        """
+        norch_cos_tensor = norch.Tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True).to(self.device)
+        norch_result_cos_tensor = (norch_cos_tensor.sin()).sum()
+        norch_result_cos_tensor.backward()
+        torch_result_cos_tensor_grad = utils.to_torch(norch_cos_tensor.grad)
+
+        torch_cos_tensor = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True).to(self.device)
+        torch_expected_cos_tensor = (torch.sin(torch_cos_tensor)).sum()
+        torch_expected_cos_tensor.backward()
+        torch_expected_cos_tensor_grad = torch_cos_tensor.grad
+
+        self.assertTrue(utils.compare_torch(torch_result_cos_tensor_grad, torch_expected_cos_tensor_grad))
+    
+    
     def test_reshape(self):
         """
         Test autograd from reshaping a tensor: tensor.reshape(shape)

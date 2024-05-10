@@ -402,6 +402,7 @@ class Tensor:
             result_data.shape = [other.shape[0], self.shape[1], other.shape[2]]
             result_data.ndim = 3
             result_data.device = self.device
+            result_data.numel = 1
             for s in result_data.shape:
                 result_data.numel *= s
         else:
@@ -422,6 +423,7 @@ class Tensor:
             result_data.shape = [self.shape[0], other.shape[1]]
             result_data.ndim = 2
             result_data.device = self.device
+            result_data.numel = 1
             for s in result_data.shape:
                 result_data.numel *= s
 
@@ -571,6 +573,46 @@ class Tensor:
 
         return result_data
     
+    def sin(self):
+        Tensor._C.sin_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.sin_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.sin_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        result_data.numel = self.numel
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = SinBackward(self)
+        
+        return result_data
+    
+    def cos(self):
+        Tensor._C.cos_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.cos_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.cos_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        result_data.numel = self.numel
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = CosBackward(self)
+        
+        return result_data
+    
+
+    
     def transpose(self, axis1, axis2):
         if axis1 < 0:
             axis1 = self.ndim + axis1
@@ -596,7 +638,6 @@ class Tensor:
             result_data.grad_fn = TransposeBackward(self, axis1, axis2)
 
         return result_data
-
     
     @property
     def T(self):
@@ -611,7 +652,7 @@ class Tensor:
         result_data.ndim = self.ndim
         result_data.device = self.device
         result_data.numel = self.numel
-        
+
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = TBackward(self)
