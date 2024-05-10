@@ -27,7 +27,9 @@ class ElementwiseMulBackward:
         self.input = [x, y]
 
     def backward(self, gradient):
-        return [gradient * self.input[1], gradient * self.input[0]]
+        x = self.input[0]
+        y = self.input[1]
+        return [y * gradient, x * gradient]
     
 class MatmulBackward:
     def __init__(self, x, y):
