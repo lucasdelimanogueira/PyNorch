@@ -57,7 +57,6 @@ class Tensor:
             self.grad = None
             self.grad_fn = None
 
-
     def flatten(self, nested_list):
         def flatten_recursively(nested_list):
             flat_data = []

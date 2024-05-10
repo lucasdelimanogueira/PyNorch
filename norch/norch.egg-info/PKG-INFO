@@ -1,3 +1,17 @@
+Metadata-Version: 2.1
+Name: norch
+Version: 0.0.1
+Summary: A deep learning framework
+Home-page: https://github.com/lucasdelimanogueira/PyNorch
+Author: Lucas de Lima
+Author-email: nogueiralucasdelima@gmail.com
+Project-URL: Bug Tracker, https://github.com/lucasdelimanogueira/PyNorch/issues
+Project-URL: Repository, https://github.com/lucasdelimanogueira/PyNorch
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
 # PyNorch
 Recreating PyTorch from scratch (C/C++, CUDA and Python, with GPU support and automatic differentiation!)
 
