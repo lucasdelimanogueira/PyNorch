@@ -114,4 +114,21 @@ class DivisionBackward:
         grad_x = gradient / y
         grad_y = -1 * gradient * (x / (y * y))
         return [grad_x, grad_y]
+    
+class SinBackward:
+    def __init__(self, x):
+        self.input = [x]
+
+    def backward(self, gradient):
+        x = self.input[0]
+        return [gradient * x.cos()]
+    
+class CosBackward:
+    def __init__(self, x):
+        self.input = [x]
+
+    def backward(self, gradient):
+        x = self.input[0]
+        return [-gradient * x.sin()]
+
 
