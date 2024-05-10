@@ -179,6 +179,8 @@ class Tensor:
         self.grad_fn = None
 
     def __getitem__(self, indices):
+        if isinstance(indices, int):
+            indices = [indices]
         if len(indices) != self.ndim:
             raise ValueError("Number of indices must match the number of dimensions")
         
