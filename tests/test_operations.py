@@ -1,6 +1,6 @@
 import unittest
 import norch
-from norch import utils
+from norch.utils import utils_unittests as utils
 import torch
 import sys
 import os
