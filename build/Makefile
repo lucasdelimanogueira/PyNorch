@@ -9,7 +9,7 @@ NVCCFLAGS = -std=c++11
 # Directories
 SRCDIR = ../norch/csrc
 BUILDDIR = ../build
-TARGET = ../build/libtensor.so
+TARGET = ../norch/libtensor.so
 
 # Files
 SRCS = $(wildcard $(SRCDIR)/*.cpp)

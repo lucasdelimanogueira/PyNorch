@@ -13,8 +13,8 @@ class CTensor(ctypes.Structure):
     ]
 
 class Tensor:
-    os.path.abspath(os.curdir)
-    _C = ctypes.CDLL(os.path.join(os.path.abspath(os.curdir), "build/libtensor.so"))
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    _C = ctypes.CDLL(os.path.join(module_dir, "libtensor.so"))
 
     def __init__(self, data=None, device="cpu", requires_grad=False):
 
