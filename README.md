@@ -59,3 +59,13 @@ class MyModel(nn.Module):
         
         return out
 ```
+
+# 4 - Progress
+
+| Development                  | Status      | Feature                                                                |
+| ---------------------------- | ----------- | ---------------------------------------------------------------------- |
+| Operations                   | in progress | <ul><li>[ ] Broadcasting </li></ul>                     |
+| Loss                         | in progress | <ul><li>[x] MSE</li><li>[ ] Cross Entropy</li></ul>    |
+| Data                         | in progress    | <ul><li>[ ] Dataset</li><li>[ ] Batch</li><li>[ ] Iterator</li></ul>   |
+| Convolutional Neural Network | in progress    | <ul><li>[ ] Conv2d</li><li>[ ] MaxPool2d</li><li>[ ] Dropout</li></ul> |
+| Distributed                  | in progress | <ul><li>[ ] Distributed Data Parallel</li></ul>             
