@@ -695,7 +695,7 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
-            //batched_matmul_tensor_cuda(tensor1, tensor2, result_data);
+            batched_matmul_tensor_cuda(tensor1, tensor2, result_data);
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
