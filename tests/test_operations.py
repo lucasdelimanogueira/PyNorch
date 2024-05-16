@@ -192,7 +192,7 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
-    def test_sum_axis_no_keepdims(self):
+    def test_sum_axis(self):
         """
         Test summation of a tensor along a specific axis without keeping the dimensions
         """
@@ -202,9 +202,7 @@ class TestTensorOperations(unittest.TestCase):
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor, dim=1)
-
-        print(torch_result)
-        print("\n\n", torch_expected)
+        
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
     def test_transpose_T(self):
