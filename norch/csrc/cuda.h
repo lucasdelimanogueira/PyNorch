@@ -6,7 +6,10 @@
     
     __global__ void add_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int size);
     __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data);
-    
+
+    __global__ void add_broadcasted_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int* shape1, int* shape2, int* broadcasted_shape, int ndim1, int ndim2, int size);
+    __host__ void add_broadcasted_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape);
+
     __global__ void sum_tensor_cuda_kernel(float* data, float* result_data);
     __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data);
 
