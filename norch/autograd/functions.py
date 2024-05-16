@@ -8,11 +8,50 @@ class AddBackward:
         return [gradient, gradient]
     
 class AddBroadcastedBackward:
-    pass
+    def __init__(self, x, y):
+        self.input = [x, y]
 
+    def backward(self, gradient):
+        x, y = self.input
+        grad_x = self._reshape_gradient(gradient, x.shape)
+        grad_y = self._reshape_gradient(gradient, y.shape)
+        return [grad_x, grad_y]
+    
+    def _reshape_gradient(self, gradient, shape):
+        # Reduce gradient dimensions to match the target shape dimensions
+        while len(gradient.shape) > len(shape):
+            gradient = gradient.sum(axis=0)
 
+        # Sum along axes where the target shape dimension is 1
+        for i in range(len(shape)):
+            if shape[i] == 1:
+                gradient = gradient.sum(axis=i)
+
+        return gradient
     
+
+class SubBroadcastedBackward:
+    def __init__(self, x, y):
+        self.input = [x, y]
+
+    def backward(self, gradient):
+        x, y = self.input
+        grad_x = self._reshape_gradient(gradient, x.shape)
+        grad_y = self._reshape_gradient(gradient, y.shape)
+        return [grad_x, -grad_y]
     
+    def _reshape_gradient(self, gradient, shape):
+        # Reduce gradient dimensions to match the target shape dimensions
+        while len(gradient.shape) > len(shape):
+            gradient = gradient.sum(axis=0)
+
+        # Sum along axes where the target shape dimension is 1
+        for i in range(len(shape)):
+            if shape[i] == 1:
+                gradient = gradient.sum(axis=i)
+
+        return gradient
+
 class SubBackward:
     def __init__(self, x, y):
         self.input = [x, y]
