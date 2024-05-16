@@ -11,6 +11,46 @@ void add_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     }
 }
 
+void add_broadcasted_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape) {
+    int max_ndim = tensor1->ndim > tensor2->ndim ? tensor1->ndim : tensor2->ndim;
+
+    // Calculate strides for broadcasting
+    int* strides1 = (int*)malloc(max_ndim * sizeof(int));
+    int* strides2 = (int*)malloc(max_ndim * sizeof(int));
+    if (strides1 == NULL || strides2 == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    int stride1 = 1, stride2 = 1;
+    for (int i = max_ndim - 1; i >= 0; i--) {
+        int dim1 = i < tensor1->ndim ? tensor1->shape[tensor1->ndim - max_ndim + i] : 1;
+        int dim2 = i < tensor2->ndim ? tensor2->shape[tensor2->ndim - max_ndim + i] : 1;
+        strides1[i] = dim1 == broadcasted_shape[i] ? stride1 : 0;
+        strides2[i] = dim2 == broadcasted_shape[i] ? stride2 : 0;
+        stride1 *= broadcasted_shape[i];
+        stride2 *= broadcasted_shape[i];
+    }
+
+    // Perform element-wise addition with broadcasting
+    for (int i = 0; i < tensor1->size; i++) {
+        int index1 = 0, index2 = 0;
+        int linear_index = i;
+        for (int j = max_ndim - 1; j >= 0; j--) {
+            int pos = linear_index % broadcasted_shape[j];
+            linear_index /= broadcasted_shape[j];
+            if (strides1[j] != 0) index1 += pos * strides1[j];
+            if (strides2[j] != 0) index2 += pos * strides2[j];
+        }
+        result_data[i] = tensor1->data[index1] + tensor2->data[index2];
+    }
+
+    // Free strides
+    free(strides1);
+    free(strides2);
+}
+
+
 void sub_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     
     for (int i = 0; i < tensor1->size; i++) {
@@ -126,15 +166,51 @@ void log_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }
 
-void sum_tensor_cpu(Tensor* tensor, float* result_data) {
-    float sum = 0.0;
+void sum_tensor_cpu(Tensor* tensor, float* result_data, int axis) {
+    if (axis == -1) {
+        // Sum over all elements
+        float sum = 0.0;
+        for (int i = 0; i < tensor->size; i++) {
+            sum += tensor->data[i];
+        }
+        *result_data = sum;
+    } else {
+        if (axis < 0 || axis >= tensor->ndim) {
+            printf("Invalid axis");
+            return;
+        }
+        
+        int result_shape[tensor->ndim - 1];
+        int result_size = 1;
+        int axis_stride = tensor->strides[axis];
 
-    for (int i = 0; i < tensor->size; i++) {
-        sum += tensor->data[i];
+        int idx = 0;
+        for (int i = 0; i < tensor->ndim; i++) {
+            if (i != axis) {
+                result_shape[idx++] = tensor->shape[i];
+                result_size *= tensor->shape[i];
+            }
+        }
+
+        memset(result_data, 0, result_size * sizeof(float));
+
+        for (int i = 0; i < tensor->shape[axis]; i++) {
+            for (int j = 0; j < result_size; j++) {
+                int index = 0;
+                int remainder = j;
+                for (int k = tensor->ndim - 2; k >= 0; k--) {
+                    index += (remainder % result_shape[k]) * tensor->strides[k < axis ? k : k + 1];
+                    remainder /= result_shape[k];
+                }
+                result_data[j] += tensor->data[index + i * axis_stride];
+            }
+        }
     }
-
-    *result_data = sum;
 }
+
+
+
+
 
 void ones_like_tensor_cpu(Tensor* tensor, float* result_data) {
     
