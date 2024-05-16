@@ -7,6 +7,12 @@ class AddBackward:
     def backward(self, gradient):
         return [gradient, gradient]
     
+class AddBroadcastedBackward:
+    pass
+
+
+    
+    
 class SubBackward:
     def __init__(self, x, y):
         self.input = [x, y]

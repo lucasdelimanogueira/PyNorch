@@ -35,6 +35,22 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_broadcasting_addition(self):
+        """
+        Test addition of two tensors with broadcasting: tensor1 + tensor2
+        """
+        norch_tensor1 = norch.Tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
+        norch_tensor2 = norch.Tensor([1, 1, 1]).to(self.device)  # Shape (3)
+        norch_result = norch_tensor1 + norch_tensor2
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
+        torch_expected = torch_tensor1 + torch_tensor2  # Broadcasting addition
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
     def test_subtraction(self):
         """
         Test subtraction of two tensors: tensor1 - tensor2
@@ -174,6 +190,21 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor)
 
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_sum_axis_no_keepdims(self):
+        """
+        Test summation of a tensor along a specific axis without keeping the dimensions
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.sum(axis=1)
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.sum(torch_tensor, dim=1)
+
+        print(torch_result)
+        print("\n\n", torch_expected)
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
     def test_transpose_T(self):
