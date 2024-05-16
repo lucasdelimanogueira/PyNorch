@@ -21,25 +21,25 @@ class TestNNModuleLoss(unittest.TestCase):
         loss_fn_torch = torch.nn.MSELoss()
 
         # Test case 1: Predictions and labels are equal
-        predictions_norch = norch.Tensor([1.1, 2, 3, 4])
-        labels_norch = norch.Tensor([1.1, 2, 3, 4])
+        predictions_norch = norch.Tensor([1.1, 2, 3, 4]).to(self.device)
+        labels_norch = norch.Tensor([1.1, 2, 3, 4]).to(self.device)
         loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
-        loss_torch_result = utils.to_torch(loss_norch)
+        loss_torch_result = utils.to_torch(loss_norch).to(self.device)
 
-        predictions_torch = torch.tensor([1.1, 2, 3, 4])
-        labels_torch = torch.tensor([1.1, 2, 3, 4])
+        predictions_torch = torch.tensor([1.1, 2, 3, 4]).to(self.device)
+        labels_torch = torch.tensor([1.1, 2, 3, 4]).to(self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)        
         
         self.assertTrue(utils.compare_torch(loss_torch_result, loss_torch_expected))
         
         # Test case 2: Predictions and labels are different
-        predictions_norch = norch.Tensor([1.1, 2, 3, 4])
-        labels_norch = norch.Tensor([4, 3, 2.1, 1])
+        predictions_norch = norch.Tensor([1.1, 2, 3, 4]).to(self.device)
+        labels_norch = norch.Tensor([4, 3, 2.1, 1]).to(self.device)
         loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
-        loss_torch_result = utils.to_torch(loss_norch)
+        loss_torch_result = utils.to_torch(loss_norch).to(self.device)
 
-        predictions_torch = torch.tensor([1.1, 2, 3, 4])
-        labels_torch = torch.tensor([4, 3, 2.1, 1])
+        predictions_torch = torch.tensor([1.1, 2, 3, 4]).to(self.device)
+        labels_torch = torch.tensor([4, 3, 2.1, 1]).to(self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)        
         
         self.assertTrue(utils.compare_torch(loss_torch_result, loss_torch_expected))
@@ -60,31 +60,31 @@ class TestNNModuleActivationFn(unittest.TestCase):
         sigmoid_fn_torch = torch.nn.Sigmoid()
 
         # Test case 1: Positive input
-        x = norch.Tensor([1, 2, 3])
+        x = norch.Tensor([1, 2, 3]).to(self.device)
         sigmoid_norch = sigmoid_fn_norch.forward(x)
-        sigmoid_torch_result = utils.to_torch(sigmoid_norch)
+        sigmoid_torch_result = utils.to_torch(sigmoid_norch).to(self.device)
 
-        x = torch.tensor([1, 2, 3])
+        x = torch.tensor([1, 2, 3]).to(self.device)
         sigmoid_torch_expected = sigmoid_fn_torch.forward(x)
 
         self.assertTrue(utils.compare_torch(sigmoid_torch_result, sigmoid_torch_expected))
 
         # Test case 1: Negative input
-        x = norch.Tensor([-1, 2, -3])
+        x = norch.Tensor([-1, 2, -3]).to(self.device)
         sigmoid_norch = sigmoid_fn_norch.forward(x)
-        sigmoid_torch_result = utils.to_torch(sigmoid_norch)
+        sigmoid_torch_result = utils.to_torch(sigmoid_norch).to(self.device)
 
-        x = torch.tensor([-1, 2, -3])
+        x = torch.tensor([-1, 2, -3]).to(self.device)
         sigmoid_torch_expected = sigmoid_fn_torch.forward(x)
 
         self.assertTrue(utils.compare_torch(sigmoid_torch_result, sigmoid_torch_expected))
 
         # Test case 1: Zero input
-        x = norch.Tensor([0, 0, 0])
+        x = norch.Tensor([0, 0, 0]).to(self.device)
         sigmoid_norch = sigmoid_fn_norch.forward(x)
-        sigmoid_torch_result = utils.to_torch(sigmoid_norch)
+        sigmoid_torch_result = utils.to_torch(sigmoid_norch).to(self.device)
 
-        x = torch.tensor([0, 0, 0])
+        x = torch.tensor([0, 0, 0]).to(self.device)
         sigmoid_torch_expected = sigmoid_fn_torch.forward(x)
 
         self.assertTrue(utils.compare_torch(sigmoid_torch_result, sigmoid_torch_expected))

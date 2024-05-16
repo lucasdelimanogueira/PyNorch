@@ -1102,7 +1102,7 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
-            //transpose_axes_cuda(tensor, result_data);
+            assign_tensor_cuda(tensor, result_data);
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
@@ -1111,7 +1111,6 @@ extern "C" {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
-            //transpose_axes_cpu(tensor, result_data, axis1, axis2, shape);
             assign_tensor_cpu(tensor, result_data);
             
             Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);

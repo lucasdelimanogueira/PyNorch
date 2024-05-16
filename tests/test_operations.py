@@ -29,7 +29,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_tensor2 = norch.Tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
         norch_result = norch_tensor1 + norch_tensor2
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
@@ -44,7 +44,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         norch_tensor2 = norch.Tensor([1, 1, 1]).to(self.device)  # Shape (3)
         norch_result = norch_tensor1 + norch_tensor2
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
@@ -66,7 +66,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_tensor2 = norch.Tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
         norch_result = norch_tensor1 - norch_tensor2
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
@@ -81,7 +81,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         norch_tensor2 = norch.Tensor([1, 1, 1]).to(self.device)  # Shape (3)
         norch_result = norch_tensor1 - norch_tensor2
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
@@ -97,7 +97,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor = norch.Tensor([[[2, 4], [6, -8]], [[10, 12], [14, 16]]]).to(self.device)
         scalar = 2
         norch_result = norch_tensor / scalar
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[2, 4], [6, -8]], [[10, 12], [14, 16]]]).to(self.device)
         torch_expected = torch_tensor / scalar
@@ -111,7 +111,7 @@ class TestTensorOperations(unittest.TestCase):
         scalar = 10
         norch_tensor = norch.Tensor([[[2, 4], [6, -8]], [[10, 12], [14, 16]]]).to(self.device)
         norch_result = scalar / norch_tensor
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[2, 4], [6, -8]], [[10, 12], [14, 16]]]).to(self.device)
         torch_expected = scalar / torch_tensor
@@ -125,7 +125,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_tensor2 = norch.Tensor([[[1, 0], [0, 1]], [[-1, 0], [0, -1]]]).to(self.device)
         norch_result = norch_tensor1 @ norch_tensor2
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_tensor2 = torch.tensor([[[1, 0], [0, 1]], [[-1, 0], [0, -1]]]).to(self.device)
@@ -140,7 +140,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         scalar = 2
         norch_result = norch_tensor * scalar
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch_tensor * scalar
@@ -154,7 +154,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_tensor2 = norch.Tensor([[[2, 2], [2, 2]], [[2, 2], [2, 2]]]).to(self.device)
         norch_result = norch_tensor1 * norch_tensor2
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_tensor2 = torch.tensor([[[2, 2], [2, 2]], [[2, 2], [2, 2]]]).to(self.device)
@@ -169,7 +169,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         new_shape = [2, 4]
         norch_result = norch_tensor.reshape(new_shape)
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch_tensor.reshape(new_shape)
@@ -183,7 +183,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         dim1, dim2 = 0, 2
         norch_result = norch_tensor.transpose(dim1, dim2)
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch_tensor.transpose(dim1, dim2)
@@ -196,7 +196,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_result = norch_tensor.log()
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.log(torch_tensor)
@@ -209,7 +209,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_result = norch_tensor.sum()
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor)
@@ -222,7 +222,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_result = norch_tensor.sum(axis=1)
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor, dim=1)
@@ -235,7 +235,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_result = norch_tensor.T
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.transpose(torch_tensor, 0, 2)
@@ -251,7 +251,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_reshaped = norch_tensor.reshape(new_shape)
         
         norch_result = norch_reshaped @ norch_tensor
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
         torch_expected = torch_tensor.reshape(new_shape) @ torch_tensor
@@ -266,7 +266,7 @@ class TestTensorOperations(unittest.TestCase):
         norch_tensor = norch.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         dim1, dim2 = 0, 2
         norch_result = norch_tensor.transpose(dim1, dim2) @ norch_tensor
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch_tensor.transpose(dim1, dim2) @ torch_tensor
@@ -283,7 +283,7 @@ class TestTensorOperations(unittest.TestCase):
         new_shape = [2, 4]
         norch_result = ((norch_tensor1 + norch_tensor2) / scalar) @ norch_tensor1
         norch_result = norch_result.reshape(new_shape)
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1., 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
@@ -299,7 +299,7 @@ class TestTensorOperations(unittest.TestCase):
         scalar = 3
         norch_tensor = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_result = scalar ** norch_tensor
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = scalar ** torch_tensor
@@ -313,7 +313,7 @@ class TestTensorOperations(unittest.TestCase):
         scalar = 3
         norch_tensor = norch.Tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_result = norch_tensor ** scalar
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch_tensor ** scalar
@@ -326,7 +326,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
         norch_result = norch_tensor.sin()
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
         torch_expected = torch.sin(torch_tensor)
@@ -339,7 +339,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
         norch_result = norch_tensor.cos()
-        torch_result = utils.to_torch(norch_result)
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[0, 30], [45, 60]], [[90, 120], [135, 180]]]).to(self.device)
         torch_expected = torch.cos(torch_tensor)
@@ -353,7 +353,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_zeros = norch_tensor.zeros_like()
-        torch_zeros_result = utils.to_torch(norch_zeros)
+        torch_zeros_result = utils.to_torch(norch_zeros).to(self.device)
 
         torch_tensor_expected = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_zeros_expected = torch.zeros_like(torch_tensor_expected)
@@ -366,7 +366,7 @@ class TestTensorOperations(unittest.TestCase):
         """
         norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         norch_ones = norch_tensor.ones_like()
-        torch_ones_result = utils.to_torch(norch_ones)
+        torch_ones_result = utils.to_torch(norch_ones).to(self.device)
 
         torch_tensor_expected = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_ones_expected = torch.ones_like(torch_tensor_expected)

@@ -698,7 +698,7 @@ class Tensor:
     
 
     
-    def transpose(self, axis1, axis2):
+    def transpose(self, axis1, axis2, requires_grad=None):
         if axis1 < 0:
             axis1 = self.ndim + axis1
         if axis2 < 0:
