@@ -12,6 +12,8 @@ class TestTensorOperations(unittest.TestCase):
         if self.device is None or self.device != 'cuda':
             self.device = 'cpu'
 
+        print(f"Running tests on: {self.device}")
+
     def test_creation_and_conversion(self):
         """
         Test creation and convertion of norch tensor to pytorch
@@ -49,6 +51,12 @@ class TestTensorOperations(unittest.TestCase):
         torch_expected = torch_tensor1 + torch_tensor2
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        norch_result = norch_tensor2 + norch_tensor1
+        torch_expected = torch_tensor2 + torch_tensor1
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
 
 
     def test_subtraction(self):

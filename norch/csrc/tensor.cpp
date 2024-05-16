@@ -150,11 +150,10 @@ extern "C" {
         }
 
         if (strcmp(tensor1->device, "cuda") == 0) {
-
             float* result_data;
             cudaMalloc((void **)&result_data, tensor1->size * sizeof(float));
-            add_broadcasted_tensor_cuda(tensor1, tensor2, result_data);
-            return create_tensor(result_data, shape, ndim, device);
+            add_broadcasted_tensor_cuda(tensor1, tensor2, result_data, broadcasted_shape);
+            return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
         } 
         else {
             float* result_data = (float*)malloc(tensor1->size * sizeof(float));

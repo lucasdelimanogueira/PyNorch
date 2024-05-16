@@ -17,8 +17,6 @@ __host__ void cpu_to_cuda(Tensor* tensor) {
     const char* device_str = "cuda";
     tensor->device = (char*)malloc(strlen(device_str) + 1);
     strcpy(tensor->device, device_str); 
-
-    printf("Successfully sent tensor to: %s\n", tensor->device);
 }
 
 __host__ void cuda_to_cpu(Tensor* tensor) {
@@ -58,56 +56,56 @@ __host__ void add_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_da
     cudaDeviceSynchronize();
 }
 
-__global__ void add_broadcasted_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int* shape1, int* shape2, int* broadcasted_shape, int ndim1, int ndim2, int size) {
+__global__ void add_broadcasted_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int* broadcasted_shape, int* strides1, int*strides2, int max_ndim, int size) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= size) return;
-
-    int idx1 = 0, idx2 = 0;
-    int stride1 = 1, stride2 = 1;
-    int linear_idx = i;
-
-    for (int j = max(ndim1, ndim2) - 1; j >= 0; j--) {
-        int dim1 = j < ndim1 ? shape1[ndim1 - 1 - j] : 1;
-        int dim2 = j < ndim2 ? shape2[ndim2 - 1 - j] : 1;
-        int broadcasted_dim = broadcasted_shape[j];
-
-        int pos = linear_idx % broadcasted_dim;
-        linear_idx /= broadcasted_dim;
-
-        if (dim1 > 1) {
-            idx1 += pos * stride1;
-        }
-        if (dim2 > 1) {
-            idx2 += pos * stride2;
-        }
-
-        stride1 *= dim1;
-        stride2 *= dim2;
+    
+    int index1 = 0, index2 = 0;
+    int linear_index = i;
+    for (int j = max_ndim - 1; j >= 0; j--) {
+        int pos = linear_index % broadcasted_shape[j];
+        linear_index /= broadcasted_shape[j];
+        if (strides1[j] != 0) index1 += pos * strides1[j];
+        if (strides2[j] != 0) index2 += pos * strides2[j];
     }
-
-    result_data[i] = data1[idx1] + data2[idx2];
+    result_data[i] = data1[index1] + data2[index2];
 }
 
 __host__ void add_broadcasted_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape) {
-    int size = tensor1->size;
+    int max_ndim = tensor1->ndim > tensor2->ndim ? tensor1->ndim : tensor2->ndim;
 
-    // Copy the shapes to device memory
-    int* d_shape1;
-    int* d_shape2;
+    int* strides1 = (int*)malloc(max_ndim * sizeof(int));
+    int* strides2 = (int*)malloc(max_ndim * sizeof(int));
+    if (strides1 == NULL || strides2 == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    int stride1 = 1, stride2 = 1;
+    for (int i = max_ndim - 1; i >= 0; i--) {
+        int dim1 = i < tensor1->ndim ? tensor1->shape[tensor1->ndim - max_ndim + i] : 1;
+        int dim2 = i < tensor2->ndim ? tensor2->shape[tensor2->ndim - max_ndim + i] : 1;
+        strides1[i] = dim1 == broadcasted_shape[i] ? stride1 : 0;
+        strides2[i] = dim2 == broadcasted_shape[i] ? stride2 : 0;
+        stride1 *= broadcasted_shape[i];
+        stride2 *= broadcasted_shape[i];
+    }
+    
     int* d_broadcasted_shape;
-    int ndim1 = tensor1->ndim;
-    int ndim2 = tensor2->ndim;
+    int* d_strides1;
+    int* d_strides2;
 
-    cudaMalloc((void**)&d_shape1, ndim1 * sizeof(int));
-    cudaMalloc((void**)&d_shape2, ndim2 * sizeof(int));
-    cudaMalloc((void**)&d_broadcasted_shape, max(ndim1, ndim2) * sizeof(int));
+    cudaMalloc((void**)&d_broadcasted_shape, max_ndim * sizeof(int));
+    cudaMemcpy(d_broadcasted_shape, broadcasted_shape, max_ndim * sizeof(int), cudaMemcpyHostToDevice);
 
-    cudaMemcpy(d_shape1, tensor1->shape, ndim1 * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_shape2, tensor2->shape, ndim2 * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_broadcasted_shape, broadcasted_shape, max(ndim1, ndim2) * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc((void**)&d_strides1, max_ndim * sizeof(int));
+    cudaMemcpy(d_strides1, strides1, max_ndim * sizeof(int), cudaMemcpyHostToDevice);
 
-    int number_of_blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-    add_broadcasted_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor1->data, tensor2->data, result_data, d_shape1, d_shape2, d_broadcasted_shape, ndim1, ndim2, size);
+    cudaMalloc((void**)&d_strides2, max_ndim * sizeof(int));
+    cudaMemcpy(d_strides2, strides2, max_ndim * sizeof(int), cudaMemcpyHostToDevice);
+
+    int number_of_blocks = (tensor1->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    add_broadcasted_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor1->data, tensor2->data, result_data, d_broadcasted_shape, d_strides1, d_strides2, max_ndim, tensor1->size);
 
     cudaError_t error = cudaGetLastError();
     if (error != cudaSuccess) {
@@ -116,9 +114,6 @@ __host__ void add_broadcasted_tensor_cuda(Tensor* tensor1, Tensor* tensor2, floa
     }
 
     cudaDeviceSynchronize();
-
-    cudaFree(d_shape1);
-    cudaFree(d_shape2);
     cudaFree(d_broadcasted_shape);
 }
 
