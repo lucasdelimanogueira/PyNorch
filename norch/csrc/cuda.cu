@@ -402,7 +402,7 @@ __host__ void batched_matmul_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float
     int cols2 = tensor2->shape[2];
 
     dim3 threadsPerBlock(16, 16);
-    dim3 number_of_blocks((cols2 + threadsPerBlock.x - 1) / threadsPerBlock.x, (rows1 + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    dim3 number_of_blocks((cols2 + threadsPerBlock.x - 1) / threadsPerBlock.x, (rows1 + threadsPerBlock.y - 1) / threadsPerBlock.y, batch_size);
     batched_matmul_tensor_cuda_kernel<<<number_of_blocks, threadsPerBlock>>>(tensor1->data, tensor2->data, result_data, batch_size, rows1, cols1, cols2);
 
 
