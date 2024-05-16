@@ -46,7 +46,7 @@ class TestTensorOperations(unittest.TestCase):
 
         torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
-        torch_expected = torch_tensor1 + torch_tensor2  # Broadcasting addition
+        torch_expected = torch_tensor1 + torch_tensor2
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
@@ -65,6 +65,22 @@ class TestTensorOperations(unittest.TestCase):
         torch_expected = torch_tensor1 - torch_tensor2
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_broadcasting_subtraction(self):
+        """
+        Test subtraction of two tensors with broadcasting: tensor1 - tensor2
+        """
+        norch_tensor1 = norch.Tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
+        norch_tensor2 = norch.Tensor([1, 1, 1]).to(self.device)  # Shape (3)
+        norch_result = norch_tensor1 - norch_tensor2
+        torch_result = utils.to_torch(norch_result)
+
+        torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
+        torch_expected = torch_tensor1 - torch_tensor2 
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
 
     def test_division_by_scalar(self):
         """
@@ -202,7 +218,7 @@ class TestTensorOperations(unittest.TestCase):
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor, dim=1)
-        
+
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
     def test_transpose_T(self):
