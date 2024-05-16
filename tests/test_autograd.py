@@ -211,7 +211,71 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor1_grad_matmul, torch_tensor1_grad_matmul))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad_matmul, torch_tensor2_grad_matmul))
     
-    
+    def test_batched_matmul(self):
+        """
+        Test autograd from batched matrix multiplication: BxMxP = BxNxM @ BxMxP
+        """
+        B = 3  # Batch size
+
+        norch_tensor1_matmul = norch.Tensor([[[1., 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)], requires_grad=True).to(self.device)
+        norch_tensor2_matmul = norch.Tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True).to(self.device)
+
+        norch_result_matmul = norch_tensor1_matmul @ norch_tensor2_matmul
+        norch_result_matmul_sum = norch_result_matmul.sum()  # Sum over all elements
+        norch_result_matmul_sum.backward()
+
+        # Convert gradients to torch tensors
+        norch_tensor1_grad_matmul = utils.to_torch(norch_tensor1_matmul.grad).to(self.device)
+        norch_tensor2_grad_matmul = utils.to_torch(norch_tensor2_matmul.grad).to(self.device)
+
+        # Repeat the same process with torch tensors
+        torch_tensor1_matmul = torch.tensor([[[1., 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)], requires_grad=True).to(self.device)
+        torch_tensor2_matmul = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True).to(self.device)
+        torch_result_matmul = torch.matmul(torch_tensor1_matmul, torch_tensor2_matmul)
+        torch_result_matmul_sum = torch_result_matmul.sum()
+        torch_result_matmul_sum.backward()
+        
+        # Extract gradients from torch tensors
+        torch_tensor1_grad_matmul = torch_tensor1_matmul.grad
+        torch_tensor2_grad_matmul = torch_tensor2_matmul.grad
+
+        # Assertions to compare the gradients
+        self.assertTrue(utils.compare_torch(norch_tensor1_grad_matmul, torch_tensor1_grad_matmul))
+        self.assertTrue(utils.compare_torch(norch_tensor2_grad_matmul, torch_tensor2_grad_matmul))
+
+    def test_broadcasted_batched_matmul(self):
+        """
+        Test autograd from batched matrix multiplication: BxMxP = NxM @ BxMxP
+        """
+        B = 3  # Batch size
+
+        norch_tensor1_matmul = norch.Tensor([[1., 2], [3, -4], [5, 6], [7, 8]], requires_grad=True).to(self.device)
+        norch_tensor2_matmul = norch.Tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True).to(self.device)
+
+        norch_result_matmul = norch_tensor1_matmul @ norch_tensor2_matmul
+        norch_result_matmul_sum = norch_result_matmul.sum()  # Sum over all elements
+        norch_result_matmul_sum.backward()
+
+        # Convert gradients to torch tensors
+        norch_tensor1_grad_matmul = utils.to_torch(norch_tensor1_matmul.grad).to(self.device)
+        norch_tensor2_grad_matmul = utils.to_torch(norch_tensor2_matmul.grad).to(self.device)
+
+        # Repeat the same process with torch tensors
+        torch_tensor1_matmul = torch.tensor([[1., 2], [3, -4], [5, 6], [7, 8]], requires_grad=True).to(self.device)
+        torch_tensor2_matmul = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True).to(self.device)
+        torch_result_matmul = torch.matmul(torch_tensor1_matmul, torch_tensor2_matmul)
+        torch_result_matmul_sum = torch_result_matmul.sum()
+        torch_result_matmul_sum.backward()
+        
+        # Extract gradients from torch tensors
+        torch_tensor1_grad_matmul = torch_tensor1_matmul.grad
+        torch_tensor2_grad_matmul = torch_tensor2_matmul.grad
+
+        # Assertions to compare the gradients
+        self.assertTrue(utils.compare_torch(norch_tensor1_grad_matmul, torch_tensor1_grad_matmul))
+        self.assertTrue(utils.compare_torch(norch_tensor2_grad_matmul, torch_tensor2_grad_matmul))
+
+
     def test_elementwise_mul_scalar(self):
         """
         Test autograd from elementwise multiplication with scalar: scalar * tensor
