@@ -15,6 +15,7 @@ class AddBroadcastedBackward:
         x, y = self.input
         grad_x = self._reshape_gradient(gradient, x.shape)
         grad_y = self._reshape_gradient(gradient, y.shape)
+
         return [grad_x, grad_y]
     
     def _reshape_gradient(self, gradient, shape):

@@ -80,11 +80,16 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
 
         ## reversed order broadcasting
+        norch_tensor1 = norch.Tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
+        norch_tensor2 = norch.Tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
 
         norch_result = (norch_tensor2 + norch_tensor1).sum()
         norch_result.backward()
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
 
         torch_result = (torch_tensor2 + torch_tensor1).sum()
         torch_result.backward()
@@ -137,6 +142,8 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
 
         # reversed order broadcasting
+        norch_tensor1 = norch.Tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
+        norch_tensor2 = norch.Tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
 
         norch_result = (norch_tensor2 - norch_tensor1).sum()
         norch_result.backward()
@@ -145,6 +152,7 @@ class TestTensorAutograd(unittest.TestCase):
 
         torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
+        
         torch_result = (torch_tensor2 - torch_tensor1).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
