@@ -82,7 +82,11 @@ class MatmulBackward:
 
     def backward(self, gradient):
         x, y = self.input
-        return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
+        
+        if x.shape != y.shape: # broadcasted case
+            return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
+        else:
+            return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
         
 """class PowBackward:
     def __init__(self, x, power):
@@ -121,13 +125,22 @@ class LogBackward:
         return [grad_input]
        
 class SumBackward:
-    def __init__(self, x):
+    def __init__(self, x, axis=None):
         self.input = [x]
+        self.axis = axis
 
     def backward(self, gradient):
-        # Since sum reduces a tensor to a scalar, gradient is broadcasted to match the original shape.
-        return [float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()]
-    
+        input_shape = self.input[0].shape
+        if self.axis is None:
+            # If axis is None, sum reduces the tensor to a scalar.
+            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+        else:
+            # Broadcast the gradient to the input shape along the specified axis.
+            grad_output_shape = [1 if i in self.axis else dim for i, dim in enumerate(input_shape)]
+            grad_output = gradient.reshape(grad_output_shape)
+            grad_output = grad_output * self.input[0].ones_like()
+        
+        return [grad_output]
 class ReshapeBackward:
     def __init__(self, x):
         self.input = [x]

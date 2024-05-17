@@ -34,6 +34,28 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
 
+    def test_sum_axis(self):
+        """
+        Test autograd from sum specifying axis
+        """
+        norch_tensor1 = norch.Tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_tensor2 = norch.Tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True).to(self.device)
+        norch_result = (norch_tensor1 + norch_tensor2).sum(axis=0).sum(axis=0).sum()
+        norch_result.backward()
+        norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
+        norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
+        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True).to(self.device)
+        torch_result = (torch_tensor1 + torch_tensor2).sum(axis=0).sum(axis=0).sum()
+        torch_result.backward()
+        torch_tensor1_grad = torch_tensor1.grad
+        torch_tensor2_grad = torch_tensor2.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
+        self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
+
+
     def test_broadcasting_addition_autograd(self):
         """
         Test autograd for broadcasting addition: tensor1 + tensor2
