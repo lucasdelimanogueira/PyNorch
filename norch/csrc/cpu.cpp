@@ -205,7 +205,7 @@ void log_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }
 
-void sum_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_shape, int axis, bool keepdim) {
+void sum_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_shape, int axis) {
     if (axis == -1) {
         // Sum over all elements
         float sum = 0.0;
@@ -231,9 +231,6 @@ void sum_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_sh
                 }
                 result_data[j] += tensor->data[index + i * axis_stride];
             }
-        }
-        for (int j = 0; j < size; j++) {
-            printf("%f", result_data[j]);
         }
     }
 }

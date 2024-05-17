@@ -192,24 +192,14 @@ extern "C" {
             shape[0] = 1;
             ndim = 1;
         } else {
-
-            if (keepdim) {
-                shape = (int*) malloc((tensor->ndim) * sizeof(int));
-                for (int i = 0; i < tensor->ndim; i++) {
-                    shape[i] = tensor->shape[i];
+            shape = (int*) malloc((tensor->ndim - 1) * sizeof(int));
+            for (int i = 0, j = 0; i < tensor->ndim; ++i) {
+                if (i != axis) {
+                    shape[j++] = tensor->shape[i];
                 }
-                shape[axis] = 1;
-                ndim = tensor->ndim;
-                
-            } else {
-                shape = (int*) malloc((tensor->ndim - 1) * sizeof(int));
-                for (int i = 0, j = 0; i < tensor->ndim; ++i) {
-                    if (i != axis) {
-                        shape[j++] = tensor->shape[i];
-                    }
-                }
-                ndim = tensor->ndim - 1;
             }
+            ndim = tensor->ndim - 1;
+            
         }
 
         int size = 1;
@@ -230,7 +220,18 @@ extern "C" {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
-            sum_tensor_cpu(tensor, result_data, size, shape, axis, keepdim);
+            sum_tensor_cpu(tensor, result_data, size, shape, axis);
+
+            if (keepdim) {
+                shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                for (int i = 0; i < tensor->ndim; i++) {
+                    shape[i] = tensor->shape[i];
+                }
+                shape[axis] = 1;
+                ndim = tensor->ndim;
+                
+            }
+
             return create_tensor(result_data, shape, ndim, device);
         }     
     }
