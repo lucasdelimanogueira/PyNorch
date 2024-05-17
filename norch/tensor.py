@@ -653,7 +653,7 @@ class Tensor:
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
-            result_data.grad_fn = SumBackward(self)
+            result_data.grad_fn = SumBackward(self, axis)
 
         return result_data
 

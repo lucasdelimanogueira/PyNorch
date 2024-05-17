@@ -37,7 +37,7 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
-    def test_broadcasting_addition(self):
+    def test_addition_broadcasted(self):
         """
         Test addition of two tensors with broadcasting: tensor1 + tensor2
         """
@@ -50,6 +50,18 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
         torch_expected = torch_tensor1 + torch_tensor2
 
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        norch_tensor1 = norch.Tensor([[0, 2]]).to(self.device) 
+        norch_tensor2 = norch.Tensor([[3, 4], [5, -1]]).to(self.device) 
+        norch_result = norch_tensor1 + norch_tensor2
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor1 = torch.tensor([[0, 2]]).to(self.device)  
+        torch_tensor2 = torch.tensor([[3, 4], [5, -1]]).to(self.device) 
+        torch_expected = torch_tensor1 + torch_tensor2
+
+        print(torch_result, torch_expected)
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
         norch_result = norch_tensor2 + norch_tensor1
@@ -244,7 +256,7 @@ class TestTensorOperations(unittest.TestCase):
 
     def test_matmul(self):
         """
-        Test batched matrix multiplication: MxP = NxM @ MxP
+        Test matrix multiplication: MxP = NxM @ MxP
         """
         # Creating batched tensors for Norch
         norch_tensor1 = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)

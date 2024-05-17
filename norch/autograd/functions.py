@@ -84,9 +84,9 @@ class MatmulBackward:
         x, y = self.input
         
         if x.ndim != y.ndim: # broadcasted case
-            print("KKKKKKKKK", x.ndim, y.ndim)
             aux = (gradient @ y.transpose(-1,-2))
-            return [aux.sum(axis=0), x.transpose(-1,-2) @ gradient]
+            aux_sum = aux.sum(axis=0)
+            return [aux_sum, x.transpose(-1,-2) @ gradient]
         else:
             return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
         
@@ -133,14 +133,15 @@ class SumBackward:
 
     def backward(self, gradient):
         input_shape = self.input[0].shape
-        if self.axis is None:
+        if self.axis == -1:
             # If axis is None, sum reduces the tensor to a scalar.
             grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
         else:
             # Broadcast the gradient to the input shape along the specified axis.
-            grad_output_shape = [1 if i in self.axis else dim for i, dim in enumerate(input_shape)]
+            grad_output_shape = list(input_shape)
+            grad_output_shape[self.axis] = 1
             grad_output = gradient.reshape(grad_output_shape)
-            grad_output = grad_output * self.input[0].ones_like()
+            grad_output = grad_output + self.input[0].zeros_like()
         
         return [grad_output]
 class ReshapeBackward:

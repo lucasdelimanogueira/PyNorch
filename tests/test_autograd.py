@@ -41,17 +41,19 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1 = norch.Tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
         norch_tensor2 = norch.Tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True).to(self.device)
         norch_result = (norch_tensor1 + norch_tensor2).sum(axis=0).sum(axis=0).sum()
+
         norch_result.backward()
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
         torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True).to(self.device)
+        
         torch_result = (torch_tensor1 + torch_tensor2).sum(axis=0).sum(axis=0).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
         torch_tensor2_grad = torch_tensor2.grad
-
+        
         self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
 
@@ -70,6 +72,21 @@ class TestTensorAutograd(unittest.TestCase):
         torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
         torch_result = (torch_tensor1 + torch_tensor2).sum()
+        torch_result.backward()
+        torch_tensor1_grad = torch_tensor1.grad
+        torch_tensor2_grad = torch_tensor2.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
+        self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
+
+        ## reversed order broadcasting
+
+        norch_result = (norch_tensor2 + norch_tensor1).sum()
+        norch_result.backward()
+        norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
+        norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
+
+        torch_result = (torch_tensor2 + torch_tensor1).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
         torch_tensor2_grad = torch_tensor2.grad
@@ -267,7 +284,7 @@ class TestTensorAutograd(unittest.TestCase):
 
     def test_broadcasted_batched_matmul(self):
         """
-        Test autograd from batched matrix multiplication: BxMxP = NxM @ BxMxP
+        Test autograd from broadcasted batched matrix multiplication: BxMxP = NxM @ BxMxP
         """
         B = 3  # Batch size
 
