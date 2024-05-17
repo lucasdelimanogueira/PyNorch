@@ -52,6 +52,7 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+        # reversed order broadcasting
         norch_tensor1 = norch.Tensor([[0, 2]]).to(self.device) 
         norch_tensor2 = norch.Tensor([[3, 4], [5, -1]]).to(self.device) 
         norch_result = norch_tensor1 + norch_tensor2
@@ -61,7 +62,6 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor2 = torch.tensor([[3, 4], [5, -1]]).to(self.device) 
         torch_expected = torch_tensor1 + torch_tensor2
 
-        print(torch_result, torch_expected)
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
         norch_result = norch_tensor2 + norch_tensor1
@@ -98,6 +98,14 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
         torch_expected = torch_tensor1 - torch_tensor2 
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        # reversed order broadcasting
+        norch_result = norch_tensor2 - norch_tensor1
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_expected = torch_tensor2 - torch_tensor1
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 

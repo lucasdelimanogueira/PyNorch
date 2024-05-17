@@ -58,7 +58,7 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
 
 
-    def test_broadcasting_addition_autograd(self):
+    def test_broadcasted_addition_autograd(self):
         """
         Test autograd for broadcasting addition: tensor1 + tensor2
         """
@@ -115,7 +115,7 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor1_grad_sub, torch_tensor1_grad_sub))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad_sub, torch_tensor2_grad_sub))
         
-    def test_broadcasting_subtraction_autograd(self):
+    def test_broadcasted_subtraction_autograd(self):
         """
         Test autograd for broadcasting subtraction: tensor1 - tensor2
         """
@@ -129,6 +129,23 @@ class TestTensorAutograd(unittest.TestCase):
         torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
         torch_result = (torch_tensor1 - torch_tensor2).sum()
+        torch_result.backward()
+        torch_tensor1_grad = torch_tensor1.grad
+        torch_tensor2_grad = torch_tensor2.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
+        self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
+
+        # reversed order broadcasting
+
+        norch_result = (norch_tensor2 - norch_tensor1).sum()
+        norch_result.backward()
+        norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
+        norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True).to(self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True).to(self.device)  # Shape (3)
+        torch_result = (torch_tensor2 - torch_tensor1).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
         torch_tensor2_grad = torch_tensor2.grad

@@ -58,7 +58,7 @@ void sub_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
     }
 }
 
-void sub_broadcasted_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape) {
+void sub_broadcasted_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape, int broadcasted_size) {
     int max_ndim = tensor1->ndim > tensor2->ndim ? tensor1->ndim : tensor2->ndim;
 
     // Calculate strides for broadcasting
@@ -75,12 +75,12 @@ void sub_broadcasted_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_
         int dim2 = i < tensor2->ndim ? tensor2->shape[tensor2->ndim - max_ndim + i] : 1;
         strides1[i] = dim1 == broadcasted_shape[i] ? stride1 : 0;
         strides2[i] = dim2 == broadcasted_shape[i] ? stride2 : 0;
-        stride1 *= broadcasted_shape[i];
-        stride2 *= broadcasted_shape[i];
+        stride1 *= (dim1 == broadcasted_shape[i]) ? dim1 : 1;
+        stride2 *= (dim2 == broadcasted_shape[i]) ? dim2 : 1;
     }
 
     // Perform element-wise addition with broadcasting
-    for (int i = 0; i < tensor1->size; i++) {
+    for (int i = 0; i < broadcasted_size; i++) {
         int index1 = 0, index2 = 0;
         int linear_index = i;
         for (int j = max_ndim - 1; j >= 0; j--) {

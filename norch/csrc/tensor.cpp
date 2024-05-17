@@ -157,7 +157,7 @@ extern "C" {
         if (strcmp(tensor1->device, "cuda") == 0) {
             float* result_data;
             cudaMalloc((void **)&result_data, broadcasted_size * sizeof(float));
-            add_broadcasted_tensor_cuda(tensor1, tensor2, result_data, broadcasted_shape);
+            add_broadcasted_tensor_cuda(tensor1, tensor2, result_data, broadcasted_shape, broadcasted_size);
             return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
         } 
         else {
@@ -295,16 +295,27 @@ extern "C" {
             broadcasted_shape[max_ndim - 1 - i] = dim1 > dim2 ? dim1 : dim2;
         }
 
-        // Allocate memory for result tensor
-        float* result_data = (float*)malloc(tensor1->size * sizeof(float));
-        if (result_data == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
+        int broadcasted_size = 1;
+        for (int i = 0; i < max_ndim; i++) {
+            broadcasted_size *= broadcasted_shape[i];
         }
 
-        sub_broadcasted_tensor_cpu(tensor1, tensor2, result_data, broadcasted_shape);
+        if (strcmp(tensor1->device, "cuda") == 0) {
+            float* result_data;
+            cudaMalloc((void **)&result_data, broadcasted_size * sizeof(float));
+            sub_broadcasted_tensor_cuda(tensor1, tensor2, result_data, broadcasted_shape, broadcasted_size);
+            return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
+        } 
+        else {
+            float* result_data = (float*)malloc(broadcasted_size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
 
-        return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
+            sub_broadcasted_tensor_cpu(tensor1, tensor2, result_data, broadcasted_shape, broadcasted_size);
+            return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
+        }
     }
 
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2) {

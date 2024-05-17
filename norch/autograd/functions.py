@@ -29,7 +29,13 @@ class AddBroadcastedBackward:
 
         return gradient
     
+class SubBackward:
+    def __init__(self, x, y):
+        self.input = [x, y]
 
+    def backward(self, gradient):
+        return [gradient, -gradient]
+    
 class SubBroadcastedBackward:
     def __init__(self, x, y):
         self.input = [x, y]
@@ -49,15 +55,7 @@ class SubBroadcastedBackward:
         for i in range(len(shape)):
             if shape[i] == 1:
                 gradient = gradient.sum(axis=i)
-
         return gradient
-
-class SubBackward:
-    def __init__(self, x, y):
-        self.input = [x, y]
-
-    def backward(self, gradient):
-        return [gradient, -gradient]
     
 class ScalarMulBackward:
     def __init__(self, x, scalar):
