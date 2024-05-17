@@ -630,20 +630,28 @@ class Tensor:
 
         return result_data
     
-    def sum(self, axis=-1):
-        Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int]
+    def sum(self, axis=-1, keepdim=False):
+        Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.sum_tensor.restype = ctypes.POINTER(CTensor)
 
-        result_tensor_ptr = Tensor._C.sum_tensor(self.tensor, axis)
+        result_tensor_ptr = Tensor._C.sum_tensor(self.tensor, axis, keepdim)
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
 
         if axis == -1:
-            result_data.shape = [1]
-            result_data.ndim = 1
+            if keepdim:
+                result_data.ndim = self.ndim
+                result_data.shape = [1] * self.ndim
+
+            else:
+                result_data.shape = [1]
+                result_data.ndim = 1
         else:
-            result_data.shape = self.shape[:axis] + self.shape[axis+1:]
+            if keepdim:
+                result_data.shape = self.shape[:axis] + [1] + self.shape[axis+1:]
+            else:
+                result_data.shape = self.shape[:axis] + self.shape[axis+1:]
             result_data.ndim = len(result_data.shape)
 
         result_data.device = self.device
@@ -653,7 +661,7 @@ class Tensor:
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
-            result_data.grad_fn = SumBackward(self, axis)
+            result_data.grad_fn = SumBackward(self, axis, keepdim=keepdim)
 
         return result_data
 

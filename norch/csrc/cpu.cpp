@@ -205,7 +205,7 @@ void log_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }
 
-void sum_tensor_cpu(Tensor* tensor, float* result_data, int axis) {
+void sum_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_shape, int axis, bool keepdim) {
     if (axis == -1) {
         // Sum over all elements
         float sum = 0.0;
@@ -219,34 +219,21 @@ void sum_tensor_cpu(Tensor* tensor, float* result_data, int axis) {
             return;
         }
         
-        int* result_shape = (int*)malloc((tensor->ndim - 1) * sizeof(int));
-        if (result_shape == NULL) {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(1);
-        }
-        int result_size = 1;
         int axis_stride = tensor->strides[axis];
 
-        int idx = 0;
-        for (int i = 0; i < tensor->ndim; i++) {
-            if (i != axis) {
-                result_shape[idx++] = tensor->shape[i];
-                result_size *= tensor->shape[i];
-            }
-        }
-
-        memset(result_data, 0, result_size * sizeof(float));
-
         for (int i = 0; i < tensor->shape[axis]; i++) {
-            for (int j = 0; j < result_size; j++) {
+            for (int j = 0; j < size; j++) {
                 int index = 0;
                 int remainder = j;
                 for (int k = tensor->ndim - 2; k >= 0; k--) {
-                    index += (remainder % result_shape[k]) * tensor->strides[k < axis ? k : k + 1];
+                    index += (remainder % result_shape[k]) * tensor->strides[k < axis ? k : k + 1];     
                     remainder /= result_shape[k];
                 }
                 result_data[j] += tensor->data[index + i * axis_stride];
             }
+        }
+        for (int j = 0; j < size; j++) {
+            printf("%f", result_data[j]);
         }
     }
 }

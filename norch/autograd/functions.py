@@ -26,7 +26,7 @@ class AddBroadcastedBackward:
         # Sum along axes where the target shape dimension is 1
         for i in range(len(shape)):
             if shape[i] == 1:
-                gradient = gradient.sum(axis=i)
+                gradient = gradient.sum(axis=i, keepdim=True)
 
         return gradient
     
@@ -126,9 +126,10 @@ class LogBackward:
         return [grad_input]
        
 class SumBackward:
-    def __init__(self, x, axis=None):
+    def __init__(self, x, axis=None, keepdim=False):
         self.input = [x]
         self.axis = axis
+        self.keepdim = keepdim
 
     def backward(self, gradient):
         input_shape = self.input[0].shape
@@ -136,13 +137,18 @@ class SumBackward:
             # If axis is None, sum reduces the tensor to a scalar.
             grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
         else:
+            if not self.keepdim:
+                # Remove dimensions of size 1 from the gradient tensor.
+                input_shape = [s for i, s in enumerate(input_shape) if i != self.axis]
+                
             # Broadcast the gradient to the input shape along the specified axis.
             grad_output_shape = list(input_shape)
-            grad_output_shape[self.axis] = 1
+            grad_output_shape.insert(self.axis, 1)
             grad_output = gradient.reshape(grad_output_shape)
             grad_output = grad_output + self.input[0].zeros_like()
         
         return [grad_output]
+    
 class ReshapeBackward:
     def __init__(self, x):
         self.input = [x]

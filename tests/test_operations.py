@@ -249,6 +249,24 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+
+    def test_sum_axis_keepdim(self):
+        """
+        Test summation of a tensor along a specific axis with keepdim=True
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.sum(axis=1, keepdim=True)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.sum(torch_tensor, dim=1, keepdim=True)
+
+        print(torch_result, '\n', torch_expected)
+
+        
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
     def test_transpose_T(self):
         """
         Test transposition of a tensor: tensor.T

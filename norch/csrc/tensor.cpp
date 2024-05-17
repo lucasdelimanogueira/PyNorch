@@ -172,7 +172,7 @@ extern "C" {
         }
     }
 
-    Tensor* sum_tensor(Tensor* tensor, int axis) {
+    Tensor* sum_tensor(Tensor* tensor, int axis, bool keepdim) {
 
         char* device = (char*)malloc(strlen(tensor->device) + 1);
         if (device != NULL) {
@@ -192,29 +192,45 @@ extern "C" {
             shape[0] = 1;
             ndim = 1;
         } else {
-            shape = (int*) malloc((tensor->ndim - 1) * sizeof(int));
-            for (int i = 0, j = 0; i < tensor->ndim; ++i) {
-                if (i != axis) {
-                    shape[j++] = tensor->shape[i];
+
+            if (keepdim) {
+                shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                for (int i = 0; i < tensor->ndim; i++) {
+                    shape[i] = tensor->shape[i];
                 }
+                shape[axis] = 1;
+                ndim = tensor->ndim;
+                
+            } else {
+                shape = (int*) malloc((tensor->ndim - 1) * sizeof(int));
+                for (int i = 0, j = 0; i < tensor->ndim; ++i) {
+                    if (i != axis) {
+                        shape[j++] = tensor->shape[i];
+                    }
+                }
+                ndim = tensor->ndim - 1;
             }
-            ndim = tensor->ndim - 1;
+        }
+
+        int size = 1;
+        for (int i = 0; i < ndim; i++) {
+            size *= shape[i];
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
 
             float* result_data;
-            cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
+            cudaMalloc((void**)&result_data, size * sizeof(float));
             sum_tensor_cuda(tensor, result_data);
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
-            float* result_data = (float*)malloc(1 * sizeof(float));
+            float* result_data = (float*)malloc(size * sizeof(float));
             if (result_data == NULL) {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
-            sum_tensor_cpu(tensor, result_data, axis);
+            sum_tensor_cpu(tensor, result_data, size, shape, axis, keepdim);
             return create_tensor(result_data, shape, ndim, device);
         }     
     }

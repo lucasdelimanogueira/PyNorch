@@ -5,7 +5,7 @@
 
 void add_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void add_broadcasted_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape, int broadcasted_size);
-void sum_tensor_cpu(Tensor* tensor, float* result_data, int axis);
+void sum_tensor_cpu(Tensor* tensor, float* result_data, int size, int* shape, int axis, bool keepdim);
 void sub_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
 void sub_broadcasted_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape, int broadcasted_size);
 void elementwise_mul_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data);
