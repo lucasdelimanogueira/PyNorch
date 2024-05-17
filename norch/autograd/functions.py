@@ -83,8 +83,10 @@ class MatmulBackward:
     def backward(self, gradient):
         x, y = self.input
         
-        if x.shape != y.shape: # broadcasted case
-            return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
+        if x.ndim != y.ndim: # broadcasted case
+            print("KKKKKKKKK", x.ndim, y.ndim)
+            aux = (gradient @ y.transpose(-1,-2))
+            return [aux.sum(axis=0), x.transpose(-1,-2) @ gradient]
         else:
             return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
         
