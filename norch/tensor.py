@@ -19,13 +19,18 @@ class Tensor:
     def __init__(self, data=None, device="cpu", requires_grad=False):
 
         if data != None:
+            if isinstance(data, (float, int)):
+                data = [data]
+
             data, shape = self.flatten(data)
-            self.data_ctype = (ctypes.c_float * len(data))(*data)
-            self.shape_ctype = (ctypes.c_int * len(shape))(*shape)
+            
+            self.shape = shape.copy()
+            
+            self.data_ctype = (ctypes.c_float * len(data))(*data.copy())
+            self.shape_ctype = (ctypes.c_int * len(shape))(*shape.copy())
             self.ndim_ctype = ctypes.c_int(len(shape))
             self.device_ctype = device.encode('utf-8')
 
-            self.shape = shape
             self.ndim = len(shape)
             self.device = device
 
@@ -109,6 +114,25 @@ class Tensor:
         return result_data
     
     def reshape(self, new_shape):
+        # Calculate the total number of elements in the tensor
+        total_elements = self.numel
+        
+        # Check for the presence of -1 in new_shape
+        if new_shape.count(-1) > 1:
+            raise ValueError("Only one dimension can be inferred (set to -1).")
+        
+        inferred_dim = None
+        known_dims_product = 1
+        for dim in new_shape:
+            if dim == -1:
+                inferred_dim = dim
+            else:
+                known_dims_product *= dim
+        
+        # Calculate the inferred dimension if -1 is present
+        if inferred_dim == -1:
+            inferred_dim_size = total_elements // known_dims_product
+            new_shape = [inferred_dim_size if dim == -1 else dim for dim in new_shape]
 
         new_shape_ctype = (ctypes.c_int * len(new_shape))(*new_shape)
         new_ndim_ctype = ctypes.c_int(len(new_shape))
