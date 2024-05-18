@@ -9,7 +9,7 @@ W2 = norch.Tensor([[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]], requires_
 B2 = norch.Tensor([[1, 2, 3, 4, 5]], requires_grad=True)
 
 
-Z1 = W1 @ X - B1
+Z1 = W1 @ X + B1
 
 # Perform matrix multiplication
 

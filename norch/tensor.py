@@ -223,8 +223,8 @@ class Tensor:
     def __add__(self, other):
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
-        
-        broadcasted_shape = []
+
+        broadcasted_shape_add = []
 
         # Function to determine if broadcasting is needed and get the broadcasted shape
         def broadcast_shape(shape1, shape2):
@@ -239,10 +239,10 @@ class Tensor:
             for dim1, dim2 in zip(shape1, shape2):
                 if dim1 != dim2 and dim1 != 1 and dim2 != 1:
                     raise ValueError("Shapes are not compatible for broadcasting")
-                broadcasted_shape.append(max(dim1, dim2))
-            return broadcasted_shape, True
+                broadcasted_shape_add.append(max(dim1, dim2))
+            return broadcasted_shape_add, True
 
-        broadcasted_shape, needs_broadcasting = broadcast_shape(self.shape, other.shape)
+        broadcasted_shape_add, needs_broadcasting = broadcast_shape(self.shape, other.shape)
 
         if needs_broadcasting:
             # Call add_broadcasted_tensor if broadcasting is needed
@@ -253,8 +253,8 @@ class Tensor:
 
             result_data = Tensor()
             result_data.tensor = result_tensor_ptr
-            result_data.shape = broadcasted_shape
-            result_data.ndim = len(broadcasted_shape)
+            result_data.shape = broadcasted_shape_add.copy()
+            result_data.ndim = len(broadcasted_shape_add)
 
             result_data.device = self.device
             result_data.numel = 1
@@ -316,7 +316,7 @@ class Tensor:
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
 
-        broadcasted_shape = []
+        broadcasted_shape_sub = []
 
         # Function to determine if broadcasting is needed and get the broadcasted shape
         def broadcast_shape(shape1, shape2):
@@ -327,13 +327,14 @@ class Tensor:
             shape1 = [1] * (max_len - len(shape1)) + shape1
             shape2 = [1] * (max_len - len(shape2)) + shape2
 
+            
             for dim1, dim2 in zip(shape1, shape2):
                 if dim1 != dim2 and dim1 != 1 and dim2 != 1:
                     raise ValueError("Shapes are not compatible for broadcasting")
-                broadcasted_shape.append(max(dim1, dim2))
-            return broadcasted_shape, True
+                broadcasted_shape_sub.append(max(dim1, dim2))
+            return broadcasted_shape_sub, True
 
-        broadcasted_shape, needs_broadcasting = broadcast_shape(self.shape, other.shape)
+        broadcasted_shape_sub, needs_broadcasting = broadcast_shape(self.shape, other.shape)
 
         if needs_broadcasting:
             # Call add_broadcasted_tensor if broadcasting is needed
@@ -344,8 +345,8 @@ class Tensor:
 
             result_data = Tensor()
             result_data.tensor = result_tensor_ptr
-            result_data.shape = broadcasted_shape
-            result_data.ndim = len(broadcasted_shape)
+            result_data.shape = broadcasted_shape_sub.copy()
+            result_data.ndim = len(broadcasted_shape_sub)
 
             result_data.device = self.device
             result_data.numel = self.numel  # Update this to calculate the correct number of elements if broadcasting
