@@ -132,7 +132,7 @@ class SumBackward:
         self.keepdim = keepdim
 
     def backward(self, gradient):
-        input_shape = self.input[0].shape
+        input_shape = self.input[0].shape.copy()
         if self.axis == -1:
             # If axis is None, sum reduces the tensor to a scalar.
             grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
