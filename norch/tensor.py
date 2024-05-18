@@ -316,6 +316,8 @@ class Tensor:
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
 
+        broadcasted_shape = []
+
         # Function to determine if broadcasting is needed and get the broadcasted shape
         def broadcast_shape(shape1, shape2):
             if shape1 == shape2:
@@ -325,7 +327,6 @@ class Tensor:
             shape1 = [1] * (max_len - len(shape1)) + shape1
             shape2 = [1] * (max_len - len(shape2)) + shape2
 
-            broadcasted_shape = []
             for dim1, dim2 in zip(shape1, shape2):
                 if dim1 != dim2 and dim1 != 1 and dim2 != 1:
                     raise ValueError("Shapes are not compatible for broadcasting")
