@@ -223,6 +223,8 @@ class Tensor:
     def __add__(self, other):
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
+        
+        broadcasted_shape = []
 
         # Function to determine if broadcasting is needed and get the broadcasted shape
         def broadcast_shape(shape1, shape2):
@@ -233,7 +235,7 @@ class Tensor:
             shape1 = [1] * (max_len - len(shape1)) + shape1
             shape2 = [1] * (max_len - len(shape2)) + shape2
 
-            broadcasted_shape = []
+            
             for dim1, dim2 in zip(shape1, shape2):
                 if dim1 != dim2 and dim1 != 1 and dim2 != 1:
                     raise ValueError("Shapes are not compatible for broadcasting")
@@ -255,7 +257,9 @@ class Tensor:
             result_data.ndim = len(broadcasted_shape)
 
             result_data.device = self.device
-            result_data.numel = self.numel  # Update this to calculate the correct number of elements if broadcasting
+            result_data.numel = 1
+            for s in result_data.shape:
+                result_data.numel *= s
 
             result_data.requires_grad = self.requires_grad or other.requires_grad
             if result_data.requires_grad:
