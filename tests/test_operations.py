@@ -546,6 +546,21 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_broadcasted_equal(self):
+        """
+        Test broadcasted equal two tensors: tensor1.equal(tensor2)
+        """
+        norch_tensor1 = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[10, 10]], [[5, 6]]]).to(self.device)
+        norch_result = norch_tensor1.equal(norch_tensor2)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[10, 10]], [[5, 6]]]).to(self.device)
+        torch_expected = (torch_tensor1 == torch_tensor2).float()
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
 
 
     def test_zeros_like(self):

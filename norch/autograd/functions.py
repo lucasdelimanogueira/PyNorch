@@ -216,6 +216,7 @@ class MaxBackward:
             grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
 
         else:
+            
             if not self.keepdim:
                 # Remove dimensions of size 1 from the gradient tensor.
                 input_shape = [s for i, s in enumerate(input_shape) if i != self.axis]
@@ -225,8 +226,12 @@ class MaxBackward:
             grad_output_shape.insert(self.axis, 1)
             grad_output = gradient.reshape(grad_output_shape)
             grad_output = grad_output + self.input[0].zeros_like()
-
+            
+            print(self.input[0])
             max_value = self.input[0].max()
+            print(max_value)
+            max_values = self.input[0].max(axis=self.axis, keepdim=True)
+            print('\n\n', max_values, '@@@')      
             mask = self.input[0].equal(max_value)
 
             grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]

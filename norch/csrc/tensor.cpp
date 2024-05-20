@@ -1084,6 +1084,54 @@ extern "C" {
         }     
     }
 
+    Tensor* equal_broadcasted_tensor(Tensor* tensor1, Tensor* tensor2) {
+
+        if (strcmp(tensor1->device, tensor2->device) != 0) {
+            fprintf(stderr, "Tensors must be on the same device: %s and %s\n", tensor1->device, tensor2->device);
+            exit(1);
+        }
+
+        int max_ndim = tensor1->ndim > tensor2->ndim ? tensor1->ndim : tensor2->ndim;
+
+        // Determine the broadcasted shape
+        int* broadcasted_shape = (int*)malloc(max_ndim * sizeof(int));
+        if (broadcasted_shape == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        for (int i = 0; i < max_ndim; i++) {
+            int dim1 = i < tensor1->ndim ? tensor1->shape[tensor1->ndim - 1 - i] : 1;
+            int dim2 = i < tensor2->ndim ? tensor2->shape[tensor2->ndim - 1 - i] : 1;
+            if (dim1 != dim2 && dim1 != 1 && dim2 != 1) {
+                fprintf(stderr, "Shapes are not compatible for broadcasting\n");
+                exit(1);
+            }
+            broadcasted_shape[max_ndim - 1 - i] = dim1 > dim2 ? dim1 : dim2;
+        }
+
+        int broadcasted_size = 1;
+        for (int i = 0; i < max_ndim; i++) {
+            broadcasted_size *= broadcasted_shape[i];
+        }
+
+        if (strcmp(tensor1->device, "cuda") == 0) {
+            float* result_data;
+            cudaMalloc((void **)&result_data, broadcasted_size * sizeof(float));
+            equal_broadcasted_tensor_cuda(tensor1, tensor2, result_data, broadcasted_shape, broadcasted_size);
+            return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
+        } 
+        else {
+            float* result_data = (float*)malloc(broadcasted_size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+
+            equal_broadcasted_tensor_cpu(tensor1, tensor2, result_data, broadcasted_shape, broadcasted_size);
+            return create_tensor(result_data, broadcasted_shape, max_ndim, tensor1->device);
+        }
+    }
+
 
     Tensor* ones_like_tensor(Tensor* tensor) {
         char* device = (char*)malloc(strlen(tensor->device) + 1);

@@ -656,24 +656,58 @@ class Tensor:
                 return self.equal(other)
             else:
                 return False
-
-        if self.shape != other.shape:
-            return False
         
-        Tensor._C.equal_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
-        Tensor._C.equal_tensor.restype = ctypes.POINTER(CTensor)
+        broadcasted_shape_add = []
 
-        result_tensor_ptr = Tensor._C.equal_tensor(self.tensor, other.tensor)
+        # Function to determine if broadcasting is needed and get the broadcasted shape
+        def broadcast_shape(shape1, shape2):
+            if shape1 == shape2:
+                return shape1, False
+            
+            max_len = max(len(shape1), len(shape2))
+            shape1 = [1] * (max_len - len(shape1)) + shape1
+            shape2 = [1] * (max_len - len(shape2)) + shape2
 
-        result_data = Tensor()
-        result_data.tensor = result_tensor_ptr
-        result_data.shape = self.shape.copy()
-        result_data.ndim = self.ndim
-        result_data.device = self.device
-        result_data.numel = self.numel
+            
+            for dim1, dim2 in zip(shape1, shape2):
+                if dim1 != dim2 and dim1 != 1 and dim2 != 1:
+                    raise ValueError("Shapes are not compatible for broadcasting")
+                broadcasted_shape_add.append(max(dim1, dim2))
+            return broadcasted_shape_add, True
+
+        broadcasted_shape_add, needs_broadcasting = broadcast_shape(self.shape, other.shape)
         
+        if needs_broadcasting:
+            # Call equal_broadcasted_tensor if broadcasting is needed
+            Tensor._C.equal_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.equal_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.equal_broadcasted_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = broadcasted_shape_add.copy()
+            result_data.ndim = len(broadcasted_shape_add)
+
+            result_data.device = self.device
+            result_data.numel = 1
+            for s in result_data.shape:
+                result_data.numel *= s
+
+        else:
+            Tensor._C.equal_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.equal_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.equal_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = self.shape.copy()
+            result_data.ndim = self.ndim
+            result_data.device = self.device
+            result_data.numel = self.numel
+            
         return result_data
-
 
     def log(self):
         Tensor._C.log_tensor.argtypes = [ctypes.POINTER(CTensor)]

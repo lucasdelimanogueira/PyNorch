@@ -31,6 +31,7 @@ extern "C" {
     Tensor* scalar_pow_tensor(float base, Tensor* tensor);
     Tensor* log_tensor(Tensor* tensor);
     Tensor* equal_tensor(Tensor* tensor1, Tensor* tensor2);
+    Tensor* equal_broadcasted_tensor(Tensor* tensor1, Tensor* tensor2);
     void to_device(Tensor* tensor, char* device);
     Tensor* ones_like_tensor(Tensor* tensor);
     Tensor* zeros_like_tensor(Tensor* tensor);
