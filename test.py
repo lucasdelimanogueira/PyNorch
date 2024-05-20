@@ -6,11 +6,16 @@ import norch.optim as optim
 import random
 random.seed(1)
 
-torch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)#.to(self.device)
-torch_tensor2 = norch.Tensor([[[10.0,], [-4.0,]],[[6.0,], [8.0,]]])
-torch_tensor3 = torch_tensor.max(axis=2, keepdim=True)
-print(torch_tensor3)
-print(torch_tensor.equal(torch_tensor3))
+torch_tensor = norch.Tensor([[[2, 2], [-1, -1]], [[1., 2], [3, 3]]], requires_grad=True)#.to(self.device)
+b = norch.nn.functional.softmax(torch_tensor)
+
+
+"""a = norch.Tensor([[[4.186502456665039]]])
+b = norch.Tensor([[[2.0, 2.0,],[-1.0, -1.0,]],[[1.0, 2.0,],[3.0, 3.0,]]])
+
+print(b)
+print(a.shape)
+print(b-a)"""
 
 """print(torch_tensor.shape)
 print('\n\n')

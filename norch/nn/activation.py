@@ -19,3 +19,12 @@ class Sigmoid(Activation):
 
     def forward(self, x):
         return F.sigmoid(x)
+    
+class Softmax(Activation):
+    def __init__(self, dim):
+        super(Softmax, self).__init__()
+
+        self.dim = dim
+
+    def forward(self, x):
+        return F.softmax(x, self.dim)

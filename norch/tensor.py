@@ -697,7 +697,7 @@ class Tensor:
             
             elif self.ndim == other.ndim - 1:
                 self = self.reshape([1] + self.shape)
-                
+
             # Call equal_broadcasted_tensor if broadcasting is needed
             Tensor._C.equal_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.equal_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
@@ -748,7 +748,9 @@ class Tensor:
 
         return result_data
     
-    def sum(self, axis=-1, keepdim=False):
+    def sum(self, axis=None, keepdim=False):
+        if axis == None:
+            axis = -1
         Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.sum_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -783,10 +785,13 @@ class Tensor:
 
         return result_data
     
-    def max(self, axis=-1, keepdim=False):
+    def max(self, axis=None, keepdim=False):
+        if axis == None:
+            axis = -1
         Tensor._C.max_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.max_tensor.restype = ctypes.POINTER(CTensor)
 
+        print(axis, keepdim)
         result_tensor_ptr = Tensor._C.max_tensor(self.tensor, axis, keepdim)
 
         result_data = Tensor()
@@ -818,7 +823,9 @@ class Tensor:
 
         return result_data
     
-    def min(self, axis=-1, keepdim=False):
+    def min(self, axis=None, keepdim=False):
+        if axis == None:
+            axis = -1
         Tensor._C.min_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.min_tensor.restype = ctypes.POINTER(CTensor)
 

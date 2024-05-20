@@ -225,14 +225,20 @@ extern "C" {
             if (keepdim) {
                 shape = (int*) malloc((tensor->ndim) * sizeof(int));
                 for (int i = 0; i < tensor->ndim; i++) {
-                    shape[i] = tensor->shape[i];
+                    if (axis == -1) {
+                        shape[i] = 1;
+                    } else {
+                        shape[i] = tensor->shape[i];
+                    }
                 }
                 shape[axis] = 1;
                 ndim = tensor->ndim;
-                
+                Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+                return reshape_tensor(new_tensor, shape, ndim);
             }
 
             return create_tensor(result_data, shape, ndim, device);
+            
         }     
     }
 
@@ -289,11 +295,16 @@ extern "C" {
             if (keepdim) {
                 shape = (int*) malloc((tensor->ndim) * sizeof(int));
                 for (int i = 0; i < tensor->ndim; i++) {
-                    shape[i] = tensor->shape[i];
+                    if (axis == -1) {
+                        shape[i] = 1;
+                    } else {
+                        shape[i] = tensor->shape[i];
+                    }
                 }
                 shape[axis] = 1;
                 ndim = tensor->ndim;
-                
+                Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+                return reshape_tensor(new_tensor, shape, ndim);
             }
 
             return create_tensor(result_data, shape, ndim, device);
@@ -353,11 +364,16 @@ extern "C" {
             if (keepdim) {
                 shape = (int*) malloc((tensor->ndim) * sizeof(int));
                 for (int i = 0; i < tensor->ndim; i++) {
-                    shape[i] = tensor->shape[i];
+                    if (axis == -1) {
+                        shape[i] = 1;
+                    } else {
+                        shape[i] = tensor->shape[i];
+                    }
                 }
                 shape[axis] = 1;
                 ndim = tensor->ndim;
-                
+                Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+                return reshape_tensor(new_tensor, shape, ndim);
             }
 
             return create_tensor(result_data, shape, ndim, device);

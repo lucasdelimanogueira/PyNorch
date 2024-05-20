@@ -60,11 +60,11 @@ class TestNNModuleActivationFn(unittest.TestCase):
         sigmoid_fn_torch = torch.nn.Sigmoid()
 
         # Test case 1: Positive input
-        x = norch.Tensor([1, 2, 3]).to(self.device)
+        x = norch.Tensor([[1, 2, 3]]).to(self.device)
         sigmoid_norch = sigmoid_fn_norch.forward(x)
         sigmoid_torch_result = utils.to_torch(sigmoid_norch).to(self.device)
 
-        x = torch.tensor([1, 2, 3]).to(self.device)
+        x = torch.tensor([[1, 2, 3]]).to(self.device)
         sigmoid_torch_expected = sigmoid_fn_torch.forward(x)
 
         self.assertTrue(utils.compare_torch(sigmoid_torch_result, sigmoid_torch_expected))
@@ -88,3 +88,40 @@ class TestNNModuleActivationFn(unittest.TestCase):
         sigmoid_torch_expected = sigmoid_fn_torch.forward(x)
 
         self.assertTrue(utils.compare_torch(sigmoid_torch_result, sigmoid_torch_expected))
+
+    def test_softmax_activation(self):
+        """
+        Test Softmax activation function
+        """    
+
+        # Test different axes
+        axes = [None, 0, 1, -1]
+
+        # Define the input tensors for different test cases
+        test_cases = [
+            (norch.Tensor([[1., 2, 3], [4, 5, 6]]), torch.tensor([[1., 2, 3], [4, 5, 6]])),
+            (norch.Tensor([[1., -1, 0], [2, -2, 0]]), torch.tensor([[1., -1, 0], [2, -2, 0]])),
+            (norch.Tensor([[0., 0, 0], [0, 0, 0]]), torch.tensor([[0., 0, 0], [0, 0, 0]]))
+        ]
+
+        for dim in axes:
+            softmax_fn_norch = norch.nn.Softmax(dim=dim)
+            softmax_fn_torch = torch.nn.Softmax(dim=dim)
+
+            for norch_input, torch_input in test_cases:
+                # Move tensors to the correct device
+                norch_input = norch_input.to(self.device)
+                torch_input = torch_input.to(self.device)
+
+                # Forward pass using norch
+                softmax_norch = softmax_fn_norch.forward(norch_input)
+                softmax_torch_result = utils.to_torch(softmax_norch).to(self.device)
+
+                # Forward pass using torch
+                softmax_torch_expected = softmax_fn_torch.forward(torch_input)
+
+                # Compare the results
+                print(softmax_torch_result)
+                print(softmax_torch_expected)
+                self.assertTrue(utils.compare_torch(softmax_torch_result, softmax_torch_expected))
+
