@@ -6,6 +6,12 @@ import norch.optim as optim
 import random
 random.seed(1)
 
+a = norch.Tensor([1, 2, 3])
+b = norch.Tensor([1, 2, 4])
+print(a == b)
+
+"""
+
 to_tensor = lambda x: norch.Tensor(x)
 reshape = lambda x: x.reshape([-1, 784])
 transform = lambda x: reshape(to_tensor(x))
@@ -40,7 +46,6 @@ criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001)
 loss_list = []
 
-
 for epoch in range(epochs):    
     for idx, batch in enumerate(train_loader):
         x, target = batch
@@ -72,4 +77,4 @@ for epoch in range(epochs):
         print('\n\n')
 
     print(f'Epoch [{epoch + 1}/{epochs}], Loss: {loss[0]:.4f}')
-    loss_list.append(loss[0])
+    loss_list.append(loss[0])"""

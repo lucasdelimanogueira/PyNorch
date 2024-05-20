@@ -17,6 +17,8 @@ extern "C" {
     float get_item(Tensor* tensor, int* indices);
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* sum_tensor(Tensor* tensor, int axis, bool keepdims);
+    Tensor* max_tensor(Tensor* tensor, int axis, bool keepdim);
+    Tensor* min_tensor(Tensor* tensor, int axis, bool keepdim);
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* elementwise_mul_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* scalar_mul_tensor(Tensor* tensor, float scalar);
@@ -28,6 +30,7 @@ extern "C" {
     Tensor* tensor_pow_scalar(Tensor* tensor, float exponent);
     Tensor* scalar_pow_tensor(float base, Tensor* tensor);
     Tensor* log_tensor(Tensor* tensor);
+    Tensor* equal_tensor(Tensor* tensor1, Tensor* tensor2);
     void to_device(Tensor* tensor, char* device);
     Tensor* ones_like_tensor(Tensor* tensor);
     Tensor* zeros_like_tensor(Tensor* tensor);

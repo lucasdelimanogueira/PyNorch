@@ -198,5 +198,23 @@ class CosBackward:
     def backward(self, gradient):
         x = self.input[0]
         return [-gradient * x.sin()]
+    
+class MaxBackward:
+    def __init__(self, x, axis=None, keepdim=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdim = keepdim
+
+    def backward(self, gradient):
+        pass
+
+class MinBackward:
+    def __init__(self, x, axis=None, keepdim=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdim = keepdim
+
+    def backward(self, gradient):
+        pass
 
 

@@ -542,6 +542,28 @@ __host__ void log_tensor_cuda(Tensor* tensor, float* result_data) {
     cudaDeviceSynchronize();
 }
 
+__global__ void equal_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int size) {
+    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < size) {
+        result_data[i] = (data1[i] == data2[i]) ? 1.0f : 0.0f;
+    }
+}
+
+__host__ void equal_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data) {
+    
+    int number_of_blocks = (tensor1->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    equal_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor1->data, tensor2->data, result_data, tensor1->size);
+
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(error));
+        exit(-1);
+    }
+
+    cudaDeviceSynchronize();
+}
+
 
 __global__ void ones_like_tensor_cuda_kernel(float* data, float* result_data, int size) {
     

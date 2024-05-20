@@ -56,7 +56,44 @@ class TestTensorAutograd(unittest.TestCase):
         
         self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
+    
+    def test_max_axis(self):
+        """
+        Test autograd from max specifying axis
+        """
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_result = norch_tensor.max(axis=1).sum()
 
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        
+        torch_result = torch_tensor.max(axis=1).sum()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+    
+
+    def test_min_axis(self):
+        """
+        Test autograd from min specifying axis
+        """
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_result = norch_tensor.min(axis=1).sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        
+        torch_result = torch_tensor.min(axis=1).sum()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+    
 
     def test_broadcasted_addition_autograd(self):
         """
@@ -410,7 +447,6 @@ class TestTensorAutograd(unittest.TestCase):
         torch_expected_cos_tensor_grad = torch_cos_tensor.grad
 
         self.assertTrue(utils.compare_torch(torch_result_cos_tensor_grad, torch_expected_cos_tensor_grad))
-    
     
     def test_reshape(self):
         """

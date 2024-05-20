@@ -235,8 +235,76 @@ void sum_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_sh
     }
 }
 
+void max_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_shape, int axis) {
+    if (axis == -1) {
+        float max_value = -INFINITY;
+        for (int i = 0; i < tensor->size; i++) {
+            max_value = fmax(max_value, tensor->data[i]);
+        }
+        *result_data = max_value;
+    } else {
+        for (int i = 0; i < size; i++) {
+            result_data[i] = -INFINITY;
+        }
+        if (axis < 0 || axis >= tensor->ndim) {
+            printf("Invalid axis");
+            return;
+        }
+        
+        int axis_stride = tensor->strides[axis];
 
+        for (int i = 0; i < tensor->shape[axis]; i++) {
+            for (int j = 0; j < size; j++) {
+                int index = 0;
+                int remainder = j;
+                for (int k = tensor->ndim - 2; k >= 0; k--) {
+                    index += (remainder % result_shape[k]) * tensor->strides[k < axis ? k : k + 1];     
+                    remainder /= result_shape[k];
+                }
+                result_data[j] = fmax(result_data[j], tensor->data[index + i * axis_stride]);
+            }
+        }
+    }
+}
 
+void min_tensor_cpu(Tensor* tensor, float* result_data, int size, int* result_shape, int axis) {
+    if (axis == -1) {
+        float min_value = INFINITY;
+        for (int i = 0; i < tensor->size; i++) {
+            min_value = fmin(min_value, tensor->data[i]);
+        }
+        *result_data = min_value;
+    } else {
+        for (int i = 0; i < size; i++) {
+            result_data[i] = INFINITY;
+        }
+        if (axis < 0 || axis >= tensor->ndim) {
+            printf("Invalid axis");
+            return;
+        }
+        
+        int axis_stride = tensor->strides[axis];
+
+        for (int i = 0; i < tensor->shape[axis]; i++) {
+            for (int j = 0; j < size; j++) {
+                int index = 0;
+                int remainder = j;
+                for (int k = tensor->ndim - 2; k >= 0; k--) {
+                    index += (remainder % result_shape[k]) * tensor->strides[k < axis ? k : k + 1];     
+                    remainder /= result_shape[k];
+                }
+                result_data[j] = fmin(result_data[j], tensor->data[index + i * axis_stride]);
+            }
+        }
+    }
+}
+
+void equal_tensor_cpu(Tensor* tensor1, Tensor* tensor2, float* result_data) {
+    
+    for (int i = 0; i < tensor1->size; i++) {
+        result_data[i] = (tensor1->data[i] == tensor2->data[i]) ? 1.0f : 0.0f;
+    }
+}
 
 
 void ones_like_tensor_cpu(Tensor* tensor, float* result_data) {

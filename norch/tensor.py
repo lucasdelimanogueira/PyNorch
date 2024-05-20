@@ -641,6 +641,29 @@ class Tensor:
         return result_data
 
     
+    def equal(self, other):
+
+        if not isinstance(other, Tensor):
+            return False
+
+        if self.shape != other.shape:
+            return False
+        
+        Tensor._C.equal_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+        Tensor._C.equal_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.equal_tensor(self.tensor, other.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        result_data.numel = self.numel
+        
+        return result_data
+
+
     def log(self):
         Tensor._C.log_tensor.argtypes = [ctypes.POINTER(CTensor)]
         Tensor._C.log_tensor.restype = ctypes.POINTER(CTensor)
@@ -692,6 +715,76 @@ class Tensor:
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = SumBackward(self, axis, keepdim=keepdim)
+
+        return result_data
+    
+    def max(self, axis=-1, keepdim=False):
+        Tensor._C.max_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
+        Tensor._C.max_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.max_tensor(self.tensor, axis, keepdim)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+
+        if axis == -1:
+            if keepdim:
+                result_data.ndim = self.ndim
+                result_data.shape = [1] * self.ndim
+
+            else:
+                result_data.shape = [1]
+                result_data.ndim = 1
+        else:
+            if keepdim:
+                result_data.shape = self.shape[:axis] + [1] + self.shape[axis+1:]
+            else:
+                result_data.shape = self.shape[:axis] + self.shape[axis+1:]
+            result_data.ndim = len(result_data.shape)
+
+        result_data.device = self.device
+        result_data.numel = 1
+        for s in result_data.shape:
+            result_data.numel *= s
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = MaxBackward(self, axis, keepdim=keepdim)
+
+        return result_data
+    
+    def min(self, axis=-1, keepdim=False):
+        Tensor._C.min_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
+        Tensor._C.min_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.min_tensor(self.tensor, axis, keepdim)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+
+        if axis == -1:
+            if keepdim:
+                result_data.ndim = self.ndim
+                result_data.shape = [1] * self.ndim
+
+            else:
+                result_data.shape = [1]
+                result_data.ndim = 1
+        else:
+            if keepdim:
+                result_data.shape = self.shape[:axis] + [1] + self.shape[axis+1:]
+            else:
+                result_data.shape = self.shape[:axis] + self.shape[axis+1:]
+            result_data.ndim = len(result_data.shape)
+
+        result_data.device = self.device
+        result_data.numel = 1
+        for s in result_data.shape:
+            result_data.numel *= s
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = MinBackward(self, axis, keepdim=keepdim)
 
         return result_data
 
