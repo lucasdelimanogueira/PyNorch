@@ -643,8 +643,19 @@ class Tensor:
     
     def equal(self, other):
 
+        if isinstance(other, Tensor) and other.numel == 1:
+            # other is a single value tensor
+            other = self.zeros_like() + other
+            return self.equal(other)
+
         if not isinstance(other, Tensor):
-            return False
+            # other is a single value
+            if isinstance(other, (int, float)):
+                other = self.zeros_like() + other
+
+                return self.equal(other)
+            else:
+                return False
 
         if self.shape != other.shape:
             return False

@@ -206,8 +206,34 @@ class MaxBackward:
         self.keepdim = keepdim
 
     def backward(self, gradient):
-        pass
+        input_shape = self.input[0].shape.copy()
+        if self.axis == -1:
+            max_value = self.input[0].max()
+            mask = self.input[0].equal(max_value)
 
+            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+
+            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+
+        else:
+            if not self.keepdim:
+                # Remove dimensions of size 1 from the gradient tensor.
+                input_shape = [s for i, s in enumerate(input_shape) if i != self.axis]
+                
+            # Broadcast the gradient to the input shape along the specified axis.
+            grad_output_shape = list(input_shape)
+            grad_output_shape.insert(self.axis, 1)
+            grad_output = gradient.reshape(grad_output_shape)
+            grad_output = grad_output + self.input[0].zeros_like()
+
+            max_value = self.input[0].max()
+            mask = self.input[0].equal(max_value)
+
+            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+        
+        return [grad_output]
+
+    
 class MinBackward:
     def __init__(self, x, axis=None, keepdim=False):
         self.input = [x]
@@ -215,6 +241,18 @@ class MinBackward:
         self.keepdim = keepdim
 
     def backward(self, gradient):
-        pass
+        input_shape = self.input[0].shape.copy()
+        if self.axis == -1:
+            min_value = self.input[0].min()
+            mask = self.input[0].equal(min_value)
+
+            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+
+            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+
+        else:
+            pass
+
+        return [grad_output]
 
 

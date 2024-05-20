@@ -533,7 +533,7 @@ class TestTensorOperations(unittest.TestCase):
 
     def test_equal(self):
         """
-        Test equal two tensors: tensor1 == tensor2
+        Test equal two tensors: tensor1.equal(tensor2)
         """
         norch_tensor1 = norch.Tensor([[[1, 2], [3, -4]], [[5, 1], [7, 8]]]).to(self.device)
         norch_tensor2 = norch.Tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)

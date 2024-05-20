@@ -7,8 +7,11 @@ import random
 random.seed(1)
 
 a = norch.Tensor([1, 2, 3])
-b = norch.Tensor([1, 2, 4])
-print(a == b)
+b = 3
+for i in range(a.numel):
+    print(a.tensor.contents.data[i])
+
+print(a)
 
 """
 

@@ -56,39 +56,134 @@ class TestTensorAutograd(unittest.TestCase):
         
         self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
         self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
+
+        norch_tensor1 = norch.Tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_tensor2 = norch.Tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True).to(self.device)
+        norch_result = (norch_tensor1 + norch_tensor2).sum(axis=1).sum()
+
+        norch_result.backward()
+        norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
+        norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
+        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True).to(self.device)
+        
+        torch_result = (torch_tensor1 + torch_tensor2).sum(axis=1).sum()
+        torch_result.backward()
+        torch_tensor1_grad = torch_tensor1.grad
+        torch_tensor2_grad = torch_tensor2.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor1_grad, torch_tensor1_grad))
+        self.assertTrue(utils.compare_torch(norch_tensor2_grad, torch_tensor2_grad))
+    
+    
+    def test_max(self):
+        """
+        Test autograd from max
+        """
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_result = norch_tensor.max()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        
+        torch_result = torch_tensor.max()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
     
     def test_max_axis(self):
         """
         Test autograd from max specifying axis
         """
         norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
-        norch_result = norch_tensor.max(axis=1).sum()
+        norch_max_axis = norch_tensor.max(axis=1)
+        norch_result = norch_max_axis.sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+
+        torch_max_axis, _ = torch_tensor.max(axis=1)
+        torch_result = torch_max_axis.sum()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+
+
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_max_axis = norch_tensor.max(axis=2)
+        norch_result = norch_max_axis.sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+
+        torch_max_axis, _ = torch_tensor.max(axis=2)
+        torch_result = torch_max_axis.sum()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+
+        print(norch_tensor_grad, '\n\n', torch_tensor_grad)
+
+    
+    def test_min(self):
+        """
+        Test autograd from min
+        """
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_result = norch_tensor.min()
 
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
         torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
         
-        torch_result = torch_tensor.max(axis=1).sum()
+        torch_result = torch_tensor.min()
         torch_result.backward()
         torch_tensor_grad = torch_tensor.grad
         
         self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
-    
 
     def test_min_axis(self):
         """
         Test autograd from min specifying axis
         """
         norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
-        norch_result = norch_tensor.min(axis=1).sum()
+        norch_min = norch_tensor.min(axis=1)
+        norch_result = norch_min.sum()
 
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
         torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
         
-        torch_result = torch_tensor.min(axis=1).sum()
+        torch_min = torch_tensor.min(axis=1)
+        torch_result = torch_min.sum()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_min = norch_tensor.min(axis=2)
+        norch_result = norch_min.sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        
+        torch_min = torch_tensor.min(axis=2)
+        torch_result = torch_min.sum()
         torch_result.backward()
         torch_tensor_grad = torch_tensor.grad
         
