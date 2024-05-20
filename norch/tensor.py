@@ -270,6 +270,14 @@ class Tensor:
 
         if needs_broadcasting:
             # Call add_broadcasted_tensor if broadcasting is needed
+            if other.ndim == self.ndim - 1:
+                other = other.reshape([1] + other.shape)
+            
+            elif self.ndim == other.ndim - 1:
+                self = self.reshape([1] + self.shape)
+                
+            
+                
             Tensor._C.add_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.add_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -361,6 +369,12 @@ class Tensor:
         broadcasted_shape_sub, needs_broadcasting = broadcast_shape(self.shape, other.shape)
 
         if needs_broadcasting:
+            if other.ndim == self.ndim - 1:
+                other = other.reshape([1] + other.shape)
+            
+            elif self.ndim == other.ndim - 1:
+                self = self.reshape([1] + self.shape)
+
             # Call add_broadcasted_tensor if broadcasting is needed
             Tensor._C.sub_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.sub_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
@@ -678,6 +692,12 @@ class Tensor:
         broadcasted_shape_add, needs_broadcasting = broadcast_shape(self.shape, other.shape)
         
         if needs_broadcasting:
+            if other.ndim == self.ndim - 1:
+                other = other.reshape([1] + other.shape)
+            
+            elif self.ndim == other.ndim - 1:
+                self = self.reshape([1] + self.shape)
+                
             # Call equal_broadcasted_tensor if broadcasting is needed
             Tensor._C.equal_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.equal_broadcasted_tensor.restype = ctypes.POINTER(CTensor)

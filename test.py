@@ -6,12 +6,20 @@ import norch.optim as optim
 import random
 random.seed(1)
 
-a = norch.Tensor([1, 2, 3])
-b = 3
-for i in range(a.numel):
-    print(a.tensor.contents.data[i])
+torch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)#.to(self.device)
+torch_tensor2 = norch.Tensor([[[10.0,], [-4.0,]],[[6.0,], [8.0,]]])
+torch_tensor3 = torch_tensor.max(axis=2, keepdim=True)
+print(torch_tensor3)
+print(torch_tensor.equal(torch_tensor3))
 
-print(a)
+"""print(torch_tensor.shape)
+print('\n\n')
+torch_tensor2 = torch_tensor.max(axis=1)
+print(torch_tensor2.shape)
+print('\n\n')
+c = torch_tensor + torch_tensor2
+print(c)
+"""
 
 """
 
