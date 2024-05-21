@@ -27,7 +27,4 @@ def one_hot_encode(x, num_classes):
         target_idx = int(x.tensor.contents.data[i])
         one_hot[i][target_idx] = 1
 
-    if x.numel < 2:
-        one_hot = one_hot[0]
-
     return norch.Tensor(one_hot)

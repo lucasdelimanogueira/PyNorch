@@ -45,6 +45,7 @@ class CrossEntropyLoss(Loss):
                 target = norch.one_hot_encode(target, num_classes)
                 
                 logits = norch.softmax(input, dim=0)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum()
                 
             else:
@@ -52,6 +53,7 @@ class CrossEntropyLoss(Loss):
                 assert target.shape == input.shape, \
                     "Input and target shape does not match: {} and {}".format(input.shape, target.shape)
                 logits = norch.softmax(input, dim=0)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum()
 
 
@@ -65,6 +67,7 @@ class CrossEntropyLoss(Loss):
                 
                 batch_size = input.shape[0]
                 logits = norch.softmax(input, dim=1)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum() / batch_size
 
             else:
@@ -74,6 +77,7 @@ class CrossEntropyLoss(Loss):
                 
                 batch_size = input.shape[0]
                 logits = norch.softmax(input, dim=1)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum() / batch_size
 
         if input.requires_grad:

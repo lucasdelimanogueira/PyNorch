@@ -23,13 +23,15 @@ class MyModel(nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
         self.fc1 = nn.Linear(784, 5)
-        self.sigmoid = nn.Sigmoid()
+        self.sigmoid1 = nn.Sigmoid()
         self.fc2 = nn.Linear(5, 10)
+        self.sigmoid2 = nn.Sigmoid()
 
     def forward(self, x):
         out = self.fc1(x)
-        out = self.sigmoid(out)
+        out = self.sigmoid1(out)
         out = self.fc2(out)
+        out = self.sigmoid2(out)
         
         return out
 
@@ -49,10 +51,11 @@ for epoch in range(epochs):
         target = target
 
         x = x.to(device)
-        target = target.to(device).unsqueeze(-1)
+        target = target.to(device)
 
-        outputs = model(x)
-        print(outputs.shape, target.shape, x.shape)
+        outputs = model(x).squeeze(-1)
+        print(x.shape, outputs.shape, target.shape)
+        
         loss = criterion(outputs, target)
         
         optimizer.zero_grad()
@@ -70,6 +73,7 @@ for epoch in range(epochs):
         print('f1 depois', model.fc1.bias)
         print('f2 depois', model.fc2.bias)
         print('\n\n')
+        exit()
 
     print(f'Epoch [{epoch + 1}/{epochs}], Loss: {loss[0]:.4f}')
     loss_list.append(loss[0])
