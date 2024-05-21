@@ -1,4 +1,5 @@
 import math
+import norch
 
 class AddBackward:
     def __init__(self, x, y):
@@ -268,5 +269,26 @@ class MinBackward:
             grad_output = (grad_output * mask)
 
         return [grad_output]
+
+
+class CrossEntropyLossBackward:
+    def __init__(self, logits, targets):
+        self.input = [logits, targets]
+    
+    def backward(self, gradient):
+        logits, targets = self.input
+
+        if logits.ndim == 1:
+            softmax = norch.softmax(logits, dim=0)
+            grad_logits = (softmax - targets)
+                
+        elif logits.ndim == 2:
+            # batched 
+                batch_size = logits.shape[0]
+                softmax = norch.softmax(logits, dim=1)
+
+                grad_logits = (softmax - targets) / batch_size
+
+        return [grad_logits, None]  # targets do not have a gradient
 
 

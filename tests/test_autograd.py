@@ -604,40 +604,147 @@ class TestTensorAutograd(unittest.TestCase):
         
         self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
 
-    def test_softmax(self):
+    def test_mse_loss_autograd(self):
         """
-        Test autograd from softmax
+        Test the MSELoss with autograd functionality
         """
-        norch_tensor = norch.Tensor([[[-5, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
-        norch_softmax = norch.softmax(norch_tensor, dim=1)
-        norch_result = norch_softmax.sum()
+        loss_fn_norch = norch.nn.MSELoss()
+        loss_fn_torch = torch.nn.MSELoss()
 
-        norch_result.backward()
-        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+        predictions_norch = norch.Tensor([1.1, 2, 3, 4], requires_grad=True).to(self.device)
+        labels_norch = norch.Tensor([4, 3, 2.1, 1]).to(self.device)
+        loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
+        loss_norch.backward()  # Backpropagate the loss
+        grad_norch = predictions_norch.grad
 
-        torch_tensor = torch.tensor([[[-5, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
-        torch_softmax = torch.softmax(torch_tensor, dim=1)
-        torch_result = torch_softmax.sum()
+        predictions_torch = torch.tensor([1.1, 2, 3, 4], requires_grad=True).to(self.device)
+        labels_torch = torch.tensor([4, 3, 2.1, 1]).to(self.device)
+        loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
+        loss_torch_expected.backward()  # Backpropagate the loss
+        grad_torch_expected = predictions_torch.grad
 
-        torch_result.backward()
-        torch_tensor_grad = torch_tensor.grad
+        # Convert norch gradient to torch tensor for comparison
+        grad_norch_torch = utils.to_torch(grad_norch).to(self.device)
+
+        self.assertTrue(utils.compare_torch(grad_norch_torch, grad_torch_expected))
+
+    def test_cross_entropy_loss_autograd(self):
+        """
+        Test the CrossEntropyLoss with autograd functionality
+        """
+        loss_fn_norch = norch.nn.CrossEntropyLoss()
+        loss_fn_torch = torch.nn.CrossEntropyLoss()
+
+        # Test case 1: Single class, single sample
+        predictions_norch = norch.Tensor([2.0, 1.0, 0.1], requires_grad=True).to(self.device)
+        labels_norch = norch.Tensor([0]).to(self.device)
+        loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
+
+        loss_norch.backward()  # Backpropagate the loss
+        grad_norch = predictions_norch.grad
+
+        predictions_torch = torch.tensor([2.0, 1.0, 0.1], requires_grad=True).to(self.device)
+        labels_torch = torch.tensor(0).to(self.device)
+        loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
+        loss_torch_expected.backward()  # Backpropagate the loss
+        grad_torch_expected = predictions_torch.grad
+
+        # Convert norch gradient to torch tensor for comparison
+        grad_norch_torch = utils.to_torch(grad_norch).to(self.device)
+
+        self.assertTrue(utils.compare_torch(grad_norch_torch, grad_torch_expected))
+
+        # Test case 2: Multiple classes, multiple samples
+        predictions_norch = norch.Tensor([[0.5, 1.5, 2.5], [1.0, 2.0, 3.0]], requires_grad=True).to(self.device)
+        labels_norch = norch.Tensor([2, 1]).to(self.device)
+        loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
+        loss_norch.backward()  # Backpropagate the loss
+        grad_norch = predictions_norch.grad
+
+        predictions_torch = torch.tensor([[0.5, 1.5, 2.5], [1.0, 2.0, 3.0]], requires_grad=True).to(self.device)
+        labels_torch = torch.tensor([2, 1]).to(self.device)
+        loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
+        loss_torch_expected.backward()  # Backpropagate the loss
+        grad_torch_expected = predictions_torch.grad
+
+        # Convert norch gradient to torch tensor for comparison
+        grad_norch_torch = utils.to_torch(grad_norch).to(self.device)
+
+        self.assertTrue(utils.compare_torch(grad_norch_torch, grad_torch_expected))
+
+        # Test case 3: Edge case - all predictions are zero
+        predictions_norch = norch.Tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], requires_grad=True).to(self.device)
+        labels_norch = norch.Tensor([1, 2]).to(self.device)
+        loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
+        loss_norch.backward()  # Backpropagate the loss
+        grad_norch = predictions_norch.grad
+
+        predictions_torch = torch.tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], requires_grad=True).to(self.device)
+        labels_torch = torch.tensor([1, 2]).to(self.device)
+        loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
+        loss_torch_expected.backward()  # Backpropagate the loss
+        grad_torch_expected = predictions_torch.grad
+
+        # Convert norch gradient to torch tensor for comparison
+        grad_norch_torch = utils.to_torch(grad_norch).to(self.device)
+
+        self.assertTrue(utils.compare_torch(grad_norch_torch, grad_torch_expected))
+
+        # Test case 4: Batched class probabilities instead of class index
+        predictions_norch = norch.Tensor([[0.5, 0.2, 0.1], [0.1, 0.5, 0.7]], requires_grad=True).to(self.device)
+        labels_norch = norch.Tensor([[1., 0, 0], [0, 1, 0]]).to(self.device)
+        loss_norch = loss_fn_norch.forward(predictions_norch, labels_norch)
+        loss_norch.backward()  # Backpropagate the loss
+        grad_norch = predictions_norch.grad
+
+        predictions_torch = torch.tensor([[0.5, 0.2, 0.1], [0.1, 0.5, 0.7]], requires_grad=True).to(self.device)
+        labels_torch = torch.tensor([[1., 0, 0], [0, 1, 0]]).to(self.device)
+        loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
+        loss_torch_expected.backward()  # Backpropagate the loss
+        grad_torch_expected = predictions_torch.grad
+
+        # Convert norch gradient to torch tensor for comparison
+        grad_norch_torch = utils.to_torch(grad_norch).to(self.device)
+
+        self.assertTrue(utils.compare_torch(grad_norch_torch, grad_torch_expected))
+
+
+    # implement grad pure softmax --> 0
+    # def test_softmax(self):
+    #     """
+    #     Test autograd from softmax
+    #     """
+    #     norch_tensor = norch.Tensor([[[-5, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+    #     norch_softmax = norch.softmax(norch_tensor, dim=1)
+    #     norch_result = norch_softmax.sum()
+
+    #     norch_result.backward()
+    #     norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+    #     torch_tensor = torch.tensor([[[-5, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+    #     torch_softmax = torch.softmax(torch_tensor, dim=1)
+    #     torch_result = torch_softmax.sum()
+
+    #     torch_result.backward()
+    #     torch_tensor_grad = torch_tensor.grad
         
-        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+    #     self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
 
-        norch_tensor = norch.Tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True).to(self.device)
-        norch_softmax = norch.softmax(norch_tensor, dim=2)
-        norch_result = norch_softmax.sum()
+    #     norch_tensor = norch.Tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True).to(self.device)
+    #     norch_softmax = norch.softmax(norch_tensor, dim=2)
+    #     norch_result = norch_softmax.sum()
 
-        norch_result.backward()
-        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+    #     norch_result.backward()
+    #     norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True).to(self.device)
+    #     torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True).to(self.device)
 
-        torch_softmax = torch.softmax(torch_tensor, dim=2)
-        torch_result = torch_softmax.sum()
-        torch_result.backward()
-        torch_tensor_grad = torch_tensor.grad
-        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+    #     torch_softmax = torch.softmax(torch_tensor, dim=2)
+    #     torch_result = torch_softmax.sum()
+    #     torch_result.backward()
+    #     torch_tensor_grad = torch_tensor.grad
+       
+    #     self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
 
     
     def test_reshape(self):

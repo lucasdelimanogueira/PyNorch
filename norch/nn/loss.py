@@ -1,4 +1,5 @@
 from .module import Module
+from norch.autograd.functions import *
 import norch
 from abc import ABC
 
@@ -45,8 +46,6 @@ class CrossEntropyLoss(Loss):
                 
                 logits = norch.softmax(input, dim=0)
                 cost = -(logits.log() * target).sum()
-
-                return cost
                 
             else:
                 # target -> class probabilities (one-hot encoded)
@@ -54,8 +53,6 @@ class CrossEntropyLoss(Loss):
                     "Input and target shape does not match: {} and {}".format(input.shape, target.shape)
                 logits = norch.softmax(input, dim=0)
                 cost = -(logits.log() * target).sum()
-
-                return cost
 
 
         elif input.ndim == 2:
@@ -70,8 +67,6 @@ class CrossEntropyLoss(Loss):
                 logits = norch.softmax(input, dim=1)
                 cost = -(logits.log() * target).sum() / batch_size
 
-                return cost
-
             else:
                 # target -> class probabilities (one-hot encoded)
                 assert target.shape == input.shape, \
@@ -81,7 +76,10 @@ class CrossEntropyLoss(Loss):
                 logits = norch.softmax(input, dim=1)
                 cost = -(logits.log() * target).sum() / batch_size
 
-                return cost
+        if input.requires_grad:
+            cost.grad_fn = CrossEntropyLossBackward(input, target)
+
+        return cost
             
 
 
