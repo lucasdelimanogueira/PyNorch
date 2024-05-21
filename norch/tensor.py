@@ -19,13 +19,18 @@ class Tensor:
     def __init__(self, data=None, device="cpu", requires_grad=False):
 
         if data != None:
+            if isinstance(data, (float, int)):
+                data = [data]
+
             data, shape = self.flatten(data)
-            self.data_ctype = (ctypes.c_float * len(data))(*data)
-            self.shape_ctype = (ctypes.c_int * len(shape))(*shape)
+            
+            self.shape = shape.copy()
+            
+            self.data_ctype = (ctypes.c_float * len(data))(*data.copy())
+            self.shape_ctype = (ctypes.c_int * len(shape))(*shape.copy())
             self.ndim_ctype = ctypes.c_int(len(shape))
             self.device_ctype = device.encode('utf-8')
 
-            self.shape = shape
             self.ndim = len(shape)
             self.device = device
 
@@ -109,6 +114,25 @@ class Tensor:
         return result_data
     
     def reshape(self, new_shape):
+        # Calculate the total number of elements in the tensor
+        total_elements = self.numel
+        
+        # Check for the presence of -1 in new_shape
+        if new_shape.count(-1) > 1:
+            raise ValueError("Only one dimension can be inferred (set to -1).")
+        
+        inferred_dim = None
+        known_dims_product = 1
+        for dim in new_shape:
+            if dim == -1:
+                inferred_dim = dim
+            else:
+                known_dims_product *= dim
+        
+        # Calculate the inferred dimension if -1 is present
+        if inferred_dim == -1:
+            inferred_dim_size = total_elements // known_dims_product
+            new_shape = [inferred_dim_size if dim == -1 else dim for dim in new_shape]
 
         new_shape_ctype = (ctypes.c_int * len(new_shape))(*new_shape)
         new_ndim_ctype = ctypes.c_int(len(new_shape))
@@ -129,7 +153,41 @@ class Tensor:
             result_data.grad_fn = ReshapeBackward(self)
 
         return result_data
-    
+
+    def unsqueeze(self, dim):
+        if dim < 0:
+            dim = self.ndim + dim + 1
+
+        # Ensure the dimension is valid
+        if dim > self.ndim:
+            raise ValueError("Dimension out of range (expected to be in range of [0, {0}], but got {1})".format(self.ndim, dim))
+        
+        # Create the new shape with an extra dimension of size 1
+        new_shape = self.shape[:dim] + [1] + self.shape[dim:]
+        
+        return self.reshape(new_shape)
+
+    def squeeze(self, dim=None):
+        if dim is not None:
+            if dim < 0:
+                dim = self.ndim + dim
+            
+            # Ensure the dimension is valid
+            if dim >= self.ndim or dim < 0:
+                raise ValueError("Dimension out of range (expected to be in range of [0, {0}), but got {1})".format(self.ndim, dim))
+            
+            # Only squeeze the specified dimension if its size is 1
+            if self.shape[dim] != 1:
+                raise ValueError("Dimension {0} does not have size 1 and cannot be squeezed".format(dim))
+            
+            # Create the new shape without the specified dimension
+            new_shape = self.shape[:dim] + self.shape[dim+1:]
+        else:
+            # Create the new shape by removing all dimensions of size 1
+            new_shape = [s for s in self.shape if s != 1]
+        
+        return self.reshape(new_shape)
+
     def to(self, device):
         self.device = device
         self.device_ctype = self.device.encode('utf-8')
@@ -224,6 +282,8 @@ class Tensor:
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
 
+        broadcasted_shape_add = []
+
         # Function to determine if broadcasting is needed and get the broadcasted shape
         def broadcast_shape(shape1, shape2):
             if shape1 == shape2:
@@ -233,17 +293,25 @@ class Tensor:
             shape1 = [1] * (max_len - len(shape1)) + shape1
             shape2 = [1] * (max_len - len(shape2)) + shape2
 
-            broadcasted_shape = []
+            
             for dim1, dim2 in zip(shape1, shape2):
                 if dim1 != dim2 and dim1 != 1 and dim2 != 1:
                     raise ValueError("Shapes are not compatible for broadcasting")
-                broadcasted_shape.append(max(dim1, dim2))
-            return broadcasted_shape, True
+                broadcasted_shape_add.append(max(dim1, dim2))
+            return broadcasted_shape_add, True
 
-        broadcasted_shape, needs_broadcasting = broadcast_shape(self.shape, other.shape)
+        broadcasted_shape_add, needs_broadcasting = broadcast_shape(self.shape, other.shape)
 
         if needs_broadcasting:
             # Call add_broadcasted_tensor if broadcasting is needed
+            if other.ndim == self.ndim - 1:
+                other = other.reshape([1] + other.shape)
+            
+            elif self.ndim == other.ndim - 1:
+                self = self.reshape([1] + self.shape)
+                
+            
+                
             Tensor._C.add_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.add_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -251,11 +319,13 @@ class Tensor:
 
             result_data = Tensor()
             result_data.tensor = result_tensor_ptr
-            result_data.shape = broadcasted_shape
-            result_data.ndim = len(broadcasted_shape)
+            result_data.shape = broadcasted_shape_add.copy()
+            result_data.ndim = len(broadcasted_shape_add)
 
             result_data.device = self.device
-            result_data.numel = self.numel  # Update this to calculate the correct number of elements if broadcasting
+            result_data.numel = 1
+            for s in result_data.shape:
+                result_data.numel *= s
 
             result_data.requires_grad = self.requires_grad or other.requires_grad
             if result_data.requires_grad:
@@ -312,6 +382,8 @@ class Tensor:
         if isinstance(other, (int, float)):
             other = other * self.ones_like()
 
+        broadcasted_shape_sub = []
+
         # Function to determine if broadcasting is needed and get the broadcasted shape
         def broadcast_shape(shape1, shape2):
             if shape1 == shape2:
@@ -321,16 +393,22 @@ class Tensor:
             shape1 = [1] * (max_len - len(shape1)) + shape1
             shape2 = [1] * (max_len - len(shape2)) + shape2
 
-            broadcasted_shape = []
+            
             for dim1, dim2 in zip(shape1, shape2):
                 if dim1 != dim2 and dim1 != 1 and dim2 != 1:
                     raise ValueError("Shapes are not compatible for broadcasting")
-                broadcasted_shape.append(max(dim1, dim2))
-            return broadcasted_shape, True
+                broadcasted_shape_sub.append(max(dim1, dim2))
+            return broadcasted_shape_sub, True
 
-        broadcasted_shape, needs_broadcasting = broadcast_shape(self.shape, other.shape)
+        broadcasted_shape_sub, needs_broadcasting = broadcast_shape(self.shape, other.shape)
 
         if needs_broadcasting:
+            if other.ndim == self.ndim - 1:
+                other = other.reshape([1] + other.shape)
+            
+            elif self.ndim == other.ndim - 1:
+                self = self.reshape([1] + self.shape)
+
             # Call add_broadcasted_tensor if broadcasting is needed
             Tensor._C.sub_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.sub_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
@@ -339,8 +417,8 @@ class Tensor:
 
             result_data = Tensor()
             result_data.tensor = result_tensor_ptr
-            result_data.shape = broadcasted_shape
-            result_data.ndim = len(broadcasted_shape)
+            result_data.shape = broadcasted_shape_sub.copy()
+            result_data.ndim = len(broadcasted_shape_sub)
 
             result_data.device = self.device
             result_data.numel = self.numel  # Update this to calculate the correct number of elements if broadcasting
@@ -569,6 +647,9 @@ class Tensor:
                 result_data.grad_fn = DivisionBackward(self, other)
         
         elif isinstance(self, Tensor) and isinstance(other, Tensor):
+            if other.numel == 1:
+                return self.__truediv__(other.tensor.contents.data[0])
+            
             Tensor._C.tensor_div_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.tensor_div_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -611,6 +692,80 @@ class Tensor:
         return result_data
 
     
+    def equal(self, other):
+
+        if isinstance(other, Tensor) and other.numel == 1:
+            # other is a single value tensor
+            other = self.zeros_like() + other
+            return self.equal(other)
+
+        if not isinstance(other, Tensor):
+            # other is a single value
+            if isinstance(other, (int, float)):
+                other = self.zeros_like() + other
+
+                return self.equal(other)
+            else:
+                return False
+        
+        broadcasted_shape_add = []
+
+        # Function to determine if broadcasting is needed and get the broadcasted shape
+        def broadcast_shape(shape1, shape2):
+            if shape1 == shape2:
+                return shape1, False
+            
+            max_len = max(len(shape1), len(shape2))
+            shape1 = [1] * (max_len - len(shape1)) + shape1
+            shape2 = [1] * (max_len - len(shape2)) + shape2
+
+            
+            for dim1, dim2 in zip(shape1, shape2):
+                if dim1 != dim2 and dim1 != 1 and dim2 != 1:
+                    raise ValueError("Shapes are not compatible for broadcasting")
+                broadcasted_shape_add.append(max(dim1, dim2))
+            return broadcasted_shape_add, True
+
+        broadcasted_shape_add, needs_broadcasting = broadcast_shape(self.shape, other.shape)
+        
+        if needs_broadcasting:
+            if other.ndim == self.ndim - 1:
+                other = other.reshape([1] + other.shape)
+            
+            elif self.ndim == other.ndim - 1:
+                self = self.reshape([1] + self.shape)
+
+            # Call equal_broadcasted_tensor if broadcasting is needed
+            Tensor._C.equal_broadcasted_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.equal_broadcasted_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.equal_broadcasted_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = broadcasted_shape_add.copy()
+            result_data.ndim = len(broadcasted_shape_add)
+
+            result_data.device = self.device
+            result_data.numel = 1
+            for s in result_data.shape:
+                result_data.numel *= s
+
+        else:
+            Tensor._C.equal_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
+            Tensor._C.equal_tensor.restype = ctypes.POINTER(CTensor)
+
+            result_tensor_ptr = Tensor._C.equal_tensor(self.tensor, other.tensor)
+
+            result_data = Tensor()
+            result_data.tensor = result_tensor_ptr
+            result_data.shape = self.shape.copy()
+            result_data.ndim = self.ndim
+            result_data.device = self.device
+            result_data.numel = self.numel
+            
+        return result_data
+
     def log(self):
         Tensor._C.log_tensor.argtypes = [ctypes.POINTER(CTensor)]
         Tensor._C.log_tensor.restype = ctypes.POINTER(CTensor)
@@ -630,20 +785,34 @@ class Tensor:
 
         return result_data
     
-    def sum(self, axis=-1):
-        Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int]
+    def sum(self, axis=None, keepdim=False):
+        if axis is not None and axis < 0:
+            axis = self.ndim + axis
+            
+        if axis == None:
+            axis = -1
+
+        Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.sum_tensor.restype = ctypes.POINTER(CTensor)
 
-        result_tensor_ptr = Tensor._C.sum_tensor(self.tensor, axis)
+        result_tensor_ptr = Tensor._C.sum_tensor(self.tensor, axis, keepdim)
 
         result_data = Tensor()
         result_data.tensor = result_tensor_ptr
 
         if axis == -1:
-            result_data.shape = [1]
-            result_data.ndim = 1
+            if keepdim:
+                result_data.ndim = self.ndim
+                result_data.shape = [1] * self.ndim
+
+            else:
+                result_data.shape = [1]
+                result_data.ndim = 1
         else:
-            result_data.shape = self.shape[:axis] + self.shape[axis+1:]
+            if keepdim:
+                result_data.shape = self.shape[:axis] + [1] + self.shape[axis+1:]
+            else:
+                result_data.shape = self.shape[:axis] + self.shape[axis+1:]
             result_data.ndim = len(result_data.shape)
 
         result_data.device = self.device
@@ -653,7 +822,89 @@ class Tensor:
 
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
-            result_data.grad_fn = SumBackward(self)
+            result_data.grad_fn = SumBackward(self, axis, keepdim=keepdim)
+
+        return result_data
+    
+    def max(self, axis=None, keepdim=False):
+        if axis is not None and axis < 0:
+            axis = self.ndim + axis
+            
+        if axis == None:
+            axis = -1
+
+        Tensor._C.max_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
+        Tensor._C.max_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.max_tensor(self.tensor, axis, keepdim)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+
+        if axis == -1:
+            if keepdim:
+                result_data.ndim = self.ndim
+                result_data.shape = [1] * self.ndim
+
+            else:
+                result_data.shape = [1]
+                result_data.ndim = 1
+        else:
+            if keepdim:
+                result_data.shape = self.shape[:axis] + [1] + self.shape[axis+1:]
+            else:
+                result_data.shape = self.shape[:axis] + self.shape[axis+1:]
+            result_data.ndim = len(result_data.shape)
+
+        result_data.device = self.device
+        result_data.numel = 1
+        for s in result_data.shape:
+            result_data.numel *= s
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = MaxBackward(self, axis, keepdim=keepdim)
+
+        return result_data
+    
+    def min(self, axis=None, keepdim=False):
+        if axis is not None and axis < 0:
+            axis = self.ndim + axis
+
+        if axis == None:
+            axis = -1
+        
+        Tensor._C.min_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
+        Tensor._C.min_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.min_tensor(self.tensor, axis, keepdim)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+
+        if axis == -1:
+            if keepdim:
+                result_data.ndim = self.ndim
+                result_data.shape = [1] * self.ndim
+
+            else:
+                result_data.shape = [1]
+                result_data.ndim = 1
+        else:
+            if keepdim:
+                result_data.shape = self.shape[:axis] + [1] + self.shape[axis+1:]
+            else:
+                result_data.shape = self.shape[:axis] + self.shape[axis+1:]
+            result_data.ndim = len(result_data.shape)
+
+        result_data.device = self.device
+        result_data.numel = 1
+        for s in result_data.shape:
+            result_data.numel *= s
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = MinBackward(self, axis, keepdim=keepdim)
 
         return result_data
 

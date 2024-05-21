@@ -1,4 +1,5 @@
 import math
+import norch
 
 class AddBackward:
     def __init__(self, x, y):
@@ -15,6 +16,7 @@ class AddBroadcastedBackward:
         x, y = self.input
         grad_x = self._reshape_gradient(gradient, x.shape)
         grad_y = self._reshape_gradient(gradient, y.shape)
+
         return [grad_x, grad_y]
     
     def _reshape_gradient(self, gradient, shape):
@@ -25,11 +27,17 @@ class AddBroadcastedBackward:
         # Sum along axes where the target shape dimension is 1
         for i in range(len(shape)):
             if shape[i] == 1:
-                gradient = gradient.sum(axis=i)
+                gradient = gradient.sum(axis=i, keepdim=True)
 
         return gradient
     
+class SubBackward:
+    def __init__(self, x, y):
+        self.input = [x, y]
 
+    def backward(self, gradient):
+        return [gradient, -gradient]
+    
 class SubBroadcastedBackward:
     def __init__(self, x, y):
         self.input = [x, y]
@@ -49,15 +57,7 @@ class SubBroadcastedBackward:
         for i in range(len(shape)):
             if shape[i] == 1:
                 gradient = gradient.sum(axis=i)
-
         return gradient
-
-class SubBackward:
-    def __init__(self, x, y):
-        self.input = [x, y]
-
-    def backward(self, gradient):
-        return [gradient, -gradient]
     
 class ScalarMulBackward:
     def __init__(self, x, scalar):
@@ -82,7 +82,13 @@ class MatmulBackward:
 
     def backward(self, gradient):
         x, y = self.input
-        return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
+        
+        if x.ndim != y.ndim: # broadcasted case
+            aux = (gradient @ y.transpose(-1,-2))
+            aux_sum = aux.sum(axis=0)
+            return [aux_sum, x.transpose(-1,-2) @ gradient]
+        else:
+            return [gradient @ y.transpose(-1,-2), x.transpose(-1,-2) @ gradient]
         
 """class PowBackward:
     def __init__(self, x, power):
@@ -121,12 +127,29 @@ class LogBackward:
         return [grad_input]
        
 class SumBackward:
-    def __init__(self, x):
+    def __init__(self, x, axis=None, keepdim=False):
         self.input = [x]
+        self.axis = axis
+        self.keepdim = keepdim
 
     def backward(self, gradient):
-        # Since sum reduces a tensor to a scalar, gradient is broadcasted to match the original shape.
-        return [float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()]
+        input_shape = self.input[0].shape.copy()
+        if self.axis == -1:
+            # If axis is None, sum reduces the tensor to a scalar.
+            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+        else:
+
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+
+            # Broadcast the gradient to the input shape along the specified axis.
+            grad_output_shape = list(input_shape)
+            grad_output = gradient.reshape(grad_output_shape)
+            grad_output = grad_output + self.input[0].zeros_like()
+        
+        return [grad_output]
     
 class ReshapeBackward:
     def __init__(self, x):
@@ -177,5 +200,95 @@ class CosBackward:
     def backward(self, gradient):
         x = self.input[0]
         return [-gradient * x.sin()]
+    
+class MaxBackward:
+    def __init__(self, x, axis=None, keepdim=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdim = keepdim
+
+    def backward(self, gradient):
+        input_shape = self.input[0].shape.copy()
+        if self.axis == -1:
+            max_value = self.input[0].max()
+            mask = self.input[0].equal(max_value)
+
+            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+
+            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+
+        else:
+
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+
+            # Broadcast the gradient to the input shape along the specified axis.
+            grad_output_shape = list(input_shape)
+                            
+            grad_output = gradient.reshape(grad_output_shape)
+            grad_output = grad_output + self.input[0].zeros_like()
+            max_values = self.input[0].max(axis=self.axis, keepdim=True)
+            mask = self.input[0].equal(max_values)
+
+            grad_output = (grad_output * mask)
+        
+        return [grad_output]
+
+    
+class MinBackward:
+    def __init__(self, x, axis=None, keepdim=False):
+        self.input = [x]
+        self.axis = axis
+        self.keepdim = keepdim
+
+    def backward(self, gradient):
+        input_shape = self.input[0].shape.copy()
+        if self.axis == -1:
+            min_value = self.input[0].min()
+            mask = self.input[0].equal(min_value)
+
+            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+
+            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+
+        else:
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+
+            # Broadcast the gradient to the input shape along the specified axis.
+            grad_output_shape = list(input_shape)
+            grad_output = gradient.reshape(grad_output_shape)
+            grad_output = grad_output + self.input[0].zeros_like()
+            max_values = self.input[0].min(axis=self.axis, keepdim=True)
+            mask = self.input[0].equal(max_values)
+
+            grad_output = (grad_output * mask)
+
+        return [grad_output]
+
+
+class CrossEntropyLossBackward:
+    def __init__(self, logits, targets):
+        self.input = [logits, targets]
+    
+    def backward(self, gradient):
+        logits, targets = self.input
+
+        if logits.ndim == 1:
+            softmax = norch.softmax(logits, dim=0)
+            grad_logits = (softmax - targets)
+                
+        elif logits.ndim == 2:
+            # batched 
+                batch_size = logits.shape[0]
+                softmax = norch.softmax(logits, dim=1)
+
+                grad_logits = (softmax - targets) / batch_size
+
+        return [grad_logits, None]  # targets do not have a gradient
 
 

@@ -1,4 +1,5 @@
 from .module import Module
+from . import functional as F
 import math
 
 class Activation(Module):
@@ -17,4 +18,13 @@ class Sigmoid(Activation):
         super().__init__()
 
     def forward(self, x):
-        return 1.0 / (1.0 + (math.e) ** (-x)) 
+        return F.sigmoid(x)
+    
+class Softmax(Activation):
+    def __init__(self, dim):
+        super(Softmax, self).__init__()
+
+        self.dim = dim
+
+    def forward(self, x):
+        return F.softmax(x, self.dim)

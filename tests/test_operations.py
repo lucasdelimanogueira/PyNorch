@@ -37,7 +37,7 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
-    def test_broadcasting_addition(self):
+    def test_addition_broadcasted(self):
         """
         Test addition of two tensors with broadcasting: tensor1 + tensor2
         """
@@ -48,6 +48,29 @@ class TestTensorOperations(unittest.TestCase):
 
         torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
+        torch_expected = torch_tensor1 + torch_tensor2
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        norch_tensor1 = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)  # Shape (1, 2, 3)
+        norch_tensor2 = norch.Tensor([[10, 10], [5, 6]]).to(self.device)  # Shape (3)
+        norch_result = norch_tensor1 + norch_tensor2
+        torch_result = utils.to_torch(norch_result).to(self.device)
+        
+        torch_tensor1 = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([[[10, 10], [5, 6]]]).to(self.device)  # Shape (3)
+        torch_expected = torch_tensor1 + torch_tensor2
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        # reversed order broadcasting
+        norch_tensor1 = norch.Tensor([[0, 2]]).to(self.device) 
+        norch_tensor2 = norch.Tensor([[3, 4], [5, -1]]).to(self.device) 
+        norch_result = norch_tensor1 + norch_tensor2
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor1 = torch.tensor([[0, 2]]).to(self.device)  
+        torch_tensor2 = torch.tensor([[3, 4], [5, -1]]).to(self.device) 
         torch_expected = torch_tensor1 + torch_tensor2
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
@@ -86,6 +109,14 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor1 = torch.tensor([[[1, 2, 3], [4, 5, 6]]]).to(self.device)  # Shape (1, 2, 3)
         torch_tensor2 = torch.tensor([1, 1, 1]).to(self.device)  # Shape (3)
         torch_expected = torch_tensor1 - torch_tensor2 
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        # reversed order broadcasting
+        norch_result = norch_tensor2 - norch_tensor1
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_expected = torch_tensor2 - torch_tensor1
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
@@ -176,6 +207,94 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_unsqueeze(self):
+        """
+        Test unsqueeze operation on a tensor
+        """
+        norch_tensor = norch.Tensor([[1, 2], [3, 4]]).to(self.device)
+        
+        # Unsqueeze at dim=0
+        norch_unsqueeze_0 = norch_tensor.unsqueeze(0)
+        torch_unsqueeze_0 = utils.to_torch(norch_unsqueeze_0).to(self.device)
+        torch_tensor = torch.tensor([[1, 2], [3, 4]]).to(self.device)
+        torch_expected_0 = torch_tensor.unsqueeze(0)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_0, torch_expected_0))
+
+        # Unsqueeze at dim=1
+        norch_unsqueeze_1 = norch_tensor.unsqueeze(1)
+        torch_unsqueeze_1 = utils.to_torch(norch_unsqueeze_1).to(self.device)
+        torch_expected_1 = torch_tensor.unsqueeze(1)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_1, torch_expected_1))
+
+        # Unsqueeze at dim=2
+        norch_unsqueeze_2 = norch_tensor.unsqueeze(2)
+        torch_unsqueeze_2 = utils.to_torch(norch_unsqueeze_2).to(self.device)
+        torch_expected_2 = torch_tensor.unsqueeze(2)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_2, torch_expected_2))
+
+        # Unsqueeze at dim=-1
+        norch_unsqueeze_neg_1 = norch_tensor.unsqueeze(-1)
+        torch_unsqueeze_neg_1 = utils.to_torch(norch_unsqueeze_neg_1).to(self.device)
+        torch_expected_neg_1 = torch_tensor.unsqueeze(-1)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_neg_1, torch_expected_neg_1))
+
+        # Unsqueeze at dim=-2
+        norch_unsqueeze_neg_2 = norch_tensor.unsqueeze(-2)
+        torch_unsqueeze_neg_2 = utils.to_torch(norch_unsqueeze_neg_2).to(self.device)
+        torch_expected_neg_2 = torch_tensor.unsqueeze(-2)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_neg_2, torch_expected_neg_2))
+
+    def test_squeeze(self):
+        """
+        Test squeeze operation on a tensor
+        """
+        # Create a tensor with some dimensions of size 1
+        norch_tensor = norch.Tensor([[[1, 2], [3, 4]]]).to(self.device)  # shape [1, 2, 2]
+        
+        # Squeeze at dim=0
+        norch_squeeze_0 = norch_tensor.squeeze(0)
+        torch_squeeze_0 = utils.to_torch(norch_squeeze_0).to(self.device)
+        torch_tensor = torch.tensor([[[1, 2], [3, 4]]]).to(self.device)
+        torch_expected_0 = torch_tensor.squeeze(0)
+        self.assertTrue(utils.compare_torch(torch_squeeze_0, torch_expected_0))
+
+        # Squeeze at dim=2 (should raise an error because size is not 1)
+        with self.assertRaises(ValueError):
+            norch_tensor.squeeze(2)
+
+        # Create a tensor with a dimension of size 1 in the middle
+        norch_tensor_middle_1 = norch.Tensor([[[1, 2]], [[3, 4]]]).to(self.device)  # shape [2, 1, 2]
+        
+        # Squeeze at dim=1
+        norch_squeeze_1 = norch_tensor_middle_1.squeeze(1)
+        torch_squeeze_1 = utils.to_torch(norch_squeeze_1).to(self.device)
+        torch_tensor_middle_1 = torch.tensor([[[1, 2]], [[3, 4]]]).to(self.device)
+        torch_expected_1 = torch_tensor_middle_1.squeeze(1)
+        self.assertTrue(utils.compare_torch(torch_squeeze_1, torch_expected_1))
+
+        # Squeeze at dim=-2 (same as dim=1 in this case)
+        norch_squeeze_neg_2 = norch_tensor_middle_1.squeeze(-2)
+        torch_squeeze_neg_2 = utils.to_torch(norch_squeeze_neg_2).to(self.device)
+        torch_expected_neg_2 = torch_tensor_middle_1.squeeze(-2)
+        self.assertTrue(utils.compare_torch(torch_squeeze_neg_2, torch_expected_neg_2))
+
+        # Squeeze all dimensions of size 1 (None)
+        norch_tensor_all_1 = norch.Tensor([[[[1, 2], [3, 4]]]]).to(self.device)  # shape [1, 1, 2, 2]
+        norch_squeeze_all = norch_tensor_all_1.squeeze()
+        torch_squeeze_all = utils.to_torch(norch_squeeze_all).to(self.device)
+        torch_tensor_all_1 = torch.tensor([[[[1, 2], [3, 4]]]]).to(self.device)
+        torch_expected_all = torch_tensor_all_1.squeeze()
+        self.assertTrue(utils.compare_torch(torch_squeeze_all, torch_expected_all))
+
+        # Squeeze no dimensions (no dimensions of size 1)
+        norch_tensor_no_1 = norch.Tensor([[1, 2], [3, 4]]).to(self.device)  # shape [2, 2]
+        norch_squeeze_none = norch_tensor_no_1.squeeze()
+        torch_squeeze_none = utils.to_torch(norch_squeeze_none).to(self.device)
+        torch_tensor_no_1 = torch.tensor([[1, 2], [3, 4]]).to(self.device)
+        torch_expected_none = torch_tensor_no_1.squeeze()
+        self.assertTrue(utils.compare_torch(torch_squeeze_none, torch_expected_none))
+
+
     def test_transpose(self):
         """
         Test transposition of a tensor: tensor.transpose(dim1, dim2)
@@ -229,6 +348,134 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+        # negative axis
+
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.sum(axis=-2)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.sum(torch_tensor, dim=-2)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
+    def test_sum_axis_keepdim(self):
+        """
+        Test summation of a tensor along a specific axis with keepdim=True
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.sum(axis=1, keepdim=True)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.sum(torch_tensor, dim=1, keepdim=True)
+        
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_max(self):
+        """
+        Test max of a tensor: tensor.max()
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.max()
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.max(torch_tensor)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_max_axis(self):
+        """
+        Test max of a tensor along a specific axis without keeping the dimensions
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.max(axis=1)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.max(torch_tensor, dim=1)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        # negative axis
+
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.max(axis=-1)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.max(torch_tensor, dim=-1)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
+    def test_max_axis_keepdim(self):
+        """
+        Test max of a tensor along a specific axis with keepdim=True
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.max(axis=1, keepdim=True)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.max(torch_tensor, dim=1, keepdim=True)
+        
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_min(self):
+        """
+        Test min of a tensor: tensor.min()
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.min()
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.min(torch_tensor)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_min_axis(self):
+        """
+        Test min of a tensor along a specific axis without keeping the dimensions
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.min(axis=1)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.min(torch_tensor, dim=1)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        # negative axis
+
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.min(axis=-1)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.min(torch_tensor, dim=-1)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
+    def test_min_axis_keepdim(self):
+        """
+        Test min of a tensor along a specific axis with keepdim=True
+        """
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.min(axis=1, keepdim=True)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.min(torch_tensor, dim=1, keepdim=True)
+        
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
     def test_transpose_T(self):
         """
         Test transposition of a tensor: tensor.T
@@ -240,6 +487,26 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.transpose(torch_tensor, 0, 2)
 
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_matmul(self):
+        """
+        Test matrix multiplication: MxP = NxM @ MxP
+        """
+        # Creating batched tensors for Norch
+        norch_tensor1 = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]]).to(self.device)
+
+        norch_result = norch_tensor1 @ norch_tensor2
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        # Converting to PyTorch tensors for comparison
+        torch_tensor1 = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        torch_tensor2 = torch.tensor([[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]]).to(self.device)
+
+        torch_expected = torch.matmul(torch_tensor1, torch_tensor2)
+
+        # Comparing results
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
     def test_reshape_then_matmul(self):
@@ -257,6 +524,52 @@ class TestTensorOperations(unittest.TestCase):
         torch_expected = torch_tensor.reshape(new_shape) @ torch_tensor
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_batched_matmul(self):
+        """
+        Test batched matrix multiplication: BxMxP = BxNxM @ BxMxP
+        """
+        B = 3  # Batch size
+
+        # Creating batched tensors for Norch
+        norch_tensor1 = norch.Tensor([[[1, 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+
+        norch_result = norch_tensor1 @ norch_tensor2
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        # Converting to PyTorch tensors for comparison
+        torch_tensor1 = torch.tensor([[[1, 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)]).to(self.device)
+        torch_tensor2 = torch.tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+
+        torch_expected = torch.matmul(torch_tensor1, torch_tensor2)
+
+        # Comparing results
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+
+    def test_broadcasted_batched_matmul(self):
+        """
+        Test broadcasted batched matrix multiplication: BxMxP = NxM @ BxMxP
+        """
+        B = 3  # Batch size
+
+        # Creating batched tensors for Norch
+        norch_tensor1 = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+
+        norch_result = norch_tensor1 @ norch_tensor2
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        # Converting to PyTorch tensors for comparison
+        torch_tensor1 = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+
+        torch_expected = torch.matmul(torch_tensor1, torch_tensor2)
+
+        # Comparing results
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
 
 
     def test_transpose_then_matmul(self):
@@ -346,6 +659,47 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_equal(self):
+        """
+        Test equal two tensors: tensor1.equal(tensor2)
+        """
+        norch_tensor1 = norch.Tensor([[[1, 2], [3, -4]], [[5, 1], [7, 8]]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
+        norch_result = norch_tensor1.equal(norch_tensor2)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[1, 2], [3, -4]], [[5, 1], [7, 8]]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
+        torch_expected = (torch_tensor1 == torch_tensor2).float()
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_broadcasted_equal(self):
+        """
+        Test broadcasted equal two tensors: tensor1.equal(tensor2)
+        """
+        norch_tensor1 = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[10, 10]], [[5, 6]]]).to(self.device)
+        norch_result = norch_tensor1.equal(norch_tensor2)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[10, 10]], [[5, 6]]]).to(self.device)
+        torch_expected = (torch_tensor1 == torch_tensor2).float()
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        norch_tensor1 = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[10.0,], [-4.0,]],[[6.0,], [8.0,]]]).to(self.device)
+        norch_result = norch_tensor1.equal(norch_tensor2)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor1 = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[10.0,], [-4.0,]],[[6.0,], [8.0,]]]).to(self.device)
+        torch_expected = (torch_tensor1 == torch_tensor2).float()
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+    
 
     def test_zeros_like(self):
         """
