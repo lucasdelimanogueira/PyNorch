@@ -272,6 +272,7 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor, dim=1, keepdim=True)
         
+        print(torch_result, torch_expected)
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
     def test_max(self):
