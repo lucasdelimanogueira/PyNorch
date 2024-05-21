@@ -137,13 +137,14 @@ class SumBackward:
             # If axis is None, sum reduces the tensor to a scalar.
             grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
         else:
-            if not self.keepdim:
-                # Remove dimensions of size 1 from the gradient tensor.
-                input_shape = [s for i, s in enumerate(input_shape) if i != self.axis]
-                
+
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+
             # Broadcast the gradient to the input shape along the specified axis.
             grad_output_shape = list(input_shape)
-            grad_output_shape.insert(self.axis, 1)
             grad_output = gradient.reshape(grad_output_shape)
             grad_output = grad_output + self.input[0].zeros_like()
         
@@ -216,14 +217,15 @@ class MaxBackward:
             grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
 
         else:
-            
-            if not self.keepdim:
-                # Remove dimensions of size 1 from the gradient tensor.
-                input_shape = [s for i, s in enumerate(input_shape) if i != self.axis]
-                
+
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+
             # Broadcast the gradient to the input shape along the specified axis.
             grad_output_shape = list(input_shape)
-            grad_output_shape.insert(self.axis, 1)
+                            
             grad_output = gradient.reshape(grad_output_shape)
             grad_output = grad_output + self.input[0].zeros_like()
             max_values = self.input[0].max(axis=self.axis, keepdim=True)
@@ -251,13 +253,13 @@ class MinBackward:
             grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
 
         else:
-            if not self.keepdim:
-                # Remove dimensions of size 1 from the gradient tensor.
-                input_shape = [s for i, s in enumerate(input_shape) if i != self.axis]
-                
+            if self.keepdim:
+                input_shape = input_shape[:self.axis] + [1] + input_shape[self.axis+1:]
+            else:
+                input_shape = input_shape[:self.axis] + input_shape[self.axis+1:]
+
             # Broadcast the gradient to the input shape along the specified axis.
             grad_output_shape = list(input_shape)
-            grad_output_shape.insert(self.axis, 1)
             grad_output = gradient.reshape(grad_output_shape)
             grad_output = grad_output + self.input[0].zeros_like()
             max_values = self.input[0].min(axis=self.axis, keepdim=True)

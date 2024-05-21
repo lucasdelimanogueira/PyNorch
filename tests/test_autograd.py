@@ -583,6 +583,62 @@ class TestTensorAutograd(unittest.TestCase):
         torch_expected_cos_tensor_grad = torch_cos_tensor.grad
 
         self.assertTrue(utils.compare_torch(torch_result_cos_tensor_grad, torch_expected_cos_tensor_grad))
+
+    def test_sigmoid(self):
+        """
+        Test autograd from sigmoid
+        """
+        norch_tensor = norch.Tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_sigmoid = norch.sigmoid(norch_tensor)
+        norch_result = norch_sigmoid.sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        torch_sigmoid = torch.sigmoid(torch_tensor)
+        torch_result = torch_sigmoid.sum()
+
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+
+    def test_softmax(self):
+        """
+        Test autograd from softmax
+        """
+        norch_tensor = norch.Tensor([[[-5, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        norch_softmax = norch.softmax(norch_tensor, dim=1)
+        norch_result = norch_softmax.sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[-5, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True).to(self.device)
+        torch_softmax = torch.softmax(torch_tensor, dim=1)
+        torch_result = torch_softmax.sum()
+
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+
+        norch_tensor = norch.Tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True).to(self.device)
+        norch_softmax = norch.softmax(norch_tensor, dim=2)
+        norch_result = norch_softmax.sum()
+
+        norch_result.backward()
+        norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
+
+        torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True).to(self.device)
+
+        torch_softmax = torch.softmax(torch_tensor, dim=2)
+        torch_result = torch_softmax.sum()
+        torch_result.backward()
+        torch_tensor_grad = torch_tensor.grad
+        self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
+
     
     def test_reshape(self):
         """
