@@ -232,6 +232,18 @@ class TestTensorOperations(unittest.TestCase):
         torch_expected_2 = torch_tensor.unsqueeze(2)
         self.assertTrue(utils.compare_torch(torch_unsqueeze_2, torch_expected_2))
 
+        # Unsqueeze at dim=-1
+        norch_unsqueeze_neg_1 = norch_tensor.unsqueeze(-1)
+        torch_unsqueeze_neg_1 = utils.to_torch(norch_unsqueeze_neg_1).to(self.device)
+        torch_expected_neg_1 = torch_tensor.unsqueeze(-1)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_neg_1, torch_expected_neg_1))
+
+        # Unsqueeze at dim=-2
+        norch_unsqueeze_neg_2 = norch_tensor.unsqueeze(-2)
+        torch_unsqueeze_neg_2 = utils.to_torch(norch_unsqueeze_neg_2).to(self.device)
+        torch_expected_neg_2 = torch_tensor.unsqueeze(-2)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_neg_2, torch_expected_neg_2))
+
     def test_transpose(self):
         """
         Test transposition of a tensor: tensor.transpose(dim1, dim2)
@@ -308,7 +320,6 @@ class TestTensorOperations(unittest.TestCase):
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch.sum(torch_tensor, dim=1, keepdim=True)
         
-        print(torch_result, torch_expected)
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
     def test_max(self):

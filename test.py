@@ -45,14 +45,15 @@ for epoch in range(epochs):
     for idx, batch in enumerate(train_loader):
         x, target = batch
 
-        x = x.T
+        x = x
+        print(x.shape)
         target = target
 
         x = x.to(device)
         target = target.to(device)
 
         outputs = model(x)
-        print(outputs.shape, target.shape)
+        print(outputs.shape, target.shape, x.shape)
         loss = criterion(outputs, target)
         
         optimizer.zero_grad()

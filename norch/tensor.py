@@ -155,8 +155,11 @@ class Tensor:
         return result_data
 
     def unsqueeze(self, dim):
+        if dim < 0:
+            dim = self.ndim + dim + 1
+
         # Ensure the dimension is valid
-        if dim < 0 or dim > self.ndim:
+        if dim > self.ndim:
             raise ValueError("Dimension out of range (expected to be in range of [0, {0}], but got {1})".format(self.ndim, dim))
         
         # Create the new shape with an extra dimension of size 1
