@@ -244,6 +244,57 @@ class TestTensorOperations(unittest.TestCase):
         torch_expected_neg_2 = torch_tensor.unsqueeze(-2)
         self.assertTrue(utils.compare_torch(torch_unsqueeze_neg_2, torch_expected_neg_2))
 
+    def test_squeeze(self):
+        """
+        Test squeeze operation on a tensor
+        """
+        # Create a tensor with some dimensions of size 1
+        norch_tensor = norch.Tensor([[[1, 2], [3, 4]]]).to(self.device)  # shape [1, 2, 2]
+        
+        # Squeeze at dim=0
+        norch_squeeze_0 = norch_tensor.squeeze(0)
+        torch_squeeze_0 = utils.to_torch(norch_squeeze_0).to(self.device)
+        torch_tensor = torch.tensor([[[1, 2], [3, 4]]]).to(self.device)
+        torch_expected_0 = torch_tensor.squeeze(0)
+        self.assertTrue(utils.compare_torch(torch_squeeze_0, torch_expected_0))
+
+        # Squeeze at dim=2 (should raise an error because size is not 1)
+        with self.assertRaises(ValueError):
+            norch_tensor.squeeze(2)
+
+        # Create a tensor with a dimension of size 1 in the middle
+        norch_tensor_middle_1 = norch.Tensor([[[1, 2]], [[3, 4]]]).to(self.device)  # shape [2, 1, 2]
+        
+        # Squeeze at dim=1
+        norch_squeeze_1 = norch_tensor_middle_1.squeeze(1)
+        torch_squeeze_1 = utils.to_torch(norch_squeeze_1).to(self.device)
+        torch_tensor_middle_1 = torch.tensor([[[1, 2]], [[3, 4]]]).to(self.device)
+        torch_expected_1 = torch_tensor_middle_1.squeeze(1)
+        self.assertTrue(utils.compare_torch(torch_squeeze_1, torch_expected_1))
+
+        # Squeeze at dim=-2 (same as dim=1 in this case)
+        norch_squeeze_neg_2 = norch_tensor_middle_1.squeeze(-2)
+        torch_squeeze_neg_2 = utils.to_torch(norch_squeeze_neg_2).to(self.device)
+        torch_expected_neg_2 = torch_tensor_middle_1.squeeze(-2)
+        self.assertTrue(utils.compare_torch(torch_squeeze_neg_2, torch_expected_neg_2))
+
+        # Squeeze all dimensions of size 1 (None)
+        norch_tensor_all_1 = norch.Tensor([[[[1, 2], [3, 4]]]]).to(self.device)  # shape [1, 1, 2, 2]
+        norch_squeeze_all = norch_tensor_all_1.squeeze()
+        torch_squeeze_all = utils.to_torch(norch_squeeze_all).to(self.device)
+        torch_tensor_all_1 = torch.tensor([[[[1, 2], [3, 4]]]]).to(self.device)
+        torch_expected_all = torch_tensor_all_1.squeeze()
+        self.assertTrue(utils.compare_torch(torch_squeeze_all, torch_expected_all))
+
+        # Squeeze no dimensions (no dimensions of size 1)
+        norch_tensor_no_1 = norch.Tensor([[1, 2], [3, 4]]).to(self.device)  # shape [2, 2]
+        norch_squeeze_none = norch_tensor_no_1.squeeze()
+        torch_squeeze_none = utils.to_torch(norch_squeeze_none).to(self.device)
+        torch_tensor_no_1 = torch.tensor([[1, 2], [3, 4]]).to(self.device)
+        torch_expected_none = torch_tensor_no_1.squeeze()
+        self.assertTrue(utils.compare_torch(torch_squeeze_none, torch_expected_none))
+
+
     def test_transpose(self):
         """
         Test transposition of a tensor: tensor.transpose(dim1, dim2)

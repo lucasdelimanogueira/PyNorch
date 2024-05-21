@@ -167,7 +167,27 @@ class Tensor:
         
         return self.reshape(new_shape)
 
-    
+    def squeeze(self, dim=None):
+        if dim is not None:
+            if dim < 0:
+                dim = self.ndim + dim
+            
+            # Ensure the dimension is valid
+            if dim >= self.ndim or dim < 0:
+                raise ValueError("Dimension out of range (expected to be in range of [0, {0}), but got {1})".format(self.ndim, dim))
+            
+            # Only squeeze the specified dimension if its size is 1
+            if self.shape[dim] != 1:
+                raise ValueError("Dimension {0} does not have size 1 and cannot be squeezed".format(dim))
+            
+            # Create the new shape without the specified dimension
+            new_shape = self.shape[:dim] + self.shape[dim+1:]
+        else:
+            # Create the new shape by removing all dimensions of size 1
+            new_shape = [s for s in self.shape if s != 1]
+        
+        return self.reshape(new_shape)
+
     def to(self, device):
         self.device = device
         self.device_ctype = self.device.encode('utf-8')

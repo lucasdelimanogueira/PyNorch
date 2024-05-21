@@ -45,12 +45,11 @@ for epoch in range(epochs):
     for idx, batch in enumerate(train_loader):
         x, target = batch
 
-        x = x
-        print(x.shape)
+        x = x.unsqueeze(-1)
         target = target
 
         x = x.to(device)
-        target = target.to(device)
+        target = target.to(device).unsqueeze(-1)
 
         outputs = model(x)
         print(outputs.shape, target.shape, x.shape)
