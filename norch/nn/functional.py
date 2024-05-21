@@ -1,4 +1,6 @@
 import math
+import norch
+import numpy as np
 
 def sigmoid(x):
     return 1.0 / (1.0 + (math.e) ** (-x)) 
@@ -16,3 +18,16 @@ def softmax(x, dim=None):
     else:
         sum_exp_x = exp_x.sum()
         return exp_x / sum_exp_x
+    
+def one_hot_encode(x, num_classes):
+    one_hot = [[0] * num_classes for _ in range(x.numel)]
+    
+    # Set the appropriate elements to 1
+    for i in range(x.numel):
+        target_idx = int(x.tensor.contents.data[i])
+        one_hot[i][target_idx] = 1
+
+    if x.numel < 2:
+        one_hot = one_hot[0]
+
+    return norch.Tensor(one_hot)

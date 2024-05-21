@@ -6,12 +6,19 @@ import norch.optim as optim
 import random
 random.seed(1)
 
-torch_tensor = norch.Tensor([[[1, 5], [2, -1]], [[5, 2.], [2, 2]]], requires_grad=True)#.to(self.device)
-b = norch.nn.functional.softmax(torch_tensor, dim=0)
-soma = b.sum()
-print(soma)
-soma.backward()
-print(torch_tensor.grad)
+"""one_hot_target = norch.one_hot_encode(norch.Tensor([5]), num_classes=10)
+print(one_hot_target)"""
+
+logits = norch.Tensor([[2.0, 1.0, 0.1, 0.1], [2.0, 1.0, 0.1, 0.1], [2.0, 1.0, 0.1, 0.1]], requires_grad=True)
+
+# One-hot encoded target with shape (batch_size, num_classes)
+one_hot_target = norch.Tensor([0, 1, 1])
+
+criterion = nn.CrossEntropyLoss()
+
+loss = criterion(logits, one_hot_target)
+print(loss)
+
 
 """a = norch.Tensor([[[4.186502456665039]]])
 b = norch.Tensor([[[2.0, 2.0,],[-1.0, -1.0,]],[[1.0, 2.0,],[3.0, 3.0,]]])
