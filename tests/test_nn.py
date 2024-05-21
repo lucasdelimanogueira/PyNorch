@@ -95,13 +95,13 @@ class TestNNModuleActivationFn(unittest.TestCase):
         """    
 
         # Test different axes
-        axes = [None, 0, 1, -1]
+        axes = [0, 1, 2, -1]
 
         # Define the input tensors for different test cases
         test_cases = [
-            (norch.Tensor([[1., 2, 3], [4, 5, 6]]), torch.tensor([[1., 2, 3], [4, 5, 6]])),
-            (norch.Tensor([[1., -1, 0], [2, -2, 0]]), torch.tensor([[1., -1, 0], [2, -2, 0]])),
-            (norch.Tensor([[0., 0, 0], [0, 0, 0]]), torch.tensor([[0., 0, 0], [0, 0, 0]]))
+            (norch.Tensor([[[1., 2, 3], [4, 5, 6]]]), torch.tensor([[[1., 2, 3], [4, 5, 6]]])),
+            (norch.Tensor([[[1., -1, 0], [2, -2, 0]]]), torch.tensor([[[1., -1, 0], [2, -2, 0]]])),
+            (norch.Tensor([[[0., 0, 0], [0, 0, 0]]]), torch.tensor([[[0., 0, 0], [0, 0, 0]]]))
         ]
 
         for dim in axes:
@@ -121,7 +121,5 @@ class TestNNModuleActivationFn(unittest.TestCase):
                 softmax_torch_expected = softmax_fn_torch.forward(torch_input)
 
                 # Compare the results
-                print(softmax_torch_result)
-                print(softmax_torch_expected)
                 self.assertTrue(utils.compare_torch(softmax_torch_result, softmax_torch_expected))
 

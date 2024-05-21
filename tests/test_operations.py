@@ -260,6 +260,17 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+        # negative axis
+
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.sum(axis=-2)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected = torch.sum(torch_tensor, dim=-2)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
 
     def test_sum_axis_keepdim(self):
         """
@@ -301,6 +312,17 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+        # negative axis
+
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.max(axis=-1)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.max(torch_tensor, dim=-1)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
 
     def test_max_axis_keepdim(self):
         """
@@ -338,6 +360,17 @@ class TestTensorOperations(unittest.TestCase):
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected, _ = torch.min(torch_tensor, dim=1)
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+        # negative axis
+
+        norch_tensor = norch.Tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_result = norch_tensor.min(axis=-1)
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_expected, _ = torch.min(torch_tensor, dim=-1)
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 

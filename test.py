@@ -7,8 +7,9 @@ import random
 random.seed(1)
 
 torch_tensor = norch.Tensor([[[2, 2], [-1, -1]], [[1., 2], [3, 3]]], requires_grad=True)#.to(self.device)
+torch_tensor = norch.Tensor([[[2, 2], [2, 2]], [[2, 2.], [2, 2]]])
 b = norch.nn.functional.softmax(torch_tensor)
-
+print(b)
 
 """a = norch.Tensor([[[4.186502456665039]]])
 b = norch.Tensor([[[2.0, 2.0,],[-1.0, -1.0,]],[[1.0, 2.0,],[3.0, 3.0,]]])

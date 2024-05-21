@@ -639,7 +639,7 @@ extern "C" {
 
     Tensor* tensor_div_tensor(Tensor* tensor1, Tensor* tensor2) {
         if (tensor1->ndim != tensor2->ndim) {
-            fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for element-wise multiplication\n", tensor1->ndim, tensor2->ndim);
+            fprintf(stderr, "Tensors must have the same number of dimensions %d and %d for element-wise division\n", tensor1->ndim, tensor2->ndim);
             exit(1);
         }
 
@@ -664,7 +664,7 @@ extern "C" {
 
         for (int i = 0; i < ndim; i++) {
             if (tensor1->shape[i] != tensor2->shape[i]) {
-                fprintf(stderr, "Tensors must have the same shape %d and %d at index %d for subtraction\n", tensor1->shape[i], tensor2->shape[i], i);
+                fprintf(stderr, "Tensors must have the same shape %d and %d at index %d for division\n", tensor1->shape[i], tensor2->shape[i], i);
                 exit(1);
             }
             shape[i] = tensor1->shape[i];

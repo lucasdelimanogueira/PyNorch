@@ -613,6 +613,9 @@ class Tensor:
                 result_data.grad_fn = DivisionBackward(self, other)
         
         elif isinstance(self, Tensor) and isinstance(other, Tensor):
+            if other.numel == 1:
+                return self.__truediv__(other.tensor.contents.data[0])
+            
             Tensor._C.tensor_div_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.POINTER(CTensor)]
             Tensor._C.tensor_div_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -749,8 +752,12 @@ class Tensor:
         return result_data
     
     def sum(self, axis=None, keepdim=False):
+        if axis is not None and axis < 0:
+            axis = self.ndim + axis
+            
         if axis == None:
             axis = -1
+
         Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.sum_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -786,12 +793,15 @@ class Tensor:
         return result_data
     
     def max(self, axis=None, keepdim=False):
+        if axis is not None and axis < 0:
+            axis = self.ndim + axis
+            
         if axis == None:
             axis = -1
+
         Tensor._C.max_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.max_tensor.restype = ctypes.POINTER(CTensor)
 
-        print(axis, keepdim)
         result_tensor_ptr = Tensor._C.max_tensor(self.tensor, axis, keepdim)
 
         result_data = Tensor()
@@ -824,8 +834,12 @@ class Tensor:
         return result_data
     
     def min(self, axis=None, keepdim=False):
+        if axis is not None and axis < 0:
+            axis = self.ndim + axis
+
         if axis == None:
             axis = -1
+        
         Tensor._C.min_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.min_tensor.restype = ctypes.POINTER(CTensor)
 
