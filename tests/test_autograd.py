@@ -824,7 +824,74 @@ class TestTensorAutograd(unittest.TestCase):
         self.assertTrue(utils.compare_torch(norch_tensor_grad_reshape_matmul1, torch_tensor_grad_reshape_matmul1))
         self.assertTrue(utils.compare_torch(norch_tensor_grad_reshape_matmul2, torch_tensor_grad_reshape_matmul2))
 
+    def test_unsqueeze(self):
+        """
+        Test autograd from unsqueezing a tensor: tensor.unsqueeze(dim)
+        """
+        
+        # Unsqueeze at dim=0
+        norch_tensor_unsqueeze = norch.Tensor([[1., 2], [3, 4]], requires_grad=True).to(self.device)
+        norch_result_unsqueeze_0 = norch_tensor_unsqueeze.unsqueeze(0).sum()
+        norch_result_unsqueeze_0.backward()
+        norch_tensor_grad_unsqueeze_0 = utils.to_torch(norch_tensor_unsqueeze.grad).to(self.device)
 
+        torch_tensor_unsqueeze = torch.tensor([[1., 2], [3, 4]], requires_grad=True).to(self.device)
+        torch_result_unsqueeze_0 = torch_tensor_unsqueeze.unsqueeze(0).sum()
+        torch_result_unsqueeze_0.backward()
+        torch_tensor_grad_unsqueeze_0 = torch_tensor_unsqueeze.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_unsqueeze_0, torch_tensor_grad_unsqueeze_0))
+
+        # Unsqueeze at dim=1
+        norch_tensor_unsqueeze = norch.Tensor([[1., 2.], [3, 4]], requires_grad=True).to(self.device)
+        norch_result_unsqueeze_1 = norch_tensor_unsqueeze.unsqueeze(1).sum()
+        norch_result_unsqueeze_1.backward()
+        norch_tensor_grad_unsqueeze_1 = utils.to_torch(norch_tensor_unsqueeze.grad).to(self.device)
+
+        torch_tensor_unsqueeze = torch.tensor([[1., 2.], [3, 4]], requires_grad=True).to(self.device)
+        torch_result_unsqueeze_1 = torch_tensor_unsqueeze.unsqueeze(1).sum()
+        torch_result_unsqueeze_1.backward()
+        torch_tensor_grad_unsqueeze_1 = torch_tensor_unsqueeze.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_unsqueeze_1, torch_tensor_grad_unsqueeze_1))
+
+        # Unsqueeze at dim=2
+        norch_tensor_unsqueeze = norch.Tensor([[1., 2], [3, 4]], requires_grad=True).to(self.device)
+        norch_result_unsqueeze_2 = norch_tensor_unsqueeze.unsqueeze(2).sum()
+        norch_result_unsqueeze_2.backward()
+        norch_tensor_grad_unsqueeze_2 = utils.to_torch(norch_tensor_unsqueeze.grad).to(self.device)
+
+        torch_tensor_unsqueeze = torch.tensor([[1., 2], [3, 4]], requires_grad=True).to(self.device)
+        torch_result_unsqueeze_2 = torch_tensor_unsqueeze.unsqueeze(2).sum()
+        torch_result_unsqueeze_2.backward()
+        torch_tensor_grad_unsqueeze_2 = torch_tensor_unsqueeze.grad
+
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_unsqueeze_2, torch_tensor_grad_unsqueeze_2))
+
+    def test_unsqueeze_then_matmul(self):
+        """
+        Test autograd from unsqueezing a tensor then performing matrix multiplication: matmul(tensor1.unsqueeze(dim), tensor2)
+        """
+        norch_tensor1 = norch.Tensor([[1, 2], [3, 4]], requires_grad=True).to(self.device)
+        norch_tensor2 = norch.Tensor([[1, 2], [3, 4]], requires_grad=True).to(self.device)
+        
+        # Unsqueeze at dim=0 then matmul
+        norch_result_unsqueeze_matmul = (norch_tensor1 @ norch_tensor2.unsqueeze(0)).sum()
+        norch_result_unsqueeze_matmul.backward()
+        norch_tensor_grad_unsqueeze_matmul1 = utils.to_torch(norch_tensor1.grad).to(self.device)
+        norch_tensor_grad_unsqueeze_matmul2 = utils.to_torch(norch_tensor2.grad).to(self.device)
+
+        torch_tensor1 = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32, requires_grad=True).to(self.device)
+        torch_tensor2 = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32, requires_grad=True).to(self.device)
+        
+        torch_result_unsqueeze_matmul = (torch_tensor1 @ torch_tensor2.unsqueeze(0)).sum()
+        torch_result_unsqueeze_matmul.backward()
+        torch_tensor_grad_unsqueeze_matmul1 = torch_tensor1.grad
+        torch_tensor_grad_unsqueeze_matmul2 = torch_tensor2.grad
+        
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_unsqueeze_matmul1, torch_tensor_grad_unsqueeze_matmul1))
+        self.assertTrue(utils.compare_torch(norch_tensor_grad_unsqueeze_matmul2, torch_tensor_grad_unsqueeze_matmul2))
+        
     def test_T_then_matmul(self):
         """
         Test autograd from transposing a tensor then performing matrix multiplication: matmul(tensor.T, tensor)

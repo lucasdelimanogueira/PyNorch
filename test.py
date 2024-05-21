@@ -6,37 +6,6 @@ import norch.optim as optim
 import random
 random.seed(1)
 
-"""one_hot_target = norch.one_hot_encode(norch.Tensor([5]), num_classes=10)
-print(one_hot_target)"""
-
-logits = norch.Tensor([[2.0, 1.0, 0.1, 0.1], [2.0, 1.0, 0.1, 0.1], [2.0, 1.0, 0.1, 0.1]], requires_grad=True)
-
-# One-hot encoded target with shape (batch_size, num_classes)
-one_hot_target = norch.Tensor([0, 1, 1])
-
-criterion = nn.CrossEntropyLoss()
-
-loss = criterion(logits, one_hot_target)
-print(loss)
-
-
-"""a = norch.Tensor([[[4.186502456665039]]])
-b = norch.Tensor([[[2.0, 2.0,],[-1.0, -1.0,]],[[1.0, 2.0,],[3.0, 3.0,]]])
-
-print(b)
-print(a.shape)
-print(b-a)"""
-
-"""print(torch_tensor.shape)
-print('\n\n')
-torch_tensor2 = torch_tensor.max(axis=1)
-print(torch_tensor2.shape)
-print('\n\n')
-c = torch_tensor + torch_tensor2
-print(c)
-"""
-
-"""
 
 to_tensor = lambda x: norch.Tensor(x)
 reshape = lambda x: x.reshape([-1, 784])
@@ -53,9 +22,9 @@ train_loader = Dataloader(train_data, batch_size = BATCH_SIZE)
 class MyModel(nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
-        self.fc1 = nn.Linear(784, 10)
+        self.fc1 = nn.Linear(784, 5)
         self.sigmoid = nn.Sigmoid()
-        self.fc2 = nn.Linear(10, 1)
+        self.fc2 = nn.Linear(5, 10)
 
     def forward(self, x):
         out = self.fc1(x)
@@ -68,7 +37,7 @@ device = "cpu"
 epochs = 10
 
 model = MyModel().to(device)
-criterion = nn.MSELoss()
+criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001)
 loss_list = []
 
@@ -77,13 +46,13 @@ for epoch in range(epochs):
         x, target = batch
 
         x = x.T
-        target = target.T 
+        target = target
 
         x = x.to(device)
         target = target.to(device)
 
         outputs = model(x)
-
+        print(outputs.shape, target.shape)
         loss = criterion(outputs, target)
         
         optimizer.zero_grad()
@@ -103,4 +72,4 @@ for epoch in range(epochs):
         print('\n\n')
 
     print(f'Epoch [{epoch + 1}/{epochs}], Loss: {loss[0]:.4f}')
-    loss_list.append(loss[0])"""
+    loss_list.append(loss[0])

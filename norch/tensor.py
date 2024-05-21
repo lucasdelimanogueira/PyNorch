@@ -153,6 +153,17 @@ class Tensor:
             result_data.grad_fn = ReshapeBackward(self)
 
         return result_data
+
+    def unsqueeze(self, dim):
+        # Ensure the dimension is valid
+        if dim < 0 or dim > self.ndim:
+            raise ValueError("Dimension out of range (expected to be in range of [0, {0}], but got {1})".format(self.ndim, dim))
+        
+        # Create the new shape with an extra dimension of size 1
+        new_shape = self.shape[:dim] + [1] + self.shape[dim:]
+        
+        return self.reshape(new_shape)
+
     
     def to(self, device):
         self.device = device

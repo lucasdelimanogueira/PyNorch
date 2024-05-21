@@ -207,6 +207,31 @@ class TestTensorOperations(unittest.TestCase):
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_unsqueeze(self):
+        """
+        Test unsqueeze operation on a tensor
+        """
+        norch_tensor = norch.Tensor([[1, 2], [3, 4]]).to(self.device)
+        
+        # Unsqueeze at dim=0
+        norch_unsqueeze_0 = norch_tensor.unsqueeze(0)
+        torch_unsqueeze_0 = utils.to_torch(norch_unsqueeze_0).to(self.device)
+        torch_tensor = torch.tensor([[1, 2], [3, 4]]).to(self.device)
+        torch_expected_0 = torch_tensor.unsqueeze(0)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_0, torch_expected_0))
+
+        # Unsqueeze at dim=1
+        norch_unsqueeze_1 = norch_tensor.unsqueeze(1)
+        torch_unsqueeze_1 = utils.to_torch(norch_unsqueeze_1).to(self.device)
+        torch_expected_1 = torch_tensor.unsqueeze(1)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_1, torch_expected_1))
+
+        # Unsqueeze at dim=2
+        norch_unsqueeze_2 = norch_tensor.unsqueeze(2)
+        torch_unsqueeze_2 = utils.to_torch(norch_unsqueeze_2).to(self.device)
+        torch_expected_2 = torch_tensor.unsqueeze(2)
+        self.assertTrue(utils.compare_torch(torch_unsqueeze_2, torch_expected_2))
+
     def test_transpose(self):
         """
         Test transposition of a tensor: tensor.transpose(dim1, dim2)
