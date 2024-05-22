@@ -751,7 +751,7 @@ extern "C" {
     }
 
     Tensor* broadcasted_batched_matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
-        //MxN @ BATCHxNxP = BATCHxMxP
+        //BATCHxMxP = MxN @ BATCHxNxP
         // Check if tensors have compatible shapes for matrix multiplication
         if (tensor1->shape[1] != tensor2->shape[1]) {
             fprintf(stderr, "Incompatible shapes for broadcasted batched matrix multiplication %dx%d and %dx%dx%d\n", tensor1->shape[0], tensor1->shape[1], tensor2->shape[0], tensor2->shape[1], tensor2->shape[2]);
@@ -797,7 +797,7 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
-            ////broadcasted_batched_matmul_tensor_cuda(tensor1, tensor2, result_data);
+            broadcasted_batched_matmul_tensor_cuda(tensor1, tensor2, result_data);
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
@@ -813,7 +813,7 @@ extern "C" {
     }
 
     Tensor* batched_matmul_tensor(Tensor* tensor1, Tensor* tensor2) {
-        //BATCHxMxN @ BATCHxNxP = BATCHxMxP
+        //BATCHxMxP = BATCHxMxN @ BATCHxNxP
         // Check if tensors have compatible shapes for matrix multiplication
 
         if (tensor1->shape[0] != tensor2->shape[0]) {

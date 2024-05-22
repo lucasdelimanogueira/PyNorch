@@ -40,6 +40,9 @@
     __global__ void batched_matmul_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int batch_size, int rows1, int cols1, int cols2);
     __host__ void batched_matmul_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data);
 
+    __global__ void broadcasted_batched_matmul_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int batch_size, int rows1, int cols1, int cols2);
+    __host__ void broadcasted_batched_matmul_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data);
+
     __global__ void tensor_pow_scalar_cuda_kernel(float* data, float exponent, float* result_data, int size);
     __host__ void tensor_pow_scalar_cuda(Tensor* tensor, float exponent, float* result_data);
 
