@@ -182,6 +182,11 @@ extern "C" {
         }
         int ndim;
         int* shape;
+
+        if (axis > tensor->ndim - 1) {
+            fprintf(stderr, "Error: axis argument %d must be smaller than tensor dimension %d", axis, tensor->ndim);
+        }
+
         if (axis == -1) {
             
             shape = (int*) malloc(sizeof(int));

@@ -141,33 +141,24 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
     }
 }
 
-__global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int* shape, int* strides, int ndim, int axis, int axis_size) {
+__global__ void sum_tensor_axis_cuda_kernel(float* data, float* result_data, int size, int axis_size) {
     __shared__ float partial_sum[THREADS_PER_BLOCK];
 
     int tid = threadIdx.x;
-    int bid = blockIdx.x;
-    int i = bid * blockDim.x + tid;
+    int block_offset = blockIdx.x * axis_size;
+    int i = block_offset + tid;
 
-    int total_size = 1;
-    for (int i = 0; i < ndim; i++) {
-        total_size *= shape[i];
-    }
-
-    int outer_dim_size = total_size / (axis_size * shape[axis]);
-
-    partial_sum[tid] = 0.0;
-    if (i < outer_dim_size) {
-        for (int j = 0; j < axis_size; j++) {
-            int idx = i * strides[axis] + j * strides[axis + 1];
-            partial_sum[tid] += data[idx];
-        }
+    partial_sum[tid] = 0.0f;
+    while (i < block_offset + axis_size && i < size) {
+        partial_sum[tid] += data[i];
+        i += blockDim.x;
     }
 
     __syncthreads();
 
     // Perform block-wise reduction
     for (int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
+        if (tid < s && i < block_offset + axis_size) {
             partial_sum[tid] += partial_sum[tid + s];
         }
         __syncthreads();
@@ -175,7 +166,7 @@ __global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int
 
     // Write block sum to global memory
     if (tid == 0) {
-        result_data[bid] = partial_sum[0];
+        result_data[blockIdx.x] = partial_sum[0];
     }
 }
 
@@ -203,33 +194,31 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
         }
 
         cudaDeviceSynchronize();
-        
-    } else {
-        if (axis < 0 || axis >= tensor->ndim) {
-            printf("Invalid axis\n");
-            return;
-        }
 
-        int total_size = tensor->size;
+    } else {
         int axis_size = tensor->shape[axis];
 
-        int outer_dim_size = total_size / axis_size;
+        // Allocate memory for temporary storage on the device
+        float* temp_data;
+        cudaMalloc(&temp_data, tensor->size * sizeof(float));
 
-        int num_blocks = (outer_dim_size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+        // Copy tensor data to device
+        cudaMemcpy(temp_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
 
-        int* d_shape;
-        int* d_strides;
-        cudaMalloc(&d_shape, tensor->ndim * sizeof(int));
-        cudaMalloc(&d_strides, tensor->ndim * sizeof(int));
-        cudaMemcpy(d_shape, tensor->shape, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_strides, tensor->strides, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+        int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
-        sum_tensor_cuda_kernel_axis<<<num_blocks, THREADS_PER_BLOCK>>>(
-            tensor->data, result_data, d_shape, d_strides, tensor->ndim, axis, axis_size
-        );
+        // First-level reduction
+        sum_tensor_axis_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(temp_data, result_data, tensor->size, axis_size);
 
-        cudaFree(d_shape);
-        cudaFree(d_strides);
+        // If necessary, perform multiple levels of reduction
+        while (num_blocks > 1) {
+            int num_blocks_next = (num_blocks + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+            sum_tensor_cuda_kernel<<<num_blocks_next, THREADS_PER_BLOCK>>>(result_data, result_data, num_blocks);
+            num_blocks = num_blocks_next;
+        }
+
+        // Free allocated memory on the device
+        cudaFree(temp_data);
 
         cudaError_t error = cudaGetLastError();
         if (error != cudaSuccess) {

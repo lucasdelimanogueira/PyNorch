@@ -793,6 +793,9 @@ class Tensor:
         if axis == None:
             axis = -1
 
+        if axis > self.ndim - 1:
+            raise ValueError(f"Error: axis argument {axis} cannot be higher than tensor dimension {self.ndim}")
+
         Tensor._C.sum_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.sum_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -834,6 +837,9 @@ class Tensor:
         if axis == None:
             axis = -1
 
+        if axis > self.ndim - 1:
+            raise ValueError(f"Error: axis argument {axis} cannot be higher than tensor dimension {self.ndim}")
+
         Tensor._C.max_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.max_tensor.restype = ctypes.POINTER(CTensor)
 
@@ -874,6 +880,9 @@ class Tensor:
 
         if axis == None:
             axis = -1
+
+        if axis > self.ndim - 1:
+            raise ValueError(f"Error: axis argument {axis} must be smaller than tensor dimension {self.ndim}")
         
         Tensor._C.min_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int, ctypes.c_bool]
         Tensor._C.min_tensor.restype = ctypes.POINTER(CTensor)
