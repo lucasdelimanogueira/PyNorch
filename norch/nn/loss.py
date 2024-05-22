@@ -38,7 +38,9 @@ class CrossEntropyLoss(Loss):
         
         assert isinstance(target, norch.Tensor), \
             "Cross entropy argument 'target' must be Tensor, not {}".format(type(target))
-        
+        if input.ndim > 2:
+            input = input.squeeze(-1)
+
         if input.ndim == 1:
             if target.numel == 1:
                 num_classes = input.shape[0]

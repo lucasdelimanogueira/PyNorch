@@ -60,12 +60,88 @@ class MyModel(nn.Module):
         return out
 ```
 
+### 3.3 - Example training
+```python
+import norch
+from norch.utils.data.dataloader import Dataloader
+from norch.norchvision import transforms
+import norch
+import norch.nn as nn
+import norch.optim as optim
+import random
+random.seed(1)
+
+BATCH_SIZE = 32
+device = "cpu"
+epochs = 10
+
+transform = transforms.Sequential(
+    [
+        transforms.ToTensor(),
+        transforms.Reshape([-1, 784, 1])
+    ]
+)
+
+target_transform = transforms.Sequential(
+    [
+        transforms.ToTensor()
+    ]
+)
+
+train_data, test_data = norch.norchvision.datasets.MNIST.splits(transform=transform, target_transform=target_transform)
+train_loader = Dataloader(train_data, batch_size = BATCH_SIZE)
+
+class MyModel(nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+        self.fc1 = nn.Linear(784, 30)
+        self.sigmoid1 = nn.Sigmoid()
+        self.fc2 = nn.Linear(30, 10)
+        self.sigmoid2 = nn.Sigmoid()
+
+    def forward(self, x):
+        out = self.fc1(x)
+        out = self.sigmoid1(out)
+        out = self.fc2(out)
+        out = self.sigmoid2(out)
+        
+        return out
+
+model = MyModel().to(device)
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.01)
+loss_list = []
+
+for epoch in range(epochs):    
+    for idx, batch in enumerate(train_loader):
+
+        inputs, target = batch
+
+        inputs = inputs.to(device)
+        target = target.to(device)
+
+        outputs = model(inputs)
+        
+        loss = criterion(outputs, target)
+        
+        optimizer.zero_grad()
+        
+        loss.backward()
+
+        optimizer.step()
+
+    print(f'Epoch [{epoch + 1}/{epochs}], Loss: {loss[0]:.4f}')
+    loss_list.append(loss[0])
+
+```
+
+
 # 4 - Progress
 
 | Development                  | Status      | Feature                                                                |
 | ---------------------------- | ----------- | ---------------------------------------------------------------------- |
-| Operations                   | in progress | <ul><li>[ ] Broadcasting </li></ul>                     |
-| Loss                         | in progress | <ul><li>[x] MSE</li><li>[ ] Cross Entropy</li></ul>    |
-| Data                         | in progress    | <ul><li>[ ] Dataset</li><li>[ ] Batch</li><li>[ ] Iterator</li></ul>   |
+| Operations                   | in progress | <ul><li>[x] Broadcasting </li></ul>                     |
+| Loss                         | in progress | <ul><li>[x] MSE</li><li>[x] Cross Entropy</li></ul>    |
+| Data                         | in progress    | <ul><li>[x] Dataset</li><li>[x] Batch</li><li>[x] Iterator</li></ul>   |
 | Convolutional Neural Network | in progress    | <ul><li>[ ] Conv2d</li><li>[ ] MaxPool2d</li><li>[ ] Dropout</li></ul> |
 | Distributed                  | in progress | <ul><li>[ ] Distributed Data Parallel</li></ul>             
