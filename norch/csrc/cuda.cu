@@ -194,7 +194,7 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
         }
 
         cudaDeviceSynchronize();
-
+        
     } else {
         int axis_size = tensor->shape[axis];
 

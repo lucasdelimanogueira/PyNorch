@@ -211,7 +211,6 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void**)&result_data, size * sizeof(float));
-            cudaMemset(result_data, 0, size * sizeof(float));
             sum_tensor_cuda(tensor, result_data, axis);
             
             if (keepdim) {
