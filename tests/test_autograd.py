@@ -601,7 +601,7 @@ class TestTensorAutograd(unittest.TestCase):
 
         torch_result.backward()
         torch_tensor_grad = torch_tensor.grad
-        
+
         self.assertTrue(utils.compare_torch(norch_tensor_grad, torch_tensor_grad))
 
     def test_mse_loss_autograd(self):

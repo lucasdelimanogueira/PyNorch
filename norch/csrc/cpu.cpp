@@ -405,6 +405,22 @@ void sin_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }
 
+void sigmoid_tensor_cpu(Tensor* tensor, float* result_data) {
+    for (int i = 0; i < tensor->size; i++) {
+        // avoid overflow
+        if (tensor->data[i] >= 0) {
+
+            float z = expf(-tensor->data[i]);
+            result_data[i] = 1 / (1 + z);
+
+        } else {
+
+            float z = expf(tensor->data[i]);
+            result_data[i] = z / (1 + z);
+        }
+    }
+}
+
 void cos_tensor_cpu(Tensor* tensor, float* result_data) {
     for (int i = 0; i < tensor->size; i++) {
         result_data[i] = cosf(tensor->data[i]);

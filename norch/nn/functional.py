@@ -1,9 +1,11 @@
 import math
 import norch
 import numpy as np
+from norch.autograd.functions import *
 
 def sigmoid(x):
-    return 1.0 / (1.0 + (math.e) ** (-x)) 
+    z = x.sigmoid()
+    return z
 
 def softmax(x, dim=None):
     if dim is not None and dim < 0:

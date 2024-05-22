@@ -81,9 +81,9 @@ train_loader = Dataloader(train_data, batch_size = BATCH_SIZE)
 class MyModel(nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
-        self.fc1 = nn.Linear(784, 5)
+        self.fc1 = nn.Linear(784, 10)
         self.sigmoid1 = nn.Sigmoid()
-        self.fc2 = nn.Linear(5, 10)
+        self.fc2 = nn.Linear(10, 10)
         self.sigmoid2 = nn.Sigmoid()
 
     def forward(self, x):

@@ -948,6 +948,25 @@ class Tensor:
         
         return result_data
     
+    def sigmoid(self):
+        Tensor._C.sigmoid_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.sigmoid_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.sigmoid_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        result_data.numel = self.numel
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = SigmoidBackward(self)
+        
+        return result_data
+    
 
     
     def transpose(self, axis1, axis2):

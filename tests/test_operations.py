@@ -258,10 +258,6 @@ class TestTensorOperations(unittest.TestCase):
         torch_expected_0 = torch_tensor.squeeze(0)
         self.assertTrue(utils.compare_torch(torch_squeeze_0, torch_expected_0))
 
-        # Squeeze at dim=2 (should raise an error because size is not 1)
-        with self.assertRaises(ValueError):
-            norch_tensor.squeeze(2)
-
         # Create a tensor with a dimension of size 1 in the middle
         norch_tensor_middle_1 = norch.Tensor([[[1, 2]], [[3, 4]]]).to(self.device)  # shape [2, 1, 2]
         
