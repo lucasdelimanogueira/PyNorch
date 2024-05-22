@@ -141,28 +141,104 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
     }
 }
 
-__host__ void sum_tensor_cuda(Tensor* tensor, float* result_data) {
-    cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
+__global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int* shape, int* strides, int ndim, int axis, int axis_size) {
+    __shared__ float partial_sum[THREADS_PER_BLOCK];
 
-    int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    int tid = threadIdx.x;
+    int bid = blockIdx.x;
+    int i = bid * blockDim.x + tid;
 
-    // First-level reduction
-    sum_tensor_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
-
-    // If necessary, perform multiple levels of reduction
-    while (num_blocks > 1) {
-        int num_blocks_next = (num_blocks + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        sum_tensor_cuda_kernel<<<num_blocks_next, THREADS_PER_BLOCK>>>(result_data, result_data, num_blocks);
-        num_blocks = num_blocks_next;
+    int total_size = 1;
+    for (int i = 0; i < ndim; i++) {
+        total_size *= shape[i];
     }
 
-    cudaError_t error = cudaGetLastError();
-    if (error != cudaSuccess) {
-        printf("CUDA error: %s\n", cudaGetErrorString(error));
-        exit(-1);
+    int outer_dim_size = total_size / (axis_size * shape[axis]);
+
+    partial_sum[tid] = 0.0;
+    if (i < outer_dim_size) {
+        for (int j = 0; j < axis_size; j++) {
+            int idx = i * strides[axis] + j * strides[axis + 1];
+            partial_sum[tid] += data[idx];
+        }
     }
 
-    cudaDeviceSynchronize();
+    __syncthreads();
+
+    // Perform block-wise reduction
+    for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            partial_sum[tid] += partial_sum[tid + s];
+        }
+        __syncthreads();
+    }
+
+    // Write block sum to global memory
+    if (tid == 0) {
+        result_data[bid] = partial_sum[0];
+    }
+}
+
+
+__host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
+    if (axis == -1) {
+        cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
+
+        int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+        // First-level reduction
+        sum_tensor_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
+
+        // If necessary, perform multiple levels of reduction
+        while (num_blocks > 1) {
+            int num_blocks_next = (num_blocks + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+            sum_tensor_cuda_kernel<<<num_blocks_next, THREADS_PER_BLOCK>>>(result_data, result_data, num_blocks);
+            num_blocks = num_blocks_next;
+        }
+
+        cudaError_t error = cudaGetLastError();
+        if (error != cudaSuccess) {
+            printf("CUDA error: %s\n", cudaGetErrorString(error));
+            exit(-1);
+        }
+
+        cudaDeviceSynchronize();
+        
+    } else {
+        if (axis < 0 || axis >= tensor->ndim) {
+            printf("Invalid axis\n");
+            return;
+        }
+
+        int total_size = tensor->size;
+        int axis_size = tensor->shape[axis];
+
+        int outer_dim_size = total_size / axis_size;
+
+        int num_blocks = (outer_dim_size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+        int* d_shape;
+        int* d_strides;
+        cudaMalloc(&d_shape, tensor->ndim * sizeof(int));
+        cudaMalloc(&d_strides, tensor->ndim * sizeof(int));
+        cudaMemcpy(d_shape, tensor->shape, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_strides, tensor->strides, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+
+        sum_tensor_cuda_kernel_axis<<<num_blocks, THREADS_PER_BLOCK>>>(
+            tensor->data, result_data, d_shape, d_strides, tensor->ndim, axis, axis_size
+        );
+
+        cudaFree(d_shape);
+        cudaFree(d_strides);
+
+        cudaError_t error = cudaGetLastError();
+        if (error != cudaSuccess) {
+            printf("CUDA error: %s\n", cudaGetErrorString(error));
+            exit(-1);
+        }
+
+        cudaDeviceSynchronize();
+    }
 }
 
 __global__ void sub_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int size) {

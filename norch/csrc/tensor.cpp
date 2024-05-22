@@ -207,7 +207,25 @@ extern "C" {
             float* result_data;
             cudaMalloc((void**)&result_data, size * sizeof(float));
             cudaMemset(result_data, 0, size * sizeof(float));
-            sum_tensor_cuda(tensor, result_data);
+            sum_tensor_cuda(tensor, result_data, axis);
+            
+            if (keepdim) {
+                if (axis == -1){
+                    ndim = tensor->ndim;
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = 1;
+                    }
+                } else {
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = tensor->shape[i];
+                    }
+                    shape[axis] = 1;
+                    ndim = tensor->ndim;
+                }
+                
+            }
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
