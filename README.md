@@ -1,6 +1,8 @@
 # PyNorch
 Recreating PyTorch from scratch (C/C++, CUDA and Python, with GPU support and automatic differentiation!)
 
+Project details explanations can also be found on [medium](https://towardsdatascience.com/recreating-pytorch-from-scratch-with-gpu-support-and-automatic-differentiation-8f565122a3cc).
+
 # 1 - About
 **PyNorch** is a deep learning framework constructed using C/C++, CUDA and Python. This is a personal project with educational purpose only! `Norch` means **NOT** PyTorch, and we have **NO** claims to rivaling the already established PyTorch. The main objective of **PyNorch** was to give a brief understanding of how a deep learning framework works internally. It implements the Tensor object, GPU support and an automatic differentiation system. 
 
@@ -140,8 +142,8 @@ for epoch in range(epochs):
 
 | Development                  | Status      | Feature                                                                |
 | ---------------------------- | ----------- | ---------------------------------------------------------------------- |
-| Operations                   | in progress | <ul><li>[x] Broadcasting </li></ul>                     |
-| Loss                         | in progress | <ul><li>[x] MSE</li><li>[x] Cross Entropy</li></ul>    |
-| Data                         | in progress    | <ul><li>[x] Dataset</li><li>[x] Batch</li><li>[x] Iterator</li></ul>   |
+| Operations                   | in progress | <ul><li>[X] GPU Support</li><li>[X] Autograd</li><li>[X] Broadcasting</li></ul>                 |
+| Loss                         | in progress | <ul><li>[x] MSE</li><li>[X] Cross Entropy</li></ul>    |
+| Data                         | in progress    | <ul><li>[X] Dataset</li><li>[X] Batch</li><li>[X] Iterator</li></ul>   |
 | Convolutional Neural Network | in progress    | <ul><li>[ ] Conv2d</li><li>[ ] MaxPool2d</li><li>[ ] Dropout</li></ul> |
 | Distributed                  | in progress | <ul><li>[ ] Distributed Data Parallel</li></ul>             
