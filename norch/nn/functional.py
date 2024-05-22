@@ -1,9 +1,11 @@
 import math
 import norch
 import numpy as np
+from norch.autograd.functions import *
 
 def sigmoid(x):
-    return 1.0 / (1.0 + (math.e) ** (-x)) 
+    z = x.sigmoid()
+    return z
 
 def softmax(x, dim=None):
     if dim is not None and dim < 0:
@@ -26,8 +28,5 @@ def one_hot_encode(x, num_classes):
     for i in range(x.numel):
         target_idx = int(x.tensor.contents.data[i])
         one_hot[i][target_idx] = 1
-
-    if x.numel < 2:
-        one_hot = one_hot[0]
 
     return norch.Tensor(one_hot)

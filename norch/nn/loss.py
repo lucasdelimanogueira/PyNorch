@@ -38,13 +38,16 @@ class CrossEntropyLoss(Loss):
         
         assert isinstance(target, norch.Tensor), \
             "Cross entropy argument 'target' must be Tensor, not {}".format(type(target))
-        
+        if input.ndim > 2:
+            input = input.squeeze(-1)
+
         if input.ndim == 1:
             if target.numel == 1:
                 num_classes = input.shape[0]
                 target = norch.one_hot_encode(target, num_classes)
                 
                 logits = norch.softmax(input, dim=0)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum()
                 
             else:
@@ -52,10 +55,13 @@ class CrossEntropyLoss(Loss):
                 assert target.shape == input.shape, \
                     "Input and target shape does not match: {} and {}".format(input.shape, target.shape)
                 logits = norch.softmax(input, dim=0)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum()
 
 
         elif input.ndim == 2:
+            if target.ndim > 1:
+                target = target.squeeze(-1)
             # batched 
             if target.ndim == 1:
                 # target -> Ground truth class indices:
@@ -65,6 +71,7 @@ class CrossEntropyLoss(Loss):
                 
                 batch_size = input.shape[0]
                 logits = norch.softmax(input, dim=1)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum() / batch_size
 
             else:
@@ -74,6 +81,7 @@ class CrossEntropyLoss(Loss):
                 
                 batch_size = input.shape[0]
                 logits = norch.softmax(input, dim=1)
+                target = target.reshape(logits.shape)
                 cost = -(logits.log() * target).sum() / batch_size
 
         if input.requires_grad:

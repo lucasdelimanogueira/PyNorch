@@ -178,7 +178,8 @@ class Tensor:
             
             # Only squeeze the specified dimension if its size is 1
             if self.shape[dim] != 1:
-                raise ValueError("Dimension {0} does not have size 1 and cannot be squeezed".format(dim))
+                return self
+                #raise ValueError("Dimension {0} does not have size 1 and cannot be squeezed".format(dim))
             
             # Create the new shape without the specified dimension
             new_shape = self.shape[:dim] + self.shape[dim+1:]
@@ -944,6 +945,25 @@ class Tensor:
         result_data.requires_grad = self.requires_grad
         if result_data.requires_grad:
             result_data.grad_fn = CosBackward(self)
+        
+        return result_data
+    
+    def sigmoid(self):
+        Tensor._C.sigmoid_tensor.argtypes = [ctypes.POINTER(CTensor)]
+        Tensor._C.sigmoid_tensor.restype = ctypes.POINTER(CTensor)
+
+        result_tensor_ptr = Tensor._C.sigmoid_tensor(self.tensor)
+
+        result_data = Tensor()
+        result_data.tensor = result_tensor_ptr
+        result_data.shape = self.shape.copy()
+        result_data.ndim = self.ndim
+        result_data.device = self.device
+        result_data.numel = self.numel
+
+        result_data.requires_grad = self.requires_grad
+        if result_data.requires_grad:
+            result_data.grad_fn = SigmoidBackward(self)
         
         return result_data
     

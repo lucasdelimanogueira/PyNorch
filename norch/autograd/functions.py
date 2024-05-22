@@ -28,7 +28,7 @@ class AddBroadcastedBackward:
         for i in range(len(shape)):
             if shape[i] == 1:
                 gradient = gradient.sum(axis=i, keepdim=True)
-
+        
         return gradient
     
 class SubBackward:
@@ -183,6 +183,7 @@ class DivisionBackward:
         x, y = self.input
         grad_x = gradient / y
         grad_y = -1 * gradient * (x / (y * y))
+
         return [grad_x, grad_y]
     
 class SinBackward:
@@ -291,4 +292,13 @@ class CrossEntropyLossBackward:
 
         return [grad_logits, None]  # targets do not have a gradient
 
+class SigmoidBackward:
+    def __init__(self, input):
+        self.input = [input]
+
+    def backward(self, gradient):
+        sigmoid_x = self.input[0].sigmoid()
+        grad_input = gradient * sigmoid_x * (1 - sigmoid_x)
+
+        return [grad_input]
 
