@@ -153,13 +153,13 @@ class TestTensorOperations(unittest.TestCase):
         """
         Test matrix multiplication: tensor1 @ tensor2
         """
-        norch_tensor1 = norch.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
-        norch_tensor2 = norch.Tensor([[[1, 0], [0, 1]], [[-1, 0], [0, -1]]]).to(self.device)
+        norch_tensor1 = norch.Tensor([[[1., 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[1., 0], [0, 1]], [[-1, 0], [0, -1]]]).to(self.device)
         norch_result = norch_tensor1 @ norch_tensor2
         torch_result = utils.to_torch(norch_result).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
-        torch_tensor2 = torch.tensor([[[1, 0], [0, 1]], [[-1, 0], [0, -1]]]).to(self.device)
+        torch_tensor1 = torch.tensor([[[1., 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[1., 0], [0, 1]], [[-1, 0], [0, -1]]]).to(self.device)
         torch_expected = torch_tensor1 @ torch_tensor2
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
@@ -490,15 +490,15 @@ class TestTensorOperations(unittest.TestCase):
         Test matrix multiplication: MxP = NxM @ MxP
         """
         # Creating batched tensors for Norch
-        norch_tensor1 = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
-        norch_tensor2 = norch.Tensor([[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]]).to(self.device)
+        norch_tensor1 = norch.Tensor([[1., 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]]).to(self.device)
 
         norch_result = norch_tensor1 @ norch_tensor2
         torch_result = utils.to_torch(norch_result).to(self.device)
 
         # Converting to PyTorch tensors for comparison
-        torch_tensor1 = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
-        torch_tensor2 = torch.tensor([[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]]).to(self.device)
+        torch_tensor1 = torch.tensor([[1., 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        torch_tensor2 = torch.tensor([[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]]).to(self.device)
 
         torch_expected = torch.matmul(torch_tensor1, torch_tensor2)
 
@@ -509,14 +509,14 @@ class TestTensorOperations(unittest.TestCase):
         """
         Test reshaping a tensor followed by matrix multiplication: (tensor.reshape(shape) @ other_tensor)
         """
-        norch_tensor = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        norch_tensor = norch.Tensor([[1., 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
         new_shape = [2, 4]
         norch_reshaped = norch_tensor.reshape(new_shape)
         
         norch_result = norch_reshaped @ norch_tensor
         torch_result = utils.to_torch(norch_result).to(self.device)
 
-        torch_tensor = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        torch_tensor = torch.tensor([[1., 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
         torch_expected = torch_tensor.reshape(new_shape) @ torch_tensor
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
@@ -528,15 +528,15 @@ class TestTensorOperations(unittest.TestCase):
         B = 3  # Batch size
 
         # Creating batched tensors for Norch
-        norch_tensor1 = norch.Tensor([[[1, 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)]).to(self.device)
-        norch_tensor2 = norch.Tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+        norch_tensor1 = norch.Tensor([[[1., 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
 
         norch_result = norch_tensor1 @ norch_tensor2
         torch_result = utils.to_torch(norch_result).to(self.device)
 
         # Converting to PyTorch tensors for comparison
-        torch_tensor1 = torch.tensor([[[1, 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)]).to(self.device)
-        torch_tensor2 = torch.tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+        torch_tensor1 = torch.tensor([[[1., 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)]).to(self.device)
+        torch_tensor2 = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
 
         torch_expected = torch.matmul(torch_tensor1, torch_tensor2)
 
@@ -551,15 +551,15 @@ class TestTensorOperations(unittest.TestCase):
         B = 3  # Batch size
 
         # Creating batched tensors for Norch
-        norch_tensor1 = norch.Tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
-        norch_tensor2 = norch.Tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+        norch_tensor1 = norch.Tensor([[1., 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
 
         norch_result = norch_tensor1 @ norch_tensor2
         torch_result = utils.to_torch(norch_result).to(self.device)
 
         # Converting to PyTorch tensors for comparison
-        torch_tensor1 = torch.tensor([[1, 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
-        torch_tensor2 = torch.tensor([[[2, 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
+        torch_tensor1 = torch.tensor([[1., 2], [3, -4], [5, 6], [7, 8]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)]).to(self.device)
 
         torch_expected = torch.matmul(torch_tensor1, torch_tensor2)
 
@@ -572,12 +572,12 @@ class TestTensorOperations(unittest.TestCase):
         """
         Test transposing a tensor followed by matrix multiplication: (tensor.transpose(dim1, dim2) @ other_tensor)
         """
-        norch_tensor = norch.Tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
+        norch_tensor = norch.Tensor([[[1., 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         dim1, dim2 = 0, 2
         norch_result = norch_tensor.transpose(dim1, dim2) @ norch_tensor
         torch_result = utils.to_torch(norch_result).to(self.device)
 
-        torch_tensor = torch.tensor([[[1, 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
+        torch_tensor = torch.tensor([[[1., 2], [3, 4]], [[5, 6], [7, 8]]]).to(self.device)
         torch_expected = torch_tensor.transpose(dim1, dim2) @ torch_tensor
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
@@ -587,7 +587,7 @@ class TestTensorOperations(unittest.TestCase):
         Test a combination of operations: (tensor.sum() + other_tensor) / scalar @ another_tensor followed by reshape
         """
         norch_tensor1 = norch.Tensor([[[1., 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
-        norch_tensor2 = norch.Tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
+        norch_tensor2 = norch.Tensor([[[1., 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
         scalar = 2
         new_shape = [2, 4]
         norch_result = ((norch_tensor1 + norch_tensor2) / scalar) @ norch_tensor1
@@ -595,7 +595,7 @@ class TestTensorOperations(unittest.TestCase):
         torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor1 = torch.tensor([[[1., 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
-        torch_tensor2 = torch.tensor([[[1, 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
+        torch_tensor2 = torch.tensor([[[1., 1], [1, 1]], [[1, 1], [1, 1]]]).to(self.device)
         torch_expected = ((torch_tensor1 + torch_tensor2) / scalar) @ torch_tensor1
         torch_expected = torch_expected.reshape(new_shape)
 
