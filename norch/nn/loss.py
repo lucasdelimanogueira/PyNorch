@@ -58,6 +58,8 @@ class CrossEntropyLoss(Loss):
 
 
         elif input.ndim == 2:
+            if target.ndim > 1:
+                target = target.squeeze(-1)
             # batched 
             if target.ndim == 1:
                 # target -> Ground truth class indices:

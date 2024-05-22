@@ -178,7 +178,8 @@ class Tensor:
             
             # Only squeeze the specified dimension if its size is 1
             if self.shape[dim] != 1:
-                raise ValueError("Dimension {0} does not have size 1 and cannot be squeezed".format(dim))
+                return self
+                #raise ValueError("Dimension {0} does not have size 1 and cannot be squeezed".format(dim))
             
             # Create the new shape without the specified dimension
             new_shape = self.shape[:dim] + self.shape[dim+1:]
