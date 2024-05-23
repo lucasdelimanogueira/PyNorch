@@ -53,7 +53,7 @@ class Tensor:
                 self.device_ctype
             )
 
-            self.to(device)
+            self = self.to(device)
         
         else:
             self.tensor = None,
