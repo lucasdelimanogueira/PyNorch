@@ -980,7 +980,7 @@ class TestTensorAutograd(unittest.TestCase):
 
         torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)
         torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)  
-        
+    
         torch_result_transpose_matmul = (torch_tensor1.T @ torch_tensor2).sum()
         torch_result_transpose_matmul.backward()
         torch_tensor_grad_transpose_matmul1 = torch_tensor1.grad
