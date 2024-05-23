@@ -24,11 +24,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True, device=self.device)
 
         torch_result = (torch_tensor1 + torch_tensor2).sum()
         torch_result.backward()
