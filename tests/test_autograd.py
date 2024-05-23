@@ -9,7 +9,7 @@ class TestTensorAutograd(unittest.TestCase):
         self.device = os.environ.get('device')
         if self.device is None or self.device != 'cuda':
             self.device = 'cpu'
-        
+
         print(f"Running tests on: {self.device}")
 
         

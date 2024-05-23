@@ -53,8 +53,6 @@ class Module(ABC):
     def to(self, device):
         for _, _, parameter in self.parameters():
             parameter.to(device)
-
-        return self
     
     def state_dict(self):
         state = OrderedDict()
