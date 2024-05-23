@@ -210,7 +210,15 @@ extern "C" {
         if (strcmp(tensor->device, "cuda") == 0) {
             
             float* result_data;
-            cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
+            if (axis == -1) {
+                cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
+            } else {
+
+                int target_axis_stride = tensor->strides[axis];
+                int outer_size = tensor->size / target_axis_stride;
+
+                cudaMalloc((void**)&result_data, (outer_size) * sizeof(float));
+            }
             sum_tensor_cuda(tensor, result_data, axis);
             
             if (keepdim) {
