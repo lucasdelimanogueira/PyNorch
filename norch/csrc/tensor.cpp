@@ -202,9 +202,9 @@ extern "C" {
             ndim = tensor->ndim - 1;
         }
 
-        int size = 1;
+        int axis_size = 1;
         for (int i = 0; i < ndim; i++) {
-            size *= shape[i];
+            axis_size *= shape[i];
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
@@ -213,11 +213,7 @@ extern "C" {
             if (axis == -1) {
                 cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
             } else {
-
-                int target_axis_stride = tensor->strides[axis];
-                int outer_size = tensor->size / target_axis_stride;
-
-                cudaMalloc((void**)&result_data, outer_size * sizeof(float));
+                cudaMalloc((void**)&result_data, axis_size * sizeof(float));
             }
             sum_tensor_cuda(tensor, result_data, axis);
             
@@ -241,13 +237,13 @@ extern "C" {
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
-            float* result_data = (float*)calloc(size, sizeof(float));
+            float* result_data = (float*)calloc(axis_size, sizeof(float));
             if (result_data == NULL) {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
 
-            sum_tensor_cpu(tensor, result_data, size, shape, axis);
+            sum_tensor_cpu(tensor, result_data, axis_size, shape, axis);
 
             if (keepdim) {
                 if (axis == -1){

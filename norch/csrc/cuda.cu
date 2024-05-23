@@ -141,18 +141,20 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
     }
 }
 
-__global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int* strides, int target_axis, int inner_size, int outer_size) {
+__global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int* strides, int* shape, int axis, int ndim, int axis_stride, int size, int result_size) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (tid < outer_size) {
-        int outer_index = tid / inner_size;
-        int inner_index = tid % inner_size;
+    if (tid < result_size) {
+        for (int i = 0; i < shape[axis]; i++) {
+            int index = 0;
+            int remainder = tid;
+            for (int k = ndim - 2; k >= 0; k--) {
+                index += (remainder % shape[k < axis ? k : k + 1]) * strides[k < axis ? k : k + 1];
+                remainder /= shape[k < axis ? k : k + 1];
+            }
+            index += i * axis_stride;
 
-        int offset = outer_index * strides[0] + inner_index;
-
-        for (int i = 0; i < strides[target_axis]; ++i) {
-            int index = offset + i * strides[target_axis + 1];
-            //atomicAdd(&result_data[outer_index * inner_size + inner_index], data[index]);
+            atomicAdd(&result_data[tid], data[index]);
         }
     }
 }
@@ -184,20 +186,30 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
         cudaDeviceSynchronize();
         
     } else {
+        int axis_stride = tensor->strides[axis];
 
-        int target_axis_stride = tensor->strides[axis];
-        int inner_size = tensor->strides[axis + 1];
-        int outer_size = tensor->size / target_axis_stride;
+        // Calculate the size of the resulting tensor
+        int result_size = 1;
+        for (int i = 0; i < tensor->ndim; i++) {
+            if (i != axis) {
+                result_size *= tensor->shape[i];
+            }
+        }
 
+        // Allocate memory for strides and shape on the device
         int* d_strides;
-        cudaMalloc(&d_strides, (tensor->ndim + 1) * sizeof(int));
-        cudaMemcpy(d_strides, tensor->strides, (tensor->ndim + 1) * sizeof(int), cudaMemcpyHostToDevice);
+        int* d_shape;
+        cudaMalloc(&d_strides, tensor->ndim * sizeof(int));
+        cudaMalloc(&d_shape, tensor->ndim * sizeof(int));
+        cudaMemcpy(d_strides, tensor->strides, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_shape, tensor->shape, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
 
-        cudaMemset(result_data, 0, outer_size * sizeof(float));
+        // Initialize result_data to 0
+        cudaMemset(result_data, 0, result_size * sizeof(float));
 
-        int num_threads = outer_size;
+        int num_threads = result_size;
         int num_blocks = (num_threads + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-        sum_tensor_cuda_kernel_axis<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, d_strides, axis, inner_size, outer_size);
+        sum_tensor_cuda_kernel_axis<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, d_strides, d_shape, axis, tensor->ndim, axis_stride, tensor->size, result_size);
 
         cudaError_t error = cudaGetLastError();
         if (error != cudaSuccess) {
@@ -209,6 +221,7 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
 
         // Free allocated memory
         cudaFree(d_strides);
+        cudaFree(d_shape);
     }
 }
 
