@@ -9,7 +9,7 @@ class TestTensorAutograd(unittest.TestCase):
         self.device = os.environ.get('device')
         if self.device is None or self.device != 'cuda':
             self.device = 'cpu'
-
+        
         print(f"Running tests on: {self.device}")
 
         
@@ -26,7 +26,6 @@ class TestTensorAutograd(unittest.TestCase):
 
         torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True, device=self.device)
-
         torch_result = (torch_tensor1 + torch_tensor2).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
@@ -47,11 +46,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True, device=self.device)
         
         torch_result = (torch_tensor1 + torch_tensor2).sum(axis=0).sum(axis=0).sum()
         torch_result.backward()
@@ -69,11 +65,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True, device=self.device)
         
         torch_result = (torch_tensor1 + torch_tensor2).sum(axis=1).sum()
         torch_result.backward()
@@ -94,9 +87,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor.to(self.device)
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True, device=self.device)
         
         torch_result = torch_tensor.max()
         torch_result.backward()
@@ -115,9 +106,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)
-        
-        torch_tensor.to(self.device)
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True, device=self.device)
 
         torch_max_axis, _ = torch_tensor.max(axis=1)
         torch_result = torch_max_axis.sum()
@@ -133,9 +122,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True)
-
-        torch_tensor.to(self.device)
+        torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True, device=self.device)
 
         torch_max_axis, _ = torch_tensor.max(axis=2)
         torch_result = torch_max_axis.sum()
@@ -199,9 +186,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor.to(self.device)
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True, device=self.device)
         
         torch_result = torch_tensor.min()
         torch_result.backward()
@@ -220,9 +205,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor.to(self.device)
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True, device=self.device)
         
         torch_min, _ = torch_tensor.min(axis=1)
         torch_result = torch_min.sum()
@@ -238,9 +221,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True)
-
-        torch_tensor.to(self.device)
+        torch_tensor = torch.tensor([[[10, 1], [-4, 0]], [[5., 50], [7, 8]]], requires_grad=True, device=self.device)
         
         torch_min, _ = torch_tensor.min(axis=2)
         torch_result = torch_min.sum()
@@ -261,12 +242,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True)  # Shape (1, 2, 3)
-        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True)  # Shape (3)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
-
+        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True, device=self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True, device=self.device)  # Shape (3)
         torch_result = (torch_tensor1 + torch_tensor2).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
@@ -284,11 +261,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True)  # Shape (1, 2, 3)
-        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True)  # Shape (3)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True, device=self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True, device=self.device)  # Shape (3)
 
         torch_result = (torch_tensor2 + torch_tensor1).sum()
         torch_result.backward()
@@ -309,12 +283,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad_sub = utils.to_torch(norch_tensor1_sub.grad).to(self.device)
         norch_tensor2_grad_sub = utils.to_torch(norch_tensor2_sub.grad).to(self.device)
 
-        torch_tensor1_sub = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-        torch_tensor2_sub = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True)
-
-        torch_tensor1_sub.to(self.device)
-        torch_tensor2_sub.to(self.device)
-
+        torch_tensor1_sub = torch.tensor([[[1, 2.5], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
+        torch_tensor2_sub = torch.tensor([[[1, 1.], [1, 1.9]], [[1, 1], [1, 1]]], requires_grad=True, device=self.device)
         torch_result_sub = (torch_tensor1_sub - torch_tensor2_sub).sum()
         torch_result_sub.backward()
         torch_tensor1_grad_sub = torch_tensor1_sub.grad
@@ -334,12 +304,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True)  # Shape (1, 2, 3)
-        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True)  # Shape (3)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
-
+        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True, device=self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True, device=self.device)  # Shape (3)
         torch_result = (torch_tensor1 - torch_tensor2).sum()
         torch_result.backward()
         torch_tensor1_grad = torch_tensor1.grad
@@ -357,11 +323,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor2_grad = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True)  # Shape (1, 2, 3)
-        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True)  # Shape (3)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[[1., 2, 3], [4, 5, 6]]], requires_grad=True, device=self.device)  # Shape (1, 2, 3)
+        torch_tensor2 = torch.tensor([1.5, -1, 0], requires_grad=True, device=self.device)  # Shape (3)
         
         torch_result = (torch_tensor2 - torch_tensor1).sum()
         torch_result.backward()
@@ -383,12 +346,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad_div = utils.to_torch(norch_tensor1_div.grad).to(self.device)
         norch_tensor2_grad_div = utils.to_torch(norch_tensor2_div.grad).to(self.device)
 
-        torch_tensor1_div = torch.tensor([[[2, 5.1], [6, -8]], [[10, 12], [14, 16]]], requires_grad=True)
-        torch_tensor2_div = torch.tensor([[[1, 1], [2, 2.2]], [[3, 3], [4, 4]]], requires_grad=True)
-
-        torch_tensor1_div.to(self.device)
-        torch_tensor2_div.to(self.device)
-
+        torch_tensor1_div = torch.tensor([[[2, 5.1], [6, -8]], [[10, 12], [14, 16]]], requires_grad=True, device=self.device)
+        torch_tensor2_div = torch.tensor([[[1, 1], [2, 2.2]], [[3, 3], [4, 4]]], requires_grad=True, device=self.device)
         torch_result_div = (torch_tensor1_div / torch_tensor2_div).sum()
         torch_result_div.backward()
         torch_tensor1_grad_div = torch_tensor1_div.grad
@@ -408,10 +367,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_div_scalar.backward()
         norch_tensor_grad_div_scalar = utils.to_torch(norch_tensor_div_scalar.grad).to(self.device)
 
-        torch_tensor_div_scalar = torch.tensor([[[2, 4.7], [6, 8]], [[10, 12], [14, 16]]], requires_grad=True)
-
-        torch_tensor_div_scalar.to(self.device)
-        
+        torch_tensor_div_scalar = torch.tensor([[[2, 4.7], [6, 8]], [[10, 12], [14, 16]]], requires_grad=True, device=self.device)
         torch_result_div_scalar = (torch_tensor_div_scalar / scalar).sum()
         torch_result_div_scalar.backward()
         torch_tensor_grad_div_scalar = torch_tensor_div_scalar.grad
@@ -429,10 +385,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_scalar_div.backward()
         norch_tensor_grad_scalar_div = utils.to_torch(norch_tensor_scalar_div.grad).to(self.device)
 
-        torch_tensor_scalar_div = torch.tensor([[[1, 2.23], [3, 4]], [[5, 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor_scalar_div.to(self.device)
-        
+        torch_tensor_scalar_div = torch.tensor([[[1, 2.23], [3, 4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_result_scalar_div = (scalar / torch_tensor_scalar_div).sum()
         torch_result_scalar_div.backward()
         torch_tensor_grad_scalar_div = torch_tensor_scalar_div.grad
@@ -450,10 +403,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_power_st.backward()
         norch_tensor_grad_power_st = utils.to_torch(norch_tensor_power_st.grad).to(self.device)
 
-        torch_tensor_power_st = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True)
-
-        torch_tensor_power_st.to(self.device)
-        
+        torch_tensor_power_st = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True, device=self.device)
         torch_result_power_st = (scalar ** torch_tensor_power_st).sum()
         torch_result_power_st.backward()
         torch_tensor_grad_power_st = torch_tensor_power_st.grad
@@ -470,10 +420,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_power_ts.backward()
         norch_tensor_grad_power_ts = utils.to_torch(norch_tensor_power_ts.grad).to(self.device)
 
-        torch_tensor_power_ts = torch.tensor([[[2, 3], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True)
-
-        torch_tensor_power_ts.to(self.device)
-        
+        torch_tensor_power_ts = torch.tensor([[[2, 3], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True, device=self.device)
         torch_result_power_ts = (torch_tensor_power_ts ** scalar).sum()
         torch_result_power_ts.backward()
         torch_tensor_grad_power_ts = torch_tensor_power_ts.grad
@@ -491,12 +438,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad_matmul = utils.to_torch(norch_tensor1_matmul.grad).to(self.device)
         norch_tensor2_grad_matmul = utils.to_torch(norch_tensor2_matmul.grad).to(self.device)
 
-        torch_tensor1_matmul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-        torch_tensor2_matmul = torch.tensor([[[1.1, 3], [4, 5]], [[6, 7], [8, 9]]], requires_grad=True)
-
-        torch_tensor1_matmul.to(self.device)
-        torch_tensor2_matmul.to(self.device)
-
+        torch_tensor1_matmul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
+        torch_tensor2_matmul = torch.tensor([[[1.1, 3], [4, 5]], [[6, 7], [8, 9]]], requires_grad=True, device=self.device)
         torch_result_matmul = (torch_tensor1_matmul @ torch_tensor2_matmul).sum()
         torch_result_matmul.backward()
         torch_tensor1_grad_matmul = torch_tensor1_matmul.grad
@@ -523,12 +466,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor2_grad_matmul = utils.to_torch(norch_tensor2_matmul.grad).to(self.device)
 
         # Repeat the same process with torch tensors
-        torch_tensor1_matmul = torch.tensor([[[1., 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)], requires_grad=True)
-        torch_tensor2_matmul = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True)
-
-        torch_tensor1_matmul.to(self.device)
-        torch_tensor2_matmul.to(self.device)
-
+        torch_tensor1_matmul = torch.tensor([[[1., 2], [3, -4], [5, 6], [7, 8]] for _ in range(B)], requires_grad=True, device=self.device)
+        torch_tensor2_matmul = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True, device=self.device)
         torch_result_matmul = torch.matmul(torch_tensor1_matmul, torch_tensor2_matmul)
         torch_result_matmul_sum = torch_result_matmul.sum()
         torch_result_matmul_sum.backward()
@@ -559,12 +498,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor2_grad_matmul = utils.to_torch(norch_tensor2_matmul.grad).to(self.device)
 
         # Repeat the same process with torch tensors
-        torch_tensor1_matmul = torch.tensor([[1., 2], [3, -4], [5, 6], [7, 8]], requires_grad=True)
-        torch_tensor2_matmul = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True)
-
-        torch_tensor1_matmul.to(self.device)
-        torch_tensor2_matmul.to(self.device)
-
+        torch_tensor1_matmul = torch.tensor([[1., 2], [3, -4], [5, 6], [7, 8]], requires_grad=True, device=self.device)
+        torch_tensor2_matmul = torch.tensor([[[2., 3, 1, 0, 4], [5, -1, 2, 3, 0]] for _ in range(B)], requires_grad=True, device=self.device)
         torch_result_matmul = torch.matmul(torch_tensor1_matmul, torch_tensor2_matmul)
         torch_result_matmul_sum = torch_result_matmul.sum()
         torch_result_matmul_sum.backward()
@@ -588,10 +523,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_elemwise_mul_scalar.backward()
         norch_tensor_grad_elemwise_mul_scalar = utils.to_torch(norch_tensor_elemwise_mul_scalar.grad).to(self.device)
 
-        torch_tensor_elemwise_mul_scalar = torch.tensor([[[1.1, 2], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor_elemwise_mul_scalar.to(self.device)
-        
+        torch_tensor_elemwise_mul_scalar = torch.tensor([[[1.1, 2], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_result_elemwise_mul_scalar = (scalar * torch_tensor_elemwise_mul_scalar).sum()
         torch_result_elemwise_mul_scalar.backward()
         torch_tensor_grad_elemwise_mul_scalar = torch_tensor_elemwise_mul_scalar.grad
@@ -610,12 +542,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor1_grad_elemwise_mul = utils.to_torch(norch_tensor1_elemwise_mul.grad).to(self.device)
         norch_tensor2_grad_elemwise_mul = utils.to_torch(norch_tensor2_elemwise_mul.grad).to(self.device)
 
-        torch_tensor1_elemwise_mul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True).to(self.device)
-        torch_tensor2_elemwise_mul = torch.tensor([[[1.1, 3], [4, 5]], [[6, 7], [8, 9]]], requires_grad=True).to(self.device)
-
-        torch_tensor1_elemwise_mul.to(self.device)
-        torch_tensor2_elemwise_mul.to(self.device)
-
+        torch_tensor1_elemwise_mul = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
+        torch_tensor2_elemwise_mul = torch.tensor([[[1.1, 3], [4, 5]], [[6, 7], [8, 9]]], requires_grad=True, device=self.device)
         torch_result_elemwise_mul = (torch_tensor1_elemwise_mul * torch_tensor2_elemwise_mul).sum()
         torch_result_elemwise_mul.backward()
         torch_tensor1_grad_elemwise_mul = torch_tensor1_elemwise_mul.grad
@@ -633,10 +561,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_sin_tensor.backward()
         torch_result_sin_tensor_grad = utils.to_torch(norch_sin_tensor.grad).to(self.device)
 
-        torch_sin_tensor = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True)
-        
-        torch_sin_tensor.to(self.device)
-
+        torch_sin_tensor = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True, device=self.device)
         torch_expected_sin_tensor = (torch.sin(torch_sin_tensor)).sum()
         torch_expected_sin_tensor.backward()
         torch_expected_sin_tensor_grad = torch_sin_tensor.grad
@@ -652,10 +577,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_cos_tensor.backward()
         torch_result_cos_tensor_grad = utils.to_torch(norch_cos_tensor.grad).to(self.device)
 
-        torch_cos_tensor = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True)
-
-        torch_cos_tensor.to(self.device)
-        
+        torch_cos_tensor = torch.tensor([[[2, 3.21], [4, 2.1]], [[6, 7], [8, 9]]], requires_grad=True, device=self.device)
         torch_expected_cos_tensor = (torch.sin(torch_cos_tensor)).sum()
         torch_expected_cos_tensor.backward()
         torch_expected_cos_tensor_grad = torch_cos_tensor.grad
@@ -673,10 +595,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result.backward()
         norch_tensor_grad = utils.to_torch(norch_tensor.grad).to(self.device)
 
-        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor.to(self.device)
-        
+        torch_tensor = torch.tensor([[[10, 10], [-4, -4]], [[5., 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_sigmoid = torch.sigmoid(torch_tensor)
         torch_result = torch_sigmoid.sum()
 
@@ -698,12 +617,8 @@ class TestTensorAutograd(unittest.TestCase):
         loss_norch.backward()  # Backpropagate the loss
         grad_norch = predictions_norch.grad
 
-        predictions_torch = torch.tensor([1.1, 2, 3, 4], requires_grad=True)
-        labels_torch = torch.tensor([4, 3, 2.1, 1])
-
-        predictions_torch.to(self.device)
-        labels_torch.to(self.device)
-
+        predictions_torch = torch.tensor([1.1, 2, 3, 4], requires_grad=True, device=self.device)
+        labels_torch = torch.tensor([4, 3, 2.1, 1], device=self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
         loss_torch_expected.backward()  # Backpropagate the loss
         grad_torch_expected = predictions_torch.grad
@@ -728,12 +643,8 @@ class TestTensorAutograd(unittest.TestCase):
         loss_norch.backward()  # Backpropagate the loss
         grad_norch = predictions_norch.grad
 
-        predictions_torch = torch.tensor([2.0, 1.0, 0.1], requires_grad=True)
-        labels_torch = torch.tensor(0)
-
-        predictions_torch.to(self.device)
-        labels_torch.to(self.device)
-
+        predictions_torch = torch.tensor([2.0, 1.0, 0.1], requires_grad=True, device=self.device)
+        labels_torch = torch.tensor(0, device=self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
         loss_torch_expected.backward()  # Backpropagate the loss
         grad_torch_expected = predictions_torch.grad
@@ -750,12 +661,8 @@ class TestTensorAutograd(unittest.TestCase):
         loss_norch.backward()  # Backpropagate the loss
         grad_norch = predictions_norch.grad
 
-        predictions_torch = torch.tensor([[0.5, 1.5, 2.5], [1.0, 2.0, 3.0]], requires_grad=True)
-        labels_torch = torch.tensor([2, 1])
-
-        predictions_torch.to(self.device)
-        labels_torch.to(self.device)
-
+        predictions_torch = torch.tensor([[0.5, 1.5, 2.5], [1.0, 2.0, 3.0]], requires_grad=True, device=self.device)
+        labels_torch = torch.tensor([2, 1], device=self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
         loss_torch_expected.backward()  # Backpropagate the loss
         grad_torch_expected = predictions_torch.grad
@@ -772,12 +679,8 @@ class TestTensorAutograd(unittest.TestCase):
         loss_norch.backward()  # Backpropagate the loss
         grad_norch = predictions_norch.grad
 
-        predictions_torch = torch.tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], requires_grad=True)
-        labels_torch = torch.tensor([1, 2])
-
-        predictions_torch.to(self.device)
-        labels_torch.to(self.device)
-
+        predictions_torch = torch.tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]], requires_grad=True, device=self.device)
+        labels_torch = torch.tensor([1, 2], device=self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
         loss_torch_expected.backward()  # Backpropagate the loss
         grad_torch_expected = predictions_torch.grad
@@ -794,12 +697,8 @@ class TestTensorAutograd(unittest.TestCase):
         loss_norch.backward()  # Backpropagate the loss
         grad_norch = predictions_norch.grad
 
-        predictions_torch = torch.tensor([[0.5, 0.2, 0.1], [0.1, 0.5, 0.7]], requires_grad=True)
-        labels_torch = torch.tensor([[1., 0, 0], [0, 1, 0]])
-
-        predictions_torch.to(self.device)
-        labels_torch.to(self.device)
-
+        predictions_torch = torch.tensor([[0.5, 0.2, 0.1], [0.1, 0.5, 0.7]], requires_grad=True, device=self.device)
+        labels_torch = torch.tensor([[1., 0, 0], [0, 1, 0]], device=self.device)
         loss_torch_expected = loss_fn_torch(predictions_torch, labels_torch)
         loss_torch_expected.backward()  # Backpropagate the loss
         grad_torch_expected = predictions_torch.grad
@@ -858,10 +757,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_reshape.backward()
         norch_tensor_grad_reshape = utils.to_torch(norch_tensor_reshape.grad).to(self.device)
 
-        torch_tensor_reshape = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor_reshape.to(self.device)
-        
+        torch_tensor_reshape = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_result_reshape = torch_tensor_reshape.reshape(new_shape).sum()
         torch_result_reshape.backward()
         torch_tensor_grad_reshape = torch_tensor_reshape.grad
@@ -879,10 +775,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_transpose.backward()
         norch_tensor_grad_transpose = utils.to_torch(norch_tensor_transpose.grad).to(self.device)
 
-        torch_tensor_transpose = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor_transpose.to(self.device)
-
+        torch_tensor_transpose = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_result_transpose = torch_tensor_transpose.transpose(axis1, axis2).sum()
         torch_result_transpose.backward()
         torch_tensor_grad_transpose = torch_tensor_transpose.grad
@@ -899,10 +792,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_T.backward()
         norch_tensor_grad_T = utils.to_torch(norch_tensor_T.grad).to(self.device)
 
-        torch_tensor_T = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True)
-
-        torch_tensor_T.to(self.device)
-        
+        torch_tensor_T = torch.tensor([[[1, 2.1], [3, -4]], [[5, 6], [7, 8]]], requires_grad=True, device=self.device)
         torch_result_T = torch_tensor_T.mT.sum()
         torch_result_T.backward()
         torch_tensor_grad_T = torch_tensor_T.grad
@@ -923,11 +813,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor_grad_reshape_matmul1 = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor_grad_reshape_matmul2 = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
-        torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)     
         
         torch_result_reshape_matmul = (torch_tensor1.reshape(new_shape) @ torch_tensor2).sum()
         torch_result_reshape_matmul.backward()
@@ -948,10 +835,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_unsqueeze_0.backward()
         norch_tensor_grad_unsqueeze_0 = utils.to_torch(norch_tensor_unsqueeze.grad).to(self.device)
 
-        torch_tensor_unsqueeze = torch.tensor([[1., 2], [3, 4]], requires_grad=True)
-
-        torch_tensor_unsqueeze.to(self.device)
-        
+        torch_tensor_unsqueeze = torch.tensor([[1., 2], [3, 4]], requires_grad=True, device=self.device)
         torch_result_unsqueeze_0 = torch_tensor_unsqueeze.unsqueeze(0).sum()
         torch_result_unsqueeze_0.backward()
         torch_tensor_grad_unsqueeze_0 = torch_tensor_unsqueeze.grad
@@ -964,10 +848,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_unsqueeze_1.backward()
         norch_tensor_grad_unsqueeze_1 = utils.to_torch(norch_tensor_unsqueeze.grad).to(self.device)
 
-        torch_tensor_unsqueeze = torch.tensor([[1., 2.], [3, 4]], requires_grad=True)
-        
-        torch_tensor_unsqueeze.to(self.device)
-
+        torch_tensor_unsqueeze = torch.tensor([[1., 2.], [3, 4]], requires_grad=True, device=self.device)
         torch_result_unsqueeze_1 = torch_tensor_unsqueeze.unsqueeze(1).sum()
         torch_result_unsqueeze_1.backward()
         torch_tensor_grad_unsqueeze_1 = torch_tensor_unsqueeze.grad
@@ -980,10 +861,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_unsqueeze_2.backward()
         norch_tensor_grad_unsqueeze_2 = utils.to_torch(norch_tensor_unsqueeze.grad).to(self.device)
 
-        torch_tensor_unsqueeze = torch.tensor([[1., 2], [3, 4]], requires_grad=True)
-        
-        torch_tensor_unsqueeze.to(self.device)
-
+        torch_tensor_unsqueeze = torch.tensor([[1., 2], [3, 4]], requires_grad=True, device=self.device)
         torch_result_unsqueeze_2 = torch_tensor_unsqueeze.unsqueeze(2).sum()
         torch_result_unsqueeze_2.backward()
         torch_tensor_grad_unsqueeze_2 = torch_tensor_unsqueeze.grad
@@ -1003,11 +881,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor_grad_unsqueeze_matmul1 = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor_grad_unsqueeze_matmul2 = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32, requires_grad=True)
-        torch_tensor2 = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32, requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32, requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[1, 2], [3, 4]], dtype=torch.float32, requires_grad=True, device=self.device)
         
         torch_result_unsqueeze_matmul = (torch_tensor1 @ torch_tensor2.unsqueeze(0)).sum()
         torch_result_unsqueeze_matmul.backward()
@@ -1027,10 +902,7 @@ class TestTensorAutograd(unittest.TestCase):
         norch_result_squeeze_0.backward()
         norch_tensor_grad_squeeze_0 = utils.to_torch(norch_tensor_squeeze.grad).to(self.device)
 
-        torch_tensor_squeeze = torch.tensor([[[1., 2], [3, 4]]], requires_grad=True)
-
-        torch_tensor_squeeze.to(self.device)
-        
+        torch_tensor_squeeze = torch.tensor([[[1., 2], [3, 4]]], requires_grad=True, device=self.device)
         torch_result_squeeze_0 = torch_tensor_squeeze.squeeze(0).sum()
         torch_result_squeeze_0.backward()
         torch_tensor_grad_squeeze_0 = torch_tensor_squeeze.grad
@@ -1047,14 +919,11 @@ class TestTensorAutograd(unittest.TestCase):
         # Squeeze at dim=0 then matmul
         norch_result_squeeze_matmul = (norch_tensor1.squeeze(0) @ norch_tensor2).sum()
         norch_result_squeeze_matmul.backward()
-        norch_tensor_grad_squeeze_matmul1 = utils.to_torch(norch_tensor1.grad).to(self.device)
-        norch_tensor_grad_squeeze_matmul2 = utils.to_torch(norch_tensor2.grad).to(self.device)
+        norch_tensor_grad_squeeze_matmul1 = utils.to_torch(norch_tensor1.grad, device=self.device)
+        norch_tensor_grad_squeeze_matmul2 = utils.to_torch(norch_tensor2.grad, device=self.device)
 
-        torch_tensor1 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True)
-        torch_tensor2 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True).to(self.device)
+        torch_tensor2 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True).to(self.device)
         
         torch_result_squeeze_matmul = (torch_tensor1.squeeze(0) @ torch_tensor2).sum()
         torch_result_squeeze_matmul.backward()
@@ -1077,11 +946,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor_grad_T_matmul1 = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor_grad_T_matmult2 = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
-        torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)     
         
         torch_result_T_matmul = (torch_tensor1.T @ torch_tensor2).sum()
         torch_result_T_matmul.backward()
@@ -1096,7 +962,7 @@ class TestTensorAutograd(unittest.TestCase):
         The code has a problem on the following operation
         tensor1.reshape(..) @ tensor1
         print(tensor1.grad)
-        (also transpose and .T)
+        (also transpsoe and .T)
         """
         pass
 
@@ -1112,11 +978,8 @@ class TestTensorAutograd(unittest.TestCase):
         norch_tensor_grad_transpose_matmul1 = utils.to_torch(norch_tensor1.grad).to(self.device)
         norch_tensor_grad_transpose_matmult2 = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
-        torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True)
-
-        torch_tensor1.to(self.device)
-        torch_tensor2.to(self.device)
+        torch_tensor1 = torch.tensor([[1, 2.1], [3, -4], [5, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[1, 5.1], [0.1, -4], [0, 6], [7, 8]], dtype=torch.float32, requires_grad=True, device=self.device)  
         
         torch_result_transpose_matmul = (torch_tensor1.T @ torch_tensor2).sum()
         torch_result_transpose_matmul.backward()

@@ -52,8 +52,6 @@ class Tensor:
                 self.ndim_ctype,
                 self.device_ctype
             )
-
-            self = self.to(device)
         
         else:
             self.tensor = None,
