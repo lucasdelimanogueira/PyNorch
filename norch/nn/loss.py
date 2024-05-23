@@ -44,7 +44,7 @@ class CrossEntropyLoss(Loss):
         if input.ndim == 1:
             if target.numel == 1:
                 num_classes = input.shape[0]
-                target = norch.one_hot_encode(target, num_classes)
+                target = norch.one_hot_encode(target, num_classes).to(target.device)
                 
                 logits = norch.softmax(input, dim=0)
                 target = target.reshape(logits.shape)
@@ -67,7 +67,7 @@ class CrossEntropyLoss(Loss):
                 # target -> Ground truth class indices:
                 num_classes = input.shape[1]
 
-                target = norch.one_hot_encode(target, num_classes)
+                target = norch.one_hot_encode(target, num_classes).to(target.device)
                 
                 batch_size = input.shape[0]
                 logits = norch.softmax(input, dim=1)

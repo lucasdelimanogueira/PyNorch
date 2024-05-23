@@ -51,8 +51,10 @@ class Module(ABC):
             parameter.zero_grad()
 
     def to(self, device):
-        for _, _, parameter in self.parameters():
-            parameter.to(device)
+        for module, name, _ in self.parameters():
+            parameter = getattr(module, name)
+            parameter = parameter.to(device)
+            setattr(module, name, parameter)
 
         return self
     
