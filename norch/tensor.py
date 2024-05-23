@@ -190,6 +190,8 @@ class Tensor:
         return self.reshape(new_shape)
 
     def to(self, device):
+        device = str(device)
+        
         self.device = device
         self.device_ctype = self.device.encode('utf-8')
 
