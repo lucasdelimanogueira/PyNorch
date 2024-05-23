@@ -328,7 +328,6 @@ __host__ void max_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
         // Initialize result_data to 0
         float neg_inf = -FLT_MAX;
         cudaMemset(result_data, *reinterpret_cast<int*>(&neg_inf), result_size * sizeof(float));
-        cudaMemset(result_data, 0, result_size * sizeof(float));
 
         int num_threads = result_size;
         int num_blocks = (num_threads + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
