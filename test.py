@@ -1,7 +1,27 @@
 import norch
-from norch.utils import utils_unittests as utils
+import norch.nn as nn
+import norch.optim as optim
+from norch.utils.data.dataloader import Dataloader
+from norch.norchvision import transforms
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+random.seed(1)
 
-device = "cpu"
+class MyModel(nn.Module):
+    def __init__(self):
+        super(MyModel, self).__init__()
+        self.fc1 = nn.Linear(784, 30)
+        self.sigmoid1 = nn.Sigmoid()
+        self.fc2 = nn.Linear(30, 10)
+        self.sigmoid2 = nn.Sigmoid()
 
-norch_tensor = norch.Tensor([[[[1, 2], [3, -4]], [[5, 6], [7, 8]]], [[[1, 2], [3, -4]], [[5, 6], [7, 8]]]]).to(device)
-norch_result = norch_tensor.sum(axis=0)
+    def forward(self, x):
+        out = self.fc1(x)
+        out = self.sigmoid1(out)
+        out = self.fc2(out)
+        out = self.sigmoid2(out)
+
+        return out
+
+model = MyModel().to("cuda")
