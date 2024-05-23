@@ -79,7 +79,7 @@
     __global__ void transpose_2D_tensor_cuda_kernel(float* data, float* result_data, int rows, int cols);
     __host__ void transpose_2D_tensor_cuda(Tensor* tensor, float* result_data);
 
-    __global__ void transpose_3D_tensor_cuda_kernel(float* data, float* result_data, int rows, int cols);
+    __global__ void transpose_3D_tensor_cuda_kernel(float* data, float* result_data, int batch, int rows, int cols);
     __host__ void transpose_3D_tensor_cuda(Tensor* tensor, float* result_data);
 
     __global__ void assign_tensor_cuda_kernel(float* data, float* result_data, int size);

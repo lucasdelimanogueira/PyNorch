@@ -1080,7 +1080,7 @@ __host__ void transpose_3D_tensor_cuda(Tensor* tensor, float* result_data) {
 
     dim3 threadsPerBlock(8, 8, 8);
     dim3 number_of_blocks((batch + threadsPerBlock.x - 1) / threadsPerBlock.x, (rows + threadsPerBlock.y - 1) / threadsPerBlock.y, (cols + threadsPerBlock.z - 1) / threadsPerBlock.z);
-    transpose_2D_tensor_cuda_kernel<<<number_of_blocks, threadsPerBlock>>>(tensor->data, result_data, rows, cols);
+    transpose_3D_tensor_cuda_kernel<<<number_of_blocks, threadsPerBlock>>>(tensor->data, result_data, batch, rows, cols);
 
 
     cudaError_t error = cudaGetLastError();
