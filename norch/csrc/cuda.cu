@@ -152,7 +152,7 @@ __global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int
 
         for (int i = 0; i < strides[target_axis]; ++i) {
             int index = offset + i * strides[target_axis + 1];
-            atomicAdd(&result_data[outer_index * inner_size + inner_index], data[index]);
+            //atomicAdd(&result_data[outer_index * inner_size + inner_index], data[index]);
         }
     }
 }

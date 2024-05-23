@@ -217,7 +217,7 @@ extern "C" {
                 int target_axis_stride = tensor->strides[axis];
                 int outer_size = tensor->size / target_axis_stride;
 
-                cudaMalloc((void**)&result_data, (outer_size) * sizeof(float));
+                cudaMalloc((void**)&result_data, outer_size * sizeof(float));
             }
             sum_tensor_cuda(tensor, result_data, axis);
             
