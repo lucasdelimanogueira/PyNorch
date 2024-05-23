@@ -14,7 +14,7 @@
     __host__ void sub_broadcasted_tensor_cuda(Tensor* tensor1, Tensor* tensor2, float* result_data, int* broadcasted_shape, int broadcasted_size);
 
     __global__ void sum_tensor_cuda_kernel(float* data, float* result_data);
-    __global__ void sum_tensor_axis_cuda_kernel(float* data, float* result_data, int size, int axis_size);
+    __global__ void sum_tensor_cuda_kernel_axis(float* data, float* result_data, int* strides, int target_axis, int inner_size, int outer_size);
     __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis);
 
     __global__ void sub_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int size);
