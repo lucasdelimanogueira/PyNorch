@@ -29,6 +29,4 @@ def one_hot_encode(x, num_classes):
         target_idx = int(x[i])
         one_hot[i][target_idx] = 1
 
-    
-
     return norch.Tensor(one_hot)

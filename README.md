@@ -74,7 +74,7 @@ import random
 random.seed(1)
 
 BATCH_SIZE = 32
-device = "cpu"
+device = "cuda" #cpu
 epochs = 10
 
 transform = transforms.Sequential(
