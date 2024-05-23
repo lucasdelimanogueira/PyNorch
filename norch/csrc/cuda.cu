@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
 
 #define THREADS_PER_BLOCK 128
 #define TILE_SIZE 32
@@ -210,6 +211,128 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
         int num_threads = result_size;
         int num_blocks = (num_threads + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
         sum_tensor_cuda_kernel_axis<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, d_strides, d_shape, axis, tensor->ndim, axis_stride, tensor->size, result_size);
+
+        cudaError_t error = cudaGetLastError();
+        if (error != cudaSuccess) {
+            printf("CUDA error: %s\n", cudaGetErrorString(error));
+            exit(-1);
+        }
+
+        cudaDeviceSynchronize();
+
+        // Free allocated memory
+        cudaFree(d_strides);
+        cudaFree(d_shape);
+    }
+}
+
+__global__ void max_tensor_cuda_kernel(float* data, float* result_data, int size) {
+    __shared__ float partial_sum[THREADS_PER_BLOCK * sizeof(float)];
+
+    int tid = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    partial_sum[tid] = (i < size) ? data[i] : 0;
+
+    __syncthreads();
+
+    // Perform block-wise reduction
+    for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            partial_sum[tid] = fmax(partial_sum[tid], partial_sum[tid + s]);
+        }
+        __syncthreads();
+    }
+
+    // Write block sum to global memory
+    if (tid == 0) {
+        result_data[blockIdx.x] = partial_sum[0];
+    }
+}
+
+__device__ float atomicMaxFloat(float* address, float val) {
+    int* address_as_int = (int*)address;
+    int old = *address_as_int, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_int, assumed,
+                        __float_as_int(fmaxf(val, __int_as_float(assumed))));
+    } while (assumed != old);
+
+    return __int_as_float(old);
+}
+
+__global__ void max_tensor_cuda_kernel_axis(float* data, float* result_data, int* strides, int* shape, int axis, int ndim, int axis_stride, int size, int result_size) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (tid < result_size) {
+        for (int i = 0; i < shape[axis]; i++) {
+            int index = 0;
+            int remainder = tid;
+            for (int k = ndim - 2; k >= 0; k--) {
+                index += (remainder % shape[k < axis ? k : k + 1]) * strides[k < axis ? k : k + 1];
+                remainder /= shape[k < axis ? k : k + 1];
+            }
+            index += i * axis_stride;
+
+            atomicMaxFloat(&result_data[tid], data[index]);
+        }
+    }
+}
+
+__host__ void max_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
+
+    if (axis == -1) {
+        cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
+        
+        int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+
+        // First-level reduction
+        max_tensor_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->size);
+
+        // If necessary, perform multiple levels of reduction
+        while (num_blocks > 1) {
+            int num_blocks_next = (num_blocks + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+            max_tensor_cuda_kernel<<<num_blocks_next, THREADS_PER_BLOCK>>>(result_data, result_data, num_blocks);
+            num_blocks = num_blocks_next;
+        }
+
+        cudaError_t error = cudaGetLastError();
+        if (error != cudaSuccess) {
+            printf("CUDA error: %s\n", cudaGetErrorString(error));
+            exit(-1);
+        }
+
+        cudaDeviceSynchronize();
+        
+    } else {
+        int axis_stride = tensor->strides[axis];
+
+        // Calculate the size of the resulting tensor
+        int result_size = 1;
+        for (int i = 0; i < tensor->ndim; i++) {
+            if (i != axis) {
+                result_size *= tensor->shape[i];
+            }
+        }
+
+        // Allocate memory for strides and shape on the device
+        int* d_strides;
+        int* d_shape;
+        cudaMalloc(&d_strides, tensor->ndim * sizeof(int));
+        cudaMalloc(&d_shape, tensor->ndim * sizeof(int));
+        cudaMemcpy(d_strides, tensor->strides, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_shape, tensor->shape, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+
+        // Initialize result_data to 0
+        float neg_inf = -FLT_MAX;
+        cudaMemset(result_data, *reinterpret_cast<int*>(&neg_inf), result_size * sizeof(float));
+        cudaMemset(result_data, 0, result_size * sizeof(float));
+
+        int num_threads = result_size;
+        int num_blocks = (num_threads + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+        max_tensor_cuda_kernel_axis<<<num_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, d_strides, d_shape, axis, tensor->ndim, axis_stride, tensor->size, result_size);
 
         cudaError_t error = cudaGetLastError();
         if (error != cudaSuccess) {

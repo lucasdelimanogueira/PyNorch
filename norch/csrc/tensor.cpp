@@ -290,26 +290,20 @@ extern "C" {
             ndim = tensor->ndim - 1;
         }
 
-        int size = 1;
+        int axis_size = 1;
         for (int i = 0; i < ndim; i++) {
-            size *= shape[i];
+            axis_size *= shape[i];
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
 
             float* result_data;
-            cudaMalloc((void**)&result_data, size * sizeof(float));
-            //cudaMemset(result_data, -INFINITY, size * sizeof(float));
-            //max_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, shape, ndim, device);
-        } 
-        else {
-            float* result_data = (float*)malloc(size * sizeof(float));
-            if (result_data == NULL) {
-                fprintf(stderr, "Memory allocation failed\n");
-                exit(1);
+            if (axis == -1) {
+                cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
+            } else {
+                cudaMalloc((void**)&result_data, axis_size * sizeof(float));
             }
-            max_tensor_cpu(tensor, result_data, size, shape, axis);
+            max_tensor_cuda(tensor, result_data, axis);
 
             if (keepdim) {
                 if (axis == -1){
@@ -325,9 +319,37 @@ extern "C" {
                     }
                     shape[axis] = 1;
                     ndim = tensor->ndim;
-                }   
+                }
+                
             }
+            return create_tensor(result_data, shape, ndim, device);
 
+        } 
+        else {
+            float* result_data = (float*)malloc(axis_size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            max_tensor_cpu(tensor, result_data, axis_size, shape, axis);
+
+            if (keepdim) {
+                if (axis == -1){
+                    ndim = tensor->ndim;
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = 1;
+                    }
+                } else {
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = tensor->shape[i];
+                    }
+                    shape[axis] = 1;
+                    ndim = tensor->ndim;
+                }
+                
+            }
             return create_tensor(result_data, shape, ndim, device);
         }     
     }
