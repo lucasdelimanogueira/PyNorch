@@ -205,7 +205,7 @@ class Tensor:
                 
         if gradient is None:
             if self.shape == [1]:
-                gradient = Tensor([1])
+                gradient = Tensor([1]).to(self.device)
             else:
                 raise RuntimeError("Gradient argument must be specified for non-scalar tensors.")
 
