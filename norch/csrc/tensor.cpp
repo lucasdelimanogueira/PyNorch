@@ -202,9 +202,9 @@ extern "C" {
             ndim = tensor->ndim - 1;
         }
 
-        int size = 1;
+        int axis_size = 1;
         for (int i = 0; i < ndim; i++) {
-            size *= shape[i];
+            axis_size *= shape[i];
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
@@ -213,11 +213,7 @@ extern "C" {
             if (axis == -1) {
                 cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
             } else {
-
-                int target_axis_stride = tensor->strides[axis];
-                int outer_size = tensor->size / target_axis_stride;
-
-                cudaMalloc((void**)&result_data, (outer_size) * sizeof(float));
+                cudaMalloc((void**)&result_data, axis_size * sizeof(float));
             }
             sum_tensor_cuda(tensor, result_data, axis);
             
@@ -241,13 +237,13 @@ extern "C" {
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
-            float* result_data = (float*)calloc(size, sizeof(float));
+            float* result_data = (float*)calloc(axis_size, sizeof(float));
             if (result_data == NULL) {
                 fprintf(stderr, "Memory allocation failed\n");
                 exit(1);
             }
 
-            sum_tensor_cpu(tensor, result_data, size, shape, axis);
+            sum_tensor_cpu(tensor, result_data, axis_size, shape, axis);
 
             if (keepdim) {
                 if (axis == -1){
@@ -294,26 +290,20 @@ extern "C" {
             ndim = tensor->ndim - 1;
         }
 
-        int size = 1;
+        int axis_size = 1;
         for (int i = 0; i < ndim; i++) {
-            size *= shape[i];
+            axis_size *= shape[i];
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
 
             float* result_data;
-            cudaMalloc((void**)&result_data, size * sizeof(float));
-            //cudaMemset(result_data, -INFINITY, size * sizeof(float));
-            //max_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, shape, ndim, device);
-        } 
-        else {
-            float* result_data = (float*)malloc(size * sizeof(float));
-            if (result_data == NULL) {
-                fprintf(stderr, "Memory allocation failed\n");
-                exit(1);
+            if (axis == -1) {
+                cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
+            } else {
+                cudaMalloc((void**)&result_data, axis_size * sizeof(float));
             }
-            max_tensor_cpu(tensor, result_data, size, shape, axis);
+            max_tensor_cuda(tensor, result_data, axis);
 
             if (keepdim) {
                 if (axis == -1){
@@ -329,9 +319,37 @@ extern "C" {
                     }
                     shape[axis] = 1;
                     ndim = tensor->ndim;
-                }   
+                }
+                
             }
+            return create_tensor(result_data, shape, ndim, device);
 
+        } 
+        else {
+            float* result_data = (float*)malloc(axis_size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            max_tensor_cpu(tensor, result_data, axis_size, shape, axis);
+
+            if (keepdim) {
+                if (axis == -1){
+                    ndim = tensor->ndim;
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = 1;
+                    }
+                } else {
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = tensor->shape[i];
+                    }
+                    shape[axis] = 1;
+                    ndim = tensor->ndim;
+                }
+                
+            }
             return create_tensor(result_data, shape, ndim, device);
         }     
     }
@@ -347,7 +365,6 @@ extern "C" {
         int ndim;
         int* shape;
         if (axis == -1) {
-            
             shape = (int*) malloc(sizeof(int));
             shape[0] = 1;
             ndim = 1;
@@ -361,26 +378,20 @@ extern "C" {
             ndim = tensor->ndim - 1;
         }
         
-        int size = 1;
+        int axis_size = 1;
         for (int i = 0; i < ndim; i++) {
-            size *= shape[i];
+            axis_size *= shape[i];
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
 
             float* result_data;
-            cudaMalloc((void**)&result_data, size * sizeof(float));
-            //cudaMemset(result_data, INFINITY, size * sizeof(float));
-            //min_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, shape, ndim, device);
-        } 
-        else {
-            float* result_data = (float*)malloc(size * sizeof(float));
-            if (result_data == NULL) {
-                fprintf(stderr, "Memory allocation failed\n");
-                exit(1);
+            if (axis == -1) {
+                cudaMalloc((void**)&result_data, tensor->size * sizeof(float));
+            } else {
+                cudaMalloc((void**)&result_data, axis_size * sizeof(float));
             }
-            min_tensor_cpu(tensor, result_data, size, shape, axis);
+            min_tensor_cuda(tensor, result_data, axis);
 
             if (keepdim) {
                 if (axis == -1){
@@ -396,11 +407,39 @@ extern "C" {
                     }
                     shape[axis] = 1;
                     ndim = tensor->ndim;
-                }   
+                }
+                
             }
-
             return create_tensor(result_data, shape, ndim, device);
-        }     
+
+        } 
+        else {
+            float* result_data = (float*)malloc(axis_size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                exit(1);
+            }
+            min_tensor_cpu(tensor, result_data, axis_size, shape, axis);
+
+            if (keepdim) {
+                if (axis == -1){
+                    ndim = tensor->ndim;
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = 1;
+                    }
+                } else {
+                    shape = (int*) malloc((tensor->ndim) * sizeof(int));
+                    for (int i = 0; i < tensor->ndim; i++) {
+                        shape[i] = tensor->shape[i];
+                    }
+                    shape[axis] = 1;
+                    ndim = tensor->ndim;
+                }
+                
+            }
+            return create_tensor(result_data, shape, ndim, device);
+        }       
     }
 
     Tensor* sub_tensor(Tensor* tensor1, Tensor* tensor2) {
@@ -1383,7 +1422,20 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
-            transpose_tensor_cuda(tensor, result_data);
+            switch (ndim) {
+                case 1:
+                    transpose_1D_tensor_cuda(tensor, result_data);
+                    break;
+                case 2:
+                    transpose_2D_tensor_cuda(tensor, result_data);
+                    break;
+                case 3:
+                    transpose_3D_tensor_cuda(tensor, result_data);
+                    break;
+                default:
+                    fprintf(stderr, "Transpose only supports tensors up to 3 dimensions.\n");
+                    exit(-1);
+            }
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
@@ -1440,7 +1492,15 @@ extern "C" {
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
             assign_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, shape, ndim, device);
+
+            Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+            for (int i = 0; i < ndim; i++) {
+                new_tensor->strides[i] = tensor->strides[i];
+            }
+            new_tensor->strides[axis1] = tensor->strides[axis2];
+            new_tensor->strides[axis2] = tensor->strides[axis1];
+            make_contiguous(new_tensor);
+            return new_tensor;
         } 
         else {
             float* result_data = (float*)malloc(size * sizeof(float));
@@ -1462,17 +1522,10 @@ extern "C" {
     }
 
     void make_contiguous(Tensor* tensor) {
-        float* new_data = (float*)malloc(tensor->size * sizeof(float));
-        if (new_data == NULL) {
-            // Handle memory allocation failure
-            return;
-        }
-
+        
         int* new_strides = (int*)malloc(tensor->ndim * sizeof(int));
         if (new_strides == NULL) {
-            free(new_data);
-            // Handle memory allocation failure
-            return;
+            fprintf(stderr, "Memory allocation failed\n");
         }
 
         // Calculate new strides assuming C-contiguous order
@@ -1482,21 +1535,17 @@ extern "C" {
             stride *= tensor->shape[i];
         }
 
-        // Rearrange data
-        for (int i = 0; i < tensor->size; i++) {
-            int index = 0;
-            int offset = i;
-            for (int j = 0; j < tensor->ndim; j++) {
-                index += (offset / new_strides[j]) * tensor->strides[j];
-                offset %= new_strides[j];
-            }
-            new_data[i] = tensor->data[index];
-        }
+        if (strcmp(tensor->device, "cuda") == 0) {
+            float* result_data;
+            cudaMalloc((void **)&result_data, tensor->size * sizeof(float));
+            make_contiguous_tensor_cuda(tensor, result_data, new_strides);
 
-        // Free old data and update tensor properties
-        free(tensor->data);
-        free(tensor->strides);
-        tensor->data = new_data;
-        tensor->strides = new_strides;
+        } else {
+            float* result_data = (float*)malloc(tensor->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+            }
+            make_contiguous_tensor_cpu(tensor, result_data, new_strides);
         }
     }
+}
