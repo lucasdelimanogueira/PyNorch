@@ -471,8 +471,33 @@ class TestTensorOperations(unittest.TestCase):
         
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 
+    def test_1D_T(self):
+        """
+        Test transposition of a 1D tensor.
+        """
+        norch_tensor = norch.Tensor([1, 2, 3, 4]).to(self.device)
+        norch_result = norch_tensor.T
+        torch_result = utils.to_torch(norch_result).to(self.device)
 
-    def test_transpose_T(self):
+        torch_tensor = torch.tensor([1, 2, 3, 4]).to(self.device)
+        torch_expected = torch_tensor.T
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_2D_T(self):
+        """
+        Test transposition of a 2D tensor.
+        """
+        norch_tensor = norch.Tensor([[1, 2, 3], [4, 5, 6]]).to(self.device)
+        norch_result = norch_tensor.T
+        torch_result = utils.to_torch(norch_result).to(self.device)
+
+        torch_tensor = torch.tensor([[1, 2, 3], [4, 5, 6]]).to(self.device)
+        torch_expected = torch_tensor.T
+
+        self.assertTrue(utils.compare_torch(torch_result, torch_expected))
+
+    def test_3D_T(self):
         """
         Test transposition of a tensor: tensor.T
         """
@@ -481,7 +506,7 @@ class TestTensorOperations(unittest.TestCase):
         torch_result = utils.to_torch(norch_result).to(self.device)
 
         torch_tensor = torch.tensor([[[1, 2], [3, -4]], [[5, 6], [7, 8]]]).to(self.device)
-        torch_expected = torch.transpose(torch_tensor, 0, 2)
+        torch_expected = torch_tensor.T
 
         self.assertTrue(utils.compare_torch(torch_result, torch_expected))
 

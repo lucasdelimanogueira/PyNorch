@@ -1422,7 +1422,20 @@ extern "C" {
 
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
-            transpose_tensor_cuda(tensor, result_data);
+            switch (ndim) {
+                case 1:
+                    transpose_1D_tensor_cuda(tensor, result_data);
+                    break;
+                case 2:
+                    transpose_2D_tensor_cuda(tensor, result_data);
+                    break;
+                case 3:
+                    transpose_3D_tensor_cuda(tensor, result_data);
+                    break;
+                default:
+                    fprintf(stderr, "Transpose only supports tensors up to 3 dimensions.\n");
+                    exit(-1);
+            }
             return create_tensor(result_data, shape, ndim, device);
         } 
         else {
@@ -1479,7 +1492,15 @@ extern "C" {
             float* result_data;
             cudaMalloc((void **)&result_data, size * sizeof(float));
             assign_tensor_cuda(tensor, result_data);
-            return create_tensor(result_data, shape, ndim, device);
+
+            Tensor* new_tensor = create_tensor(result_data, shape, ndim, device);
+            for (int i = 0; i < ndim; i++) {
+                new_tensor->strides[i] = tensor->strides[i];
+            }
+            new_tensor->strides[axis1] = tensor->strides[axis2];
+            new_tensor->strides[axis2] = tensor->strides[axis1];
+            make_contiguous(new_tensor);
+            return new_tensor;
         } 
         else {
             float* result_data = (float*)malloc(size * sizeof(float));

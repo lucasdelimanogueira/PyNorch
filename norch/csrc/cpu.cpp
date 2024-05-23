@@ -375,14 +375,14 @@ void transpose_2D_tensor_cpu(Tensor* tensor, float* result_data) {
 }
 
 void transpose_3D_tensor_cpu(Tensor* tensor, float* result_data) {
-    int depth = tensor->shape[0];
+    int batch = tensor->shape[0];
     int rows = tensor->shape[1];
     int cols = tensor->shape[2];
 
-    for (int i = 0; i < depth; i++) {
+    for (int i = 0; i < batch; i++) {
         for (int j = 0; j < rows; j++) {
             for (int k = 0; k < cols; k++) {
-                result_data[k * rows * depth + j * depth + i] = tensor->data[i * rows * cols + j * cols + k];
+                result_data[k * rows * batch + j * batch + i] = tensor->data[i * rows * cols + j * cols + k];
             }
         }
     }
