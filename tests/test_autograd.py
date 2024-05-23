@@ -919,11 +919,11 @@ class TestTensorAutograd(unittest.TestCase):
         # Squeeze at dim=0 then matmul
         norch_result_squeeze_matmul = (norch_tensor1.squeeze(0) @ norch_tensor2).sum()
         norch_result_squeeze_matmul.backward()
-        norch_tensor_grad_squeeze_matmul1 = utils.to_torch(norch_tensor1.grad, device=self.device)
-        norch_tensor_grad_squeeze_matmul2 = utils.to_torch(norch_tensor2.grad, device=self.device)
+        norch_tensor_grad_squeeze_matmul1 = utils.to_torch(norch_tensor1.grad,).to(self.device)
+        norch_tensor_grad_squeeze_matmul2 = utils.to_torch(norch_tensor2.grad).to(self.device)
 
-        torch_tensor1 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True).to(self.device)
-        torch_tensor2 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True).to(self.device)
+        torch_tensor1 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True, device=self.device)
+        torch_tensor2 = torch.tensor([[[1., 2], [3, 4]]], dtype=torch.float32, requires_grad=True, device=self.device)
         
         torch_result_squeeze_matmul = (torch_tensor1.squeeze(0) @ torch_tensor2).sum()
         torch_result_squeeze_matmul.backward()
