@@ -23,10 +23,12 @@ def softmax(x, dim=None):
     
 def one_hot_encode(x, num_classes):
     one_hot = [[0] * num_classes for _ in range(x.numel)]
-    
+
     # Set the appropriate elements to 1
     for i in range(x.numel):
-        target_idx = int(x.tensor.contents.data[i])
+        target_idx = int(x[i])
         one_hot[i][target_idx] = 1
+
+    
 
     return norch.Tensor(one_hot)
