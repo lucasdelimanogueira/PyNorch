@@ -182,7 +182,7 @@ extern "C" {
         }
         int ndim;
         int* shape;
-
+    
         if (axis > tensor->ndim - 1) {
             fprintf(stderr, "Error: axis argument %d must be smaller than tensor dimension %d", axis, tensor->ndim);
         }
@@ -208,10 +208,9 @@ extern "C" {
         }
   
         if (strcmp(tensor->device, "cuda") == 0) {
-
+            
             float* result_data;
             cudaMalloc((void**)&result_data, size * sizeof(float));
-            cudaMemset(result_data, 0, size * sizeof(float));
             sum_tensor_cuda(tensor, result_data, axis);
             
             if (keepdim) {
