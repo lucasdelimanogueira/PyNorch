@@ -1115,6 +1115,48 @@ __host__ void assign_tensor_cuda(Tensor* tensor, float* result_data) {
     cudaDeviceSynchronize();
 }
 
+__global__ void make_contiguous_tensor_cuda_kernel(float* data, float* result_data, int ndim, int size, int* strides, int* new_strides) {
+    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < size) {
+        int index = 0;
+        int offset = i;
+        for (int j = 0; j < ndim; j++) {
+            index += (offset / new_strides[j]) * strides[j];
+            offset %= new_strides[j];
+        }
+        result_data[i] = data[index];
+    }
+}
+
+__host__ void make_contiguous_tensor_cuda(Tensor* tensor, float* result_data, int* new_strides) {
+    
+    int* d_strides;
+    cudaMalloc((void **)&d_strides, tensor->ndim * sizeof(int));
+    cudaMemcpy(d_strides, tensor->strides, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+    
+    int* d_new_strides;
+    cudaMalloc((void **)&d_new_strides, tensor->ndim * sizeof(int));
+    cudaMemcpy(d_new_strides, new_strides, tensor->ndim * sizeof(int), cudaMemcpyHostToDevice);
+
+    int number_of_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    make_contiguous_tensor_cuda_kernel<<<number_of_blocks, THREADS_PER_BLOCK>>>(tensor->data, result_data, tensor->ndim, tensor->size, d_strides, d_new_strides);
+
+    cudaError_t error = cudaGetLastError();
+    if (error != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(error));
+        exit(-1);
+    }
+
+    cudaDeviceSynchronize();
+
+    // Free old data and update tensor properties
+    cudaFree(tensor->data);
+    free(tensor->strides);
+    tensor->data = result_data;
+    tensor->strides = new_strides;
+}
+
 __global__ void sin_tensor_cuda_kernel(float* data, float* result_data, int size) {
     
     int i = blockIdx.x * blockDim.x + threadIdx.x;

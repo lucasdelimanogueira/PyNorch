@@ -1522,17 +1522,10 @@ extern "C" {
     }
 
     void make_contiguous(Tensor* tensor) {
-        float* new_data = (float*)malloc(tensor->size * sizeof(float));
-        if (new_data == NULL) {
-            // Handle memory allocation failure
-            return;
-        }
-
+        
         int* new_strides = (int*)malloc(tensor->ndim * sizeof(int));
         if (new_strides == NULL) {
-            free(new_data);
-            // Handle memory allocation failure
-            return;
+            fprintf(stderr, "Memory allocation failed\n");
         }
 
         // Calculate new strides assuming C-contiguous order
@@ -1542,21 +1535,17 @@ extern "C" {
             stride *= tensor->shape[i];
         }
 
-        // Rearrange data
-        for (int i = 0; i < tensor->size; i++) {
-            int index = 0;
-            int offset = i;
-            for (int j = 0; j < tensor->ndim; j++) {
-                index += (offset / new_strides[j]) * tensor->strides[j];
-                offset %= new_strides[j];
-            }
-            new_data[i] = tensor->data[index];
-        }
+        if (strcmp(tensor->device, "cuda") == 0) {
+            float* result_data;
+            cudaMalloc((void **)&result_data, tensor->size * sizeof(float));
+            make_contiguous_tensor_cuda(tensor, result_data, new_strides);
 
-        // Free old data and update tensor properties
-        free(tensor->data);
-        free(tensor->strides);
-        tensor->data = new_data;
-        tensor->strides = new_strides;
+        } else {
+            float* result_data = (float*)malloc(tensor->size * sizeof(float));
+            if (result_data == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+            }
+            make_contiguous_tensor_cpu(tensor, result_data, new_strides);
         }
     }
+}

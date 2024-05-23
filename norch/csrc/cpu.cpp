@@ -395,6 +395,25 @@ void assign_tensor_cpu(Tensor* tensor, float* result_data) {
     }
 }
 
+void make_contiguous_tensor_cpu(Tensor* tensor, float* result_data, int* new_strides) {
+    
+    for (int i = 0; i < tensor->size; i++) {
+        int index = 0;
+        int offset = i;
+        for (int j = 0; j < tensor->ndim; j++) {
+            index += (offset / new_strides[j]) * tensor->strides[j];
+            offset %= new_strides[j];
+        }
+        result_data[i] = tensor->data[index];
+    }
+
+    // Free old data and update tensor properties
+    free(tensor->data);
+    free(tensor->strides);
+    tensor->data = result_data;
+    tensor->strides = new_strides;
+}
+
 void sin_tensor_cpu(Tensor* tensor, float* result_data) {
     for (int i = 0; i < tensor->size; i++) {
         result_data[i] = sinf(tensor->data[i]);
