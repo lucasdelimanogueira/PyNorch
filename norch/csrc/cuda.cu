@@ -172,9 +172,10 @@ __global__ void sum_tensor_axis_cuda_kernel(float* data, float* result_data, int
 
 
 __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
-    if (axis == -1) {
-        cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(result_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
 
+    if (axis == -1) {
+        
         int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
         // First-level reduction
@@ -194,21 +195,14 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
         }
 
         cudaDeviceSynchronize();
-
+        
     } else {
         int axis_size = tensor->shape[axis];
-
-        // Allocate memory for temporary storage on the device
-        float* temp_data;
-        cudaMalloc(&temp_data, tensor->size * sizeof(float));
-
-        // Copy tensor data to device
-        cudaMemcpy(temp_data, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);
 
         int num_blocks = (tensor->size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
         // First-level reduction
-        sum_tensor_axis_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(temp_data, result_data, tensor->size, axis_size);
+        sum_tensor_axis_cuda_kernel<<<num_blocks, THREADS_PER_BLOCK>>>(result_data, result_data, tensor->size, axis_size);
 
         // If necessary, perform multiple levels of reduction
         while (num_blocks > 1) {
@@ -216,9 +210,6 @@ __host__ void sum_tensor_cuda(Tensor* tensor, float* result_data, int axis) {
             sum_tensor_cuda_kernel<<<num_blocks_next, THREADS_PER_BLOCK>>>(result_data, result_data, num_blocks);
             num_blocks = num_blocks_next;
         }
-
-        // Free allocated memory on the device
-        cudaFree(temp_data);
 
         cudaError_t error = cudaGetLastError();
         if (error != cudaSuccess) {
