@@ -136,7 +136,7 @@ class SumBackward:
         input_shape = self.input[0].shape.copy()
         if self.axis == -1:
             # If axis is None, sum reduces the tensor to a scalar.
-            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+            grad_output = float(gradient[[0] * len(gradient.shape)]) * self.input[0].ones_like()
         else:
 
             if self.keepdim:
@@ -214,9 +214,9 @@ class MaxBackward:
             max_value = self.input[0].max()
             mask = self.input[0].equal(max_value)
 
-            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+            grad_output = float(gradient[[0] * len(gradient.shape)]) * self.input[0].ones_like()
 
-            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+            grad_output = (grad_output * mask) / mask.sum()[0]
 
         else:
 
@@ -250,9 +250,9 @@ class MinBackward:
             min_value = self.input[0].min()
             mask = self.input[0].equal(min_value)
 
-            grad_output = float(gradient.tensor.contents.data[0]) * self.input[0].ones_like()
+            grad_output = float(gradient[[0] * len(gradient.shape)]) * self.input[0].ones_like()
 
-            grad_output = (grad_output * mask) / mask.sum().tensor.contents.data[0]
+            grad_output = (grad_output * mask) / mask.sum()[0]
 
         else:
             if self.keepdim:
