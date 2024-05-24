@@ -22,6 +22,7 @@ apt_nccl = [
 ]
 
 subprocess.check_call(['sudo', 'apt-get', 'update'])
+subprocess.check_call(['sudo', 'apt-get', 'upgrade', '-y', '--allow-change-held-packages'])
 
 for package in apt_dependencies:
     subprocess.check_call(['sudo', 'apt', 'install', package])
