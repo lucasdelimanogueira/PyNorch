@@ -46,16 +46,12 @@ void broadcast_tensor(Tensor* tensor) {
     cudaStreamDestroy(stream);
 }
 
-void allreduce_mean_tensor(Tensor* tensor) {
+void allreduce_sum_tensor(Tensor* tensor) {
     cudaStream_t stream;
     cudaStreamCreate(&stream);
 
     // Perform NCCL AllReduce operation to calculate the sum of all tensors across all processes
     NCCL_CHECK(ncclAllReduce(tensor->data, tensor->data, tensor->size, ncclFloat, ncclSum, nccl_comm, stream));
-
-    // Divide the sum by the world size to get the mean
-    float scale = 1.0f / world_size;
-    scalar_mul_tensor_cuda(tensor, scale, tensor->data);
 
     cudaStreamSynchronize(stream);
     cudaStreamDestroy(stream);

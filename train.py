@@ -10,17 +10,22 @@ def main():
 
     dist.init_process_group(rank, world_size)
 
-    tensor = norch.Tensor([1,2,3])
-    tensor = rank * tensor
-    print(f"BEFORE on rank {rank}: ", tensor, '\n\n')
+    tensor = norch.Tensor([1,1,1])
+    tensor = (rank + 1) * tensor
+    print(f"BEFORE on rank {rank}: {tensor} \n\n")
+
+    dist.allreduce_sum_tensor(tensor)
+
+    print(f"AFTER ALLREDUCE on rank {rank}: {tensor} \n\n")
+
+    print("###############\n\n\n")
+
+    tensor = tensor * 10
+    print(f"BEFORE BROADCAST on rank {rank}: {tensor} \n\n")
 
     dist.broadcast_tensor(tensor)
 
-    print(f"AFTER BROADCAST on rank {rank}: ", tensor, '\n\n')
-
-    dist.allreduce_mean_tensor(tensor)
-
-    print(f"AFTER ALLREDUCE MEAN on rank {rank}: ", tensor, '\n\n')
+    print(f"AFTER BROADCAST on rank {rank}: {tensor} \n\n")
 
 if __name__ == "__main__":
     main()
