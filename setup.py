@@ -9,8 +9,16 @@ apt_dependencies = [
     'nvidia-cuda-toolkit'
 ]
 
+apt_get_dependencies = [
+    'mpi',
+    'libopenmpi-dev'
+]
+
 for package in apt_dependencies:
     subprocess.check_call(['sudo', 'apt', 'install', package])
+
+for package in apt_get_dependencies:
+    subprocess.check_call(['sudo', 'apt-get', 'install', 'y', package])
 
 class CustomInstall(install):
     def run(self):

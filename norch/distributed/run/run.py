@@ -1,14 +1,7 @@
 import sys
 import os
 import argparse
-import multiprocessing
-
-def worker(rank, nnodes, world_size, script_name, script_args):
-    os.environ['LOCAL_RANK'] = str(rank // nnodes)
-    os.environ['RANK'] = str(rank)
-    os.environ['WORLD_SIZE'] = str(world_size)
-    script_args = [sys.executable, script_name] + script_args
-    os.execvp(script_args[0], script_args)
+import subprocess
 
 def main():
     parser = argparse.ArgumentParser(description="Distributed runner")
@@ -26,14 +19,13 @@ def main():
 
     world_size = nproc_per_node * nnodes
 
-    processes = []
-    for rank in range(nproc_per_node):
-        p = multiprocessing.Process(target=worker, args=(rank, nnodes, world_size, script_name, script_args))
-        p.start()
-        processes.append(p)
+    mpiexec_command = [
+        'mpiexec',
+        '-n', str(world_size),
+        sys.executable, script_name
+    ] + script_args
 
-    for p in processes:
-        p.join()
+    subprocess.run(mpiexec_command)
 
 if __name__ == '__main__':
     main()

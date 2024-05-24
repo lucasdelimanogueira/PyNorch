@@ -1,6 +1,7 @@
 #ifndef CUDA_KERNEL_H_
 #define CUDA_KERNEL_H_
 
+
     __host__ void cpu_to_cuda(Tensor* tensor, int device_id);
     __host__ void cuda_to_cpu(Tensor* tensor);
     
