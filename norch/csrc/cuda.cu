@@ -7,8 +7,17 @@
 #define THREADS_PER_BLOCK 128
 #define TILE_SIZE 32
 
-__host__ void cpu_to_cuda(Tensor* tensor) {
+__host__ void cpu_to_cuda(Tensor* tensor, int device_id) {
+
+    int deviceCount;
+    cudaGetDeviceCount(&deviceCount);
+    if (device_id >= deviceCount) {
+        fprintf(stderr, "Could not send tensor to device %d, only %d devices available\n", device_id, deviceCount);
+            exit(1);
+    }
     
+    cudaSetDevice(device_id); 
+
     float* data_tmp;
     cudaMalloc((void **)&data_tmp, tensor->size * sizeof(float));
     cudaMemcpy(data_tmp, tensor->data, tensor->size * sizeof(float), cudaMemcpyHostToDevice);

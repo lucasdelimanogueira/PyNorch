@@ -64,8 +64,15 @@ extern "C" {
     }
 
     void to_device(Tensor* tensor, char* target_device) {
+        int device_id = 0;
+        char* endptr;
+        long num = strtol(target_device, &endptr, 10);
+        if (*endptr == '\0') {
+            device_id = (int)num;
+        }
+
         if ((strcmp(target_device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
-            cpu_to_cuda(tensor);
+            cpu_to_cuda(tensor, device_id);
         }
 
         else if ((strcmp(target_device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
