@@ -18,7 +18,7 @@ apt_get_dependencies = [
 
 apt_nccl = [
     'libnccl2=2.21.5-1+cuda12.2',
-    'libnccl-dev=2.21.5-1+cuda12.2 '
+    'libnccl-dev=2.21.5-1+cuda12.2'
 ]
 
 subprocess.check_call(['sudo', 'apt-get', 'update'])
@@ -27,13 +27,15 @@ for package in apt_dependencies:
     subprocess.check_call(['sudo', 'apt', 'install', package])
 
 for package in apt_get_dependencies:
-    subprocess.check_call(['sudo', 'apt-get', 'install', 'y', package])
+    subprocess.check_call(['sudo', 'apt-get', 'install', '-y', package])
 
-subprocess.check_call(['wget', 'https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb '])
+subprocess.check_call(['wget', 'https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb'])
 subprocess.check_call(['sudo', 'dpkg', '-i', 'cuda-keyring_1.0-1_all.deb'])
 
 for package in apt_nccl:
     subprocess.check_call(['sudo', 'apt', 'install', package])
+
+subprocess.check_call(['rm', 'cuda-keyring_1.0-1_all.deb'])
 
 class CustomInstall(install):
     def run(self):
