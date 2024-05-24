@@ -22,6 +22,7 @@ def main():
     mpiexec_command = [
         'mpiexec',
         '-n', str(world_size),
+        '--allow-run-as-root',
         sys.executable, script_name
     ] + script_args
 
