@@ -18,7 +18,7 @@ def broadcast_tensor(tensor):
 
 def allreduce_sum_tensor(tensor):
 
-    Tensor._C.allreduce_mean_tensor.argtypes = [ctypes.POINTER(CTensor)]
-    Tensor._C.allreduce_mean_tensor.restype = None
+    Tensor._C.allreduce_sum_tensor.argtypes = [ctypes.POINTER(CTensor)]
+    Tensor._C.allreduce_sum_tensor.restype = None
     
-    Tensor._C.allreduce_mean_tensor(tensor)
+    Tensor._C.allreduce_sum_tensor(tensor)

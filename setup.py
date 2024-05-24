@@ -22,7 +22,6 @@ apt_nccl = [
 ]
 
 subprocess.check_call(['sudo', 'apt-get', 'update'])
-subprocess.check_call(['sudo', 'apt-get', 'upgrade', '-y', '--allow-change-held-packages'])
 
 for package in apt_dependencies:
     subprocess.check_call(['sudo', 'apt', 'install', package])
@@ -32,6 +31,8 @@ for package in apt_get_dependencies:
 
 subprocess.check_call(['wget', 'https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb'])
 subprocess.check_call(['sudo', 'dpkg', '-i', 'cuda-keyring_1.0-1_all.deb'])
+
+subprocess.check_call(['sudo', 'apt-mark', 'unhold', 'libnccl-dev', 'libnccl2'])
 
 for package in apt_nccl:
     subprocess.check_call(['sudo', 'apt', 'install', package])
