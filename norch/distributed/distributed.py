@@ -14,11 +14,11 @@ def broadcast_tensor(tensor):
     Tensor._C.broadcast_tensor.argtypes = [ctypes.POINTER(CTensor)]
     Tensor._C.broadcast_tensor.restype = None
     
-    Tensor._C.broadcast_tensor(tensor)
+    Tensor._C.broadcast_tensor(tensor.tensor)
 
 def allreduce_sum_tensor(tensor):
 
     Tensor._C.allreduce_sum_tensor.argtypes = [ctypes.POINTER(CTensor)]
     Tensor._C.allreduce_sum_tensor.restype = None
     
-    Tensor._C.allreduce_sum_tensor(tensor)
+    Tensor._C.allreduce_sum_tensor(tensor.tensor)
