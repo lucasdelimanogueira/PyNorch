@@ -1,7 +1,7 @@
 # Compiler
 CC = g++
 NVCC = nvcc
-MPI_CC = mpiCC
+MPI_CC = mpicc
 
 # Compiler flags
 CFLAGS = -Wall -Wextra -std=c++11
@@ -13,7 +13,7 @@ CUDAFLAGS = -arch=sm_75
 CUDALIBS = -I/usr/local/cuda/include -L/usr/local/cuda/lib64 -lcudart -lcuda
 
 # MPI flags and libraries
-MPILIBS = -lmpi_cxx
+DISTRIBUTEDLIBS = -lmpi_cxx -lnccl
 
 # Directories
 SRCDIR = ../norch/csrc
@@ -31,7 +31,7 @@ MPI_OBJS := $(BUILDDIR)/distributed.o
 
 # Rule to build the target
 $(TARGET): $(OBJS) $(MPI_OBJS) $(CU_OBJS)
-	$(NVCC) --shared -o $(TARGET) $(OBJS) $(MPI_OBJS) $(CU_OBJS) $(CUDALIBS) $(MPILIBS)
+	$(NVCC) --shared -o $(TARGET) $(OBJS) $(MPI_OBJS) $(CU_OBJS) $(CUDALIBS) $(DISTRIBUTEDLIBS)
 
 # Rule to compile C++ source files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp

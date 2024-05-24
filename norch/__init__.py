@@ -1,4 +1,4 @@
-from norch.tensor import Tensor
+from norch.tensor import *
 from .nn import *
 from .optim import *
 from .utils import *
