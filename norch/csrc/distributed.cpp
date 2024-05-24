@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "distributed.h"
-#include "tensor.h"
 #include "cuda.h"
 #include <mpi.h>
 #include <nccl.h>

@@ -1,5 +1,6 @@
 #ifndef DISTRIBUTED_H
 #define DISTRIBUTED_H
+#include "tensor.h"
 
 #define MPI_CHECK(cmd) do {                          \
   int e = cmd;                                      \
