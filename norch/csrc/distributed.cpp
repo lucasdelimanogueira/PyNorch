@@ -63,8 +63,8 @@ void allreduce_mean_tensor(Tensor* tensor) {
     // Perform NCCL AllReduce operation to calculate the mean of all tensors across all processes
     NCCL_CHECK(ncclAllReduce(tensor->data, tensor->data, tensor->size, ncclFloat, ncclSum, nccl_comm, stream));
 
-    tensor_div_scalar(tensor, tensor->data);
-    
+    tensor_div_scalar_cuda(tensor, world_size, tensor->data);
+
     cudaStreamSynchronize(stream);
     cudaStreamDestroy(stream);
 }
