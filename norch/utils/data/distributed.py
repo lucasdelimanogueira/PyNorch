@@ -1,5 +1,5 @@
-import math
 import numpy as np
+import math
 
 class DistributedSampler:
     def __init__(self, dataset, num_replicas, rank):
@@ -10,17 +10,16 @@ class DistributedSampler:
         self.total_size = self.num_samples * self.num_replicas
 
     def __iter__(self):
-        # Create indices for the dataset
-        indices = np.arange(len(self.dataset))
+        indices = list(range(len(self.dataset)))
 
         # Add extra samples to make it evenly divisible
-        indices = np.concatenate([indices, indices[:(self.total_size - len(indices)) % len(indices)]])
+        indices = indices[:self.total_size]
         assert len(indices) == self.total_size
 
-        # Subsample
+        # subsample
         indices = indices[self.rank:self.total_size:self.num_replicas]
         assert len(indices) == self.num_samples
-
+        
         return iter(indices)
 
     def __len__(self):

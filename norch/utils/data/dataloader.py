@@ -11,17 +11,19 @@ class Dataloader:
 
     def __iter__(self):
         if self.sampler is not None:
-            indices = list(self.sampler)
+            indices = iter(self.sampler)
+
         else:
-            indices = np.arange(len(self.dataset))
-        
-        for start in range(0, len(indices), self.batch_size):
-            end = start + self.batch_size
-            batch_indices = indices[start:end]
-            batch_size = len(batch_indices)
-            yield Batch([self.dataset[i] for i in batch_indices], batch_size)
+            indices = range(len(self.dataset))
+
+        for idx in indices:
+            start = idx * self.batch_size
+            end = min(start + self.batch_size, len(self.dataset))
+            yield Batch(self.dataset[start:end], end - start)
+
 
     def __len__(self):
         if self.sampler is not None:
             return len(self.sampler) // self.batch_size
+        
         return len(self.dataset) // self.batch_size
