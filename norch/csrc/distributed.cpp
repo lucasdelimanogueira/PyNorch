@@ -56,6 +56,19 @@ void allreduce_sum_tensor(Tensor* tensor) {
     cudaStreamDestroy(stream);
 }
 
+void allreduce_mean_tensor(Tensor* tensor) {
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
+    // Perform NCCL AllReduce operation to calculate the mean of all tensors across all processes
+    NCCL_CHECK(ncclAllReduce(tensor->data, tensor->data, tensor->size, ncclFloat, ncclSum, nccl_comm, stream));
+
+    tensor_div_scalar(tensor, tensor->data);
+    
+    cudaStreamSynchronize(stream);
+    cudaStreamDestroy(stream);
+}
+
 void end_process_group() {
     MPI_CHECK(MPI_Finalize());
     NCCL_CHECK(ncclCommDestroy(nccl_comm));
