@@ -2,7 +2,7 @@ import numpy as np
 from .batch import Batch
 
 
-class Dataloader:
+class DataLoader:
     
     def __init__(self, dataset, batch_size=32, sampler=None):
         self.dataset = dataset
