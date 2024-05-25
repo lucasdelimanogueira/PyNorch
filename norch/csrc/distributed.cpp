@@ -35,12 +35,12 @@ void init_process_group(int env_rank, int env_world_size) {
 
 }
 
-void broadcast_tensor(Tensor* tensor) {
+void broadcast_tensor(Tensor* tensor, int src) {
 
     cudaStream_t stream;
     cudaStreamCreate(&stream);
     
-    NCCL_CHECK(ncclBroadcast(tensor->data, tensor->data, tensor->size * sizeof(float), ncclFloat, 0, nccl_comm, stream));
+    NCCL_CHECK(ncclBroadcast(tensor->data, tensor->data, tensor->size * sizeof(float), ncclFloat, src, nccl_comm, stream));
     cudaStreamSynchronize(stream);
     cudaStreamDestroy(stream);
 }

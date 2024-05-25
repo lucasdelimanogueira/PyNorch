@@ -22,7 +22,7 @@
 
 extern "C" {
   void init_process_group(int rank, int world_size);
-  void broadcast_tensor(Tensor* tensor);
+  void broadcast_tensor(Tensor* tensor, int src);
   void allreduce_sum_tensor(Tensor* tensor);
   void allreduce_mean_tensor(Tensor* tensor);
 }

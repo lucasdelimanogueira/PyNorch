@@ -9,12 +9,12 @@ def init_process_group(rank, world_size, backend='nccl'):
 
     Tensor._C.init_process_group(rank, world_size)
 
-def broadcast_tensor(tensor):
+def broadcast_tensor(tensor, src=0):
 
-    Tensor._C.broadcast_tensor.argtypes = [ctypes.POINTER(CTensor)]
+    Tensor._C.broadcast_tensor.argtypes = [ctypes.POINTER(CTensor), ctypes.c_int]
     Tensor._C.broadcast_tensor.restype = None
     
-    Tensor._C.broadcast_tensor(tensor.tensor)
+    Tensor._C.broadcast_tensor(tensor.tensor, src)
 
 def allreduce_sum_tensor(tensor):
 
