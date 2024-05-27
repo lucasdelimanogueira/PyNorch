@@ -9,7 +9,7 @@ from norch.norchvision import transforms as norch_transforms
 from torchvision import transforms as torch_transforms
 
 class TestDistributed(unittest.TestCase):
-    """def test_distributed_sampler_batch_1(self):
+    def test_distributed_sampler_batch_1(self):
         transforms = norch_transforms.Compose(
             [
                 norch_transforms.ToTensor(),
@@ -48,7 +48,7 @@ class TestDistributed(unittest.TestCase):
                 break
 
         for label_norch, label_torch in zip(labels_norch, labels_torch):
-            self.assertTrue(utils.compare_torch(label_norch, label_torch))"""
+            self.assertTrue(utils.compare_torch(label_norch, label_torch))
 
     
     def test_distributed_sampler_batch_32_rank_2(self):
