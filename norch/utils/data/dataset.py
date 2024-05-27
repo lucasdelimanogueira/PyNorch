@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import os
-from norch.utils import extract_to_dir, download_from_url
+from norch.utils.functions import extract_to_dir, download_from_url
 from .example import Example
 import norch
 

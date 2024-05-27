@@ -65,7 +65,7 @@ class MyModel(nn.Module):
 ### 3.3 - Example training
 ```python
 import norch
-from norch.utils.data.dataloader import Dataloader
+from norch.utils.data.dataloader import DataLoader
 from norch.norchvision import transforms
 import norch
 import norch.nn as nn
@@ -77,21 +77,21 @@ BATCH_SIZE = 32
 device = "cuda" #cpu
 epochs = 10
 
-transform = transforms.Sequential(
+transform = transforms.Compose(
     [
         transforms.ToTensor(),
         transforms.Reshape([-1, 784, 1])
     ]
 )
 
-target_transform = transforms.Sequential(
+target_transform = transforms.Compose(
     [
         transforms.ToTensor()
     ]
 )
 
 train_data, test_data = norch.norchvision.datasets.MNIST.splits(transform=transform, target_transform=target_transform)
-train_loader = Dataloader(train_data, batch_size = BATCH_SIZE)
+train_loader = DataLoader(train_data, batch_size = BATCH_SIZE)
 
 class MyModel(nn.Module):
     def __init__(self):
@@ -146,4 +146,4 @@ for epoch in range(epochs):
 | Loss                         | in progress | <ul><li>[x] MSE</li><li>[X] Cross Entropy</li></ul>    |
 | Data                         | in progress    | <ul><li>[X] Dataset</li><li>[X] Batch</li><li>[X] Iterator</li></ul>   |
 | Convolutional Neural Network | in progress    | <ul><li>[ ] Conv2d</li><li>[ ] MaxPool2d</li><li>[ ] Dropout</li></ul> |
-| Distributed                  | in progress | <ul><li>[ ] Distributed Data Parallel</li></ul>             
+| Distributed                  | in progress | <ul>><li>[ ] All reduce</li><li>[ ] DistributedDataParallel</li>><li>[ ] DistributedSampler</li></ul>             

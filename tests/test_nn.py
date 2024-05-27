@@ -201,4 +201,3 @@ class TestNNModuleActivationFn(unittest.TestCase):
 
                 # Compare the results
                 self.assertTrue(utils.compare_torch(softmax_torch_result, softmax_torch_expected))
-

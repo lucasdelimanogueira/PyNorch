@@ -11,7 +11,7 @@ class Reshape:
     def __call__(self, x):
         return x.reshape(self.shape)
     
-class Sequential:
+class Compose:
     def __init__(self, transforms):
         self.transforms = transforms
 
