@@ -146,4 +146,4 @@ for epoch in range(epochs):
 | Loss                         | in progress | <ul><li>[x] MSE</li><li>[X] Cross Entropy</li></ul>    |
 | Data                         | in progress    | <ul><li>[X] Dataset</li><li>[X] Batch</li><li>[X] Iterator</li></ul>   |
 | Convolutional Neural Network | in progress    | <ul><li>[ ] Conv2d</li><li>[ ] MaxPool2d</li><li>[ ] Dropout</li></ul> |
-| Distributed                  | in progress | <ul>><li>[ ] All reduce</li><li>[X] DistributedSampler</li><li>[ ] DistributedDataParallel</li>></ul>             |
+| Distributed                  | in progress | <ul><li>[ ] All-reduce</li><li>[X] DistributedSampler</li><li>[ ] DistributedDataParallel</li></ul>                 |
