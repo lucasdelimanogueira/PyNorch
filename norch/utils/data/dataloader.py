@@ -4,24 +4,23 @@ from .batch import Batch
 
 class DataLoader:
     
-    def __init__(self, dataset, batch_size=32, sampler=None):
+    def __init__(self, dataset, batch_size, sampler=None):
         self.dataset = dataset
         self.batch_size = batch_size
         self.sampler = sampler
 
     def __iter__(self):
         if self.sampler is not None:
-            indices = iter(self.sampler)
-
+            indices = list(iter(self.sampler))
+    
         else:
-            indices = range(len(self.dataset))
-
-        for idx in indices:
-            start = idx * self.batch_size
-            end = min(start + self.batch_size, len(self.dataset))
-            yield Batch(self.dataset[start:end], end - start)
-
-
+            indices = list(range(len(self.dataset)))
+        
+        for i in range(0, len(indices), self.batch_size):
+            batch_indices = indices[i:i + self.batch_size]
+            batch_data = self.dataset[batch_indices]
+            yield Batch(batch_data, len(batch_data))
+            
     def __len__(self):
         if self.sampler is not None:
             return len(self.sampler) // self.batch_size

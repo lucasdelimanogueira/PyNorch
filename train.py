@@ -39,7 +39,7 @@ from norch.norchvision import transforms
 
 train_data, test_data = norch.norchvision.datasets.MNIST.splits(transform=transforms.ToTensor())
 train_sampler = norch.utils.data.distributed.DistributedSampler(dataset=train_data, num_replicas=10, rank=2)
-train_loader = norch.utils.data.Dataloader(train_data, batch_size = 1, sampler=train_sampler)
+train_loader = norch.utils.data.Dataloader(train_data, batch_size = 50, sampler=train_sampler)
 input_sample, target_sample = train_data[0]
 
 fig = plt.figure(figsize = (20, 10))

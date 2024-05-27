@@ -14,6 +14,8 @@ class DistributedSampler:
 
         # Add extra samples to make it evenly divisible
         indices = indices[:self.total_size]
+        if len(indices) < self.total_size:
+            indices += indices[:(self.total_size - len(indices))]
         assert len(indices) == self.total_size
 
         # subsample
