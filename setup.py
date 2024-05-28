@@ -12,7 +12,9 @@ apt_dependencies = [
 
 apt_get_dependencies = [
     'mpi',
-    'libopenmpi-dev'
+    'libopenmpi-dev',
+    'openmpi-common',
+    'openmpi-bin'
 ]
 
 apt_nccl = [
