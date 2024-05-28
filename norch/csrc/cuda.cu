@@ -40,8 +40,6 @@ __host__ void cuda_to_cpu(Tensor* tensor) {
     const char* device_str = "cpu";
     tensor->device = (char*)malloc(strlen(device_str) + 1);
     strcpy(tensor->device, device_str); 
-
-    printf("Successfully sent tensor to: %s\n", tensor->device);
 }
 
 __global__ void add_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int size) {
