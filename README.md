@@ -7,7 +7,7 @@ Project details explanations can also be found on [medium](https://towardsdatasc
 **PyNorch** is a deep learning framework constructed using C/C++, CUDA and Python. This is a personal project with educational purpose only! `Norch` means **NOT** PyTorch, and we have **NO** claims to rivaling the already established PyTorch. The main objective of **PyNorch** was to give a brief understanding of how a deep learning framework works internally. It implements the Tensor object, GPU support and an automatic differentiation system. 
 
 # 2 - Installation
-Install this package from PyPi (you can test on Colab!)
+Install this package from PyPi (you can test on Colab! Also tested on AWS p3 instances ami-00f1d513c2bb78c75)
 
 ```css
 $ pip install norch
