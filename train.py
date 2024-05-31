@@ -118,5 +118,5 @@ def main2():
         break
 
 if __name__ == "__main__":
-    main2()
+    main()
 
