@@ -13,7 +13,7 @@ CUDAFLAGS = -arch=sm_75
 CUDALIBS = -I/usr/local/cuda/include -L/usr/local/cuda/lib64 -lcudart -lcuda
 
 # MPI flags and libraries
-DISTRIBUTEDLIBS = -lmpi_cxx -lnccl
+DISTRIBUTEDLIBS = -lmpi_cxx -lnccl -lmpi
 
 # Directories
 SRCDIR = ../norch/csrc

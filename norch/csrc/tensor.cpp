@@ -66,9 +66,12 @@ extern "C" {
     void to_device(Tensor* tensor, char* target_device) {
         int device_id = 0;
         char* endptr;
+
         long num = strtol(target_device, &endptr, 10);
         if (*endptr == '\0') {
             device_id = (int)num;
+            target_device = new char[strlen("cuda") + 1];
+            strcpy(target_device, "cuda");
         }
 
         if ((strcmp(target_device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
@@ -77,6 +80,10 @@ extern "C" {
 
         else if ((strcmp(target_device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
             cuda_to_cpu(tensor);
+        }
+
+        else {
+            printf("Could not send tensor to device %d", device_id);
         }
     }
 

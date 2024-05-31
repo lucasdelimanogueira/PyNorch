@@ -7,7 +7,7 @@ Project details explanations can also be found on [medium](https://towardsdatasc
 **PyNorch** is a deep learning framework constructed using C/C++, CUDA and Python. This is a personal project with educational purpose only! `Norch` means **NOT** PyTorch, and we have **NO** claims to rivaling the already established PyTorch. The main objective of **PyNorch** was to give a brief understanding of how a deep learning framework works internally. It implements the Tensor object, GPU support and an automatic differentiation system. 
 
 # 2 - Installation
-Install this package from PyPi (you can test on Colab!)
+Install this package from PyPi (you can test on Colab! Also tested on AWS p3 instances ami-00f1d513c2bb78c75)
 
 ```css
 $ pip install norch
@@ -15,11 +15,9 @@ $ pip install norch
 
 or from cloning this repository
 ```css
-$ sudo apt install nvidia-cuda-toolkit
 $ git clone https://github.com/lucasdelimanogueira/PyNorch.git
-$ cd build
-$ make
-$ cd ..
+$ cd PyNorch
+$ pip install . -v
 ```
 
 # 3 - Get started
@@ -66,7 +64,7 @@ class MyModel(nn.Module):
 ```python
 import norch
 from norch.utils.data.dataloader import DataLoader
-from norch.norchvision import transforms
+from norch.norchvision import transforms as T
 import norch
 import norch.nn as nn
 import norch.optim as optim
@@ -77,16 +75,16 @@ BATCH_SIZE = 32
 device = "cuda" #cpu
 epochs = 10
 
-transform = transforms.Compose(
+transform = T.Compose(
     [
-        transforms.ToTensor(),
-        transforms.Reshape([-1, 784, 1])
+        T.ToTensor(),
+        T.Reshape([-1, 784, 1])
     ]
 )
 
-target_transform = transforms.Compose(
+target_transform = T.Compose(
     [
-        transforms.ToTensor()
+        T.ToTensor()
     ]
 )
 
