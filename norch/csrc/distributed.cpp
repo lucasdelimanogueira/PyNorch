@@ -30,6 +30,8 @@ void init_process_group(int env_rank, int env_world_size) {
     // send nccl unique id to all processes
     MPI_CHECK(MPI_Bcast((void *)&nccl_id, sizeof(nccl_id), MPI_BYTE, 0, MPI_COMM_WORLD));
 
+    cudaSetDevice(rank); 
+
     // init NCCL communication group
     NCCL_CHECK(ncclCommInitRank(&nccl_comm, world_size, nccl_id, rank));
 

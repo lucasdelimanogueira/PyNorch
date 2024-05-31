@@ -13,7 +13,7 @@ __host__ void cpu_to_cuda(Tensor* tensor, int device_id) {
     cudaGetDeviceCount(&deviceCount);
     if (device_id >= deviceCount) {
         fprintf(stderr, "Could not send tensor to device %d, only %d devices available\n", device_id, deviceCount);
-            exit(1);
+        exit(1);
     }
     
     cudaSetDevice(device_id); 
