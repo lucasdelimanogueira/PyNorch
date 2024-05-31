@@ -111,9 +111,9 @@ def main2():
 
 
             optimizer.step()
+            break
 
-        print(f'Epoch [{epoch + 1}/{epochs}], Loss: {loss[0]:.4f}')
-        loss_list.append(loss[0])
+        break
 
 if __name__ == "__main__":
     main()
