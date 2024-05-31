@@ -34,6 +34,7 @@ def main2():
     import norch.optim as optim
     from norch.utils.data.dataloader import DataLoader
     from norch.nn.parallel import DistributedDataParallel
+    from norch.utils.data.distributed import DistributedSampler
     from norch.norchvision import transforms as T
     import numpy as np
     import matplotlib.pyplot as plt
@@ -64,7 +65,7 @@ def main2():
     )
 
     train_data, test_data = norch.norchvision.datasets.MNIST.splits(transform=transform, target_transform=target_transform)
-    distributed_sampler = norch.utils.data.distributed.DistributedSampler(dataset=train_data, num_replicas=world_size, rank=local_rank)
+    distributed_sampler = DistributedSampler(dataset=train_data, num_replicas=world_size, rank=local_rank)
     train_loader = norch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE, sampler=distributed_sampler)
 
     class MyModel(nn.Module):
@@ -107,7 +108,8 @@ def main2():
             optimizer.zero_grad()
             
             loss.backward()
-            print(f"AFTER rank {local_rank}: {model.module.fc1.weight.grad}")
+            print(f"AFTER rank {local_rank}: {model.module.fc2.bias.grad}")
+            print("\n\n")
 
 
             optimizer.step()
@@ -116,5 +118,5 @@ def main2():
         break
 
 if __name__ == "__main__":
-    main()
+    main2()
 
