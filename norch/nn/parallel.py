@@ -13,8 +13,11 @@ class DistributedDataParallel(Module):
     
     def backward(self):
         self.module.backward()
-        for module, name, parameter in self.parameters():
+        for module, name, _ in self.parameters():
+            parameter = getattr(module, name)
             dist.allreduce_mean_tensor(parameter)
+            setattr(module, name, parameter)
+
 
         
 
