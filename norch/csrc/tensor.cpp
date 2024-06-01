@@ -83,7 +83,8 @@ extern "C" {
         }
 
         else {
-            printf("Could not send tensor to device %d", device_id);
+            fprintf(stderr, "Could not send tensor to device %d", device_id);
+            exit(1);
         }
     }
 
