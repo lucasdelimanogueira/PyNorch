@@ -10,10 +10,10 @@ def init_process_group(rank, world_size, backend='nccl'):
     Tensor._C.init_process_group(rank, world_size)
 
 def get_rank():
-    return os.getenv('OMPI_COMM_WORLD_RANK', 0)
+    return int(os.getenv('OMPI_COMM_WORLD_RANK', 0))
 
 def get_world_size():
-    return os.getenv('OMPI_COMM_WORLD_SIZE', 1)
+    return int(os.getenv('OMPI_COMM_WORLD_SIZE', 1))
 
 def broadcast_tensor(tensor, src=0):
 
