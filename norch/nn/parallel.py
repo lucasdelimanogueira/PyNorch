@@ -32,7 +32,6 @@ class DistributedDataParallel(Module):
         if isinstance(grad, norch.Tensor):
             dist.allreduce_sum_tensor(grad) 
             avg_grad = grad / dist.get_world_size()
-            avg_grad = 0*grad + 5
         return avg_grad
     
     def register_grads_hooks(self):
