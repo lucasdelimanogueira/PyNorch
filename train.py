@@ -3,52 +3,21 @@ import norch
 import norch.distributed as dist
 import norch.distributed
 
+import norch.nn as nn
+import norch.optim as optim
+from norch.utils.data.dataloader import DataLoader
+from norch.nn.parallel import DistributedDataParallel
+from norch.utils.data.distributed import DistributedSampler
+from norch.norchvision import transforms as T
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+random.seed(1)
+
 def main():
 
-    local_rank = int(os.getenv('OMPI_COMM_WORLD_LOCAL_RANK', -1))
-    rank = int(os.getenv('OMPI_COMM_WORLD_RANK', -1))
-    world_size = int(os.getenv('OMPI_COMM_WORLD_SIZE', -1))
-
-    dist.init_process_group(rank, world_size)
-
-    tensor = norch.Tensor([1,1,1]).to(rank)
-    tensor = (rank + 1) * tensor
-    print(f"BEFORE on rank {rank}: {tensor} \n\n")
-
-    dist.allreduce_sum_tensor(tensor)
-
-    print(f"AFTER ALLREDUCE on rank {rank}: {tensor} \n\n")
-
-    print("###############\n\n\n")
-
-    tensor = tensor * 10
-    print(f"BEFORE BROADCAST on rank {rank}: {tensor} \n\n")
-
-    dist.broadcast_tensor(tensor)
-
-    print(f"AFTER BROADCAST on rank {rank}: {tensor} \n\n")
-
-def main2():
-    import norch
-    import norch.nn as nn
-    import norch.optim as optim
-    from norch.utils.data.dataloader import DataLoader
-    from norch.nn.parallel import DistributedDataParallel
-    from norch.utils.data.distributed import DistributedSampler
-    from norch.norchvision import transforms as T
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import random
-    random.seed(1)
-
-    local_rank = int(os.getenv('OMPI_COMM_WORLD_LOCAL_RANK', -1))
-    rank = int(os.getenv('OMPI_COMM_WORLD_RANK', -1))
-    world_size = int(os.getenv('OMPI_COMM_WORLD_SIZE', -1))
-
-    dist.init_process_group(rank, world_size)
-
     BATCH_SIZE = 32
-    device = local_rank
+    device = "cpu"
     epochs = 10
 
     transform = T.Compose(
@@ -65,8 +34,7 @@ def main2():
     )
 
     train_data, test_data = norch.norchvision.datasets.MNIST.splits(transform=transform, target_transform=target_transform)
-    distributed_sampler = DistributedSampler(dataset=train_data, num_replicas=world_size, rank=local_rank)
-    train_loader = norch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE, sampler=distributed_sampler)
+    train_loader = norch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE)
 
     class MyModel(nn.Module):
         def __init__(self):
@@ -90,9 +58,6 @@ def main2():
     optimizer = optim.SGD(model.parameters(), lr=0.01)
     loss_list = []
 
-    print(f"Local rank: {local_rank}")
-    print(f"World size: {world_size}")
-
     for epoch in range(epochs):    
         for idx, batch in enumerate(train_loader):
 
@@ -102,17 +67,19 @@ def main2():
             target = target.to(device)
 
             outputs = model(inputs)
-            
             loss = criterion(outputs, target)
             
             optimizer.zero_grad()
             
+            print("#####################\n\nantes backward")
+            print(model.module.fc1.bias.grad)
             loss.backward()
-            print(f"AFTER rank {local_rank}: {model.module.fc2.bias.grad}")
-            print("\n\n")
+            print(model.module.fc1.bias.grad)
+            print("\n\n\n###############\n\npós backward")
 
 
             optimizer.step()
+            print("@@")
             break
 
         break
