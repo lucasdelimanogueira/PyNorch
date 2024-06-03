@@ -23,14 +23,16 @@ class DistributedDataParallel(Module):
         for _, _, parameter in self.parameters():
             dist.broadcast_tensor(parameter)
     
+    @staticmethod
     def allreduce_grads_hook(grad):
         """
         Everytime a gradient is assign to some value, it calculates mean of this gradient among all devices
         """
+        avg_grad = grad
         if isinstance(grad, norch.Tensor):
             dist.allreduce_sum_tensor(grad) 
-            grad /= dist.get_world_size()
-        return grad
+            avg_grad = grad / dist.get_world_size()
+        return avg_grad
     
     def register_grads_hooks(self):
         """
@@ -38,7 +40,6 @@ class DistributedDataParallel(Module):
         """
         for _, _, parameter in self.parameters():
             parameter.register_hook(self.allreduce_grads_hook)
-
     
 
     

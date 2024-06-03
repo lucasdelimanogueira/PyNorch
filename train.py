@@ -70,16 +70,14 @@ def main():
             loss = criterion(outputs, target)
             
             optimizer.zero_grad()
+            print(f"GRADIENT BEFORE: {model.module.fc2.bias.grad}")
             
-            print("#####################\n\nantes backward")
-            print(model.module.fc1.bias.grad)
             loss.backward()
-            print(model.module.fc1.bias.grad)
-            print("\n\n\n###############\n\npós backward")
+            print(f"GRADIENT AFTER: {model.module.fc2.bias.grad}")
+            print("\n\n")
 
 
             optimizer.step()
-            print("@@")
             break
 
         break

@@ -18,6 +18,7 @@ class SGD(Optimizer):
             velocity = self.momentum * velocity - self.lr * parameter.grad
 
             updated_parameter = parameter + velocity
+            updated_parameter.hooks = parameter.hooks.copy()
 
             setattr(module, name, updated_parameter)
 
