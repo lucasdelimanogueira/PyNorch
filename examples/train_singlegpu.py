@@ -1,23 +1,14 @@
-import os
 import norch
-import norch.distributed as dist
-import norch.distributed
-
 import norch.nn as nn
 import norch.optim as optim
-from norch.utils.data.dataloader import DataLoader
-from norch.nn.parallel import DistributedDataParallel
-from norch.utils.data.distributed import DistributedSampler
 from norch.norchvision import transforms as T
-import numpy as np
-import matplotlib.pyplot as plt
 import random
 random.seed(1)
 
 def main():
 
     BATCH_SIZE = 32
-    device = "cpu"
+    device = "cuda"
     epochs = 10
 
     transform = T.Compose(
@@ -53,7 +44,6 @@ def main():
             return out
 
     model = MyModel().to(device)
-    model = DistributedDataParallel(model)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01)
     loss_list = []
@@ -70,17 +60,11 @@ def main():
             loss = criterion(outputs, target)
             
             optimizer.zero_grad()
-            print(f"GRADIENT BEFORE: {model.module.fc2.bias.grad}")
             
             loss.backward()
-            print(f"GRADIENT AFTER: {model.module.fc2.bias.grad}")
-            print("\n\n")
-
 
             optimizer.step()
-            break
 
-        break
 
 if __name__ == "__main__":
     main()

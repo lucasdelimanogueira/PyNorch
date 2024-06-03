@@ -5,6 +5,6 @@ from .utils import *
 from .norchvision import *
 from .utils import *
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = 'Lucas de Lima Nogueira'
 __credits__ = 'Lucas de Lima Nogueira'
