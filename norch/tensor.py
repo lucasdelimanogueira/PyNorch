@@ -39,6 +39,7 @@ class Tensor:
                 self.numel *= s
 
             self.requires_grad = requires_grad
+            self.hooks = []
             self.grad = None
             self.grad_fn = None
 
@@ -59,6 +60,7 @@ class Tensor:
             self.ndim = None,
             self.device = device
             self.requires_grad = None
+            self.hooks = []
             self.grad = None
             self.grad_fn = None
 
@@ -79,6 +81,15 @@ class Tensor:
         flat_data, shape = flatten_recursively(nested_list)
         return flat_data, shape
     
+    def __setattr__(self, name, value):
+        if name == 'grad':
+            for hook in self.hooks:
+                value = hook(value)
+        super().__setattr__(name, value)
+
+    def register_hook(self, function): 
+        self.hooks.append(function)
+
     def ones_like(self):
         
         Tensor._C.ones_like_tensor.argtypes = [ctypes.POINTER(CTensor)]

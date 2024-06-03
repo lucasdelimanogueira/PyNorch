@@ -81,11 +81,6 @@ extern "C" {
         else if ((strcmp(target_device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
             cuda_to_cpu(tensor);
         }
-
-        else {
-            fprintf(stderr, "Could not send tensor to device %d", device_id);
-            exit(1);
-        }
     }
 
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2) {
