@@ -136,7 +136,7 @@ __global__ void sum_tensor_cuda_kernel(float* data, float* result_data, int size
     __syncthreads();
 
     // Perform block-wise reduction
-    for (int s = blockDim.x / 2; s > 0; s >>= 1) {
+    for (int s = blockDim.x / 2; s > 0; s >>= 1) { // s>>=1 --> s = s/2
         if (tid < s) {
             partial_sum[tid] += partial_sum[tid + s];
         }
