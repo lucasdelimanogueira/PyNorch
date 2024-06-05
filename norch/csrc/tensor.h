@@ -5,8 +5,6 @@ typedef struct {
     float* data;
     int* strides;
     int* shape;
-    int* strides_cuda;
-    int* shape_cuda;
     int ndim;
     int size;
     char* device;
@@ -14,6 +12,7 @@ typedef struct {
 
 extern "C" {
     Tensor* create_tensor(float* data, int* shape, int ndim, char* device);
+    void delete_tensor(Tensor* tensor);
     float get_item(Tensor* tensor, int* indices);
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2);
     Tensor* sum_tensor(Tensor* tensor, int axis, bool keepdims);

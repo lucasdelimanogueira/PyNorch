@@ -26,3 +26,4 @@ class SGD(Optimizer):
 
             parameter.detach()
             velocity.detach()
+            del parameter

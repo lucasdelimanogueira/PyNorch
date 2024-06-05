@@ -29,7 +29,7 @@ x1 = norch.Tensor([[1, 2],
                   [3, 4]], requires_grad=True).to("cuda")
 
 x2 = norch.Tensor([[4, 3], 
-                  [2, 1]], requires_grad=True).to("cuda)
+                  [2, 1]], requires_grad=True).to("cuda")
 
 x3 = x1 @ x2
 result = x3.sum()

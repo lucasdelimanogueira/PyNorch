@@ -16,36 +16,78 @@ extern "C" {
             fprintf(stderr, "Memory allocation failed\n");
             exit(1);
         }
-        tensor->data = data;
-        tensor->shape = shape;
         tensor->ndim = ndim;
-
-        tensor->device = (char*)malloc(strlen(device) + 1);
-        if (device != NULL) {
-            strcpy(tensor->device, device);
-        } else {
-            fprintf(stderr, "Memory allocation failed\n");
-            exit(-1);
-        }
 
         tensor->size = 1;
         for (int i = 0; i < ndim; i++) {
             tensor->size *= shape[i];
         }
 
+        tensor->device = strdup(device);
         tensor->strides = (int*)malloc(ndim * sizeof(int));
-        if (tensor->strides == NULL) {
+        tensor->shape = (int*)malloc(ndim * sizeof(int));
+
+        if (tensor->device == NULL || tensor->strides == NULL || tensor->shape == NULL) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(1);
         }
+
+        memcpy(tensor->shape, shape, tensor->ndim * sizeof(int));
+        strcpy(tensor->device, device);
+        
+        if (strcmp(tensor->device, "cpu") == 0) {
+            tensor->data = (float*)malloc(tensor->size * sizeof(float));
+            memcpy(tensor->data, data, tensor->size * sizeof(float));
+        } else {
+            //already allocated on gpu
+            tensor->data = data;
+        }
+            
         int stride = 1;
         for (int i = ndim - 1; i >= 0; i--) {
             tensor->strides[i] = stride;
             stride *= shape[i];
         }
-        
+                
         return tensor;
     }
+
+    void delete_tensor(Tensor* tensor) {
+        if (tensor != NULL) {
+            
+            if (tensor->strides != NULL) {
+                free(tensor->strides);
+                tensor->strides = NULL;
+            }
+            
+            if (tensor->shape != NULL) {
+                free(tensor->shape);
+                tensor->shape = NULL;
+            }
+            
+            if (tensor->data != NULL) {
+                if (strcmp(tensor->device, "cpu") == 0) {
+                    free(tensor->data);
+                } else {
+                    free_cuda(tensor->data);
+                }
+                tensor->data = NULL;
+            }
+
+            if (tensor->device != NULL) {
+                free(tensor->device);
+                tensor->device = NULL;
+            }
+
+            if (tensor->strides != NULL) {
+                free(tensor->strides);
+                tensor->strides = NULL;
+            }
+            
+            free(tensor);
+        }
+    }
+
 
     float get_item(Tensor* tensor, int* indices) {
         int index = 0;
