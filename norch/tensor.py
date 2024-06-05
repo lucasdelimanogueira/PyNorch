@@ -81,6 +81,12 @@ class Tensor:
         flat_data, shape = flatten_recursively(nested_list)
         return flat_data, shape
     
+    def __del__(self):
+        if self.tensor is not None:
+            Tensor._C.delete_tensor.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_tensor.restype = None
+            Tensor._C.delete_tensor(self.tensor)
+    
     def __setattr__(self, name, value):
         if name == 'grad':
             for hook in self.hooks:

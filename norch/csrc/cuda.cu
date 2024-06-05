@@ -42,6 +42,10 @@ __host__ void cuda_to_cpu(Tensor* tensor) {
     strcpy(tensor->device, device_str); 
 }
 
+__host__ void free_cuda(float* data) {
+    cudaFree(data);
+}
+
 __global__ void add_tensor_cuda_kernel(float* data1, float* data2, float* result_data, int size) {
     
     int i = blockIdx.x * blockDim.x + threadIdx.x;
