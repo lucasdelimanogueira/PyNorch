@@ -24,9 +24,8 @@ __host__ void cpu_to_cuda(Tensor* tensor, int device_id) {
 
     tensor->data = data_tmp;
 
-    const char* device_str = "cuda";
-    tensor->device = (char*)malloc(strlen(device_str) + 1);
-    strcpy(tensor->device, device_str); 
+    tensor->device = (char*)malloc(strlen("cuda") + 1);
+    strcpy(tensor->device, "cuda"); 
 }
 
 __host__ void cuda_to_cpu(Tensor* tensor) {
@@ -37,9 +36,8 @@ __host__ void cuda_to_cpu(Tensor* tensor) {
 
     tensor->data = data_tmp;
 
-    const char* device_str = "cpu";
-    tensor->device = (char*)malloc(strlen(device_str) + 1);
-    strcpy(tensor->device, device_str); 
+    tensor->device = (char*)malloc(strlen("cpu") + 1);
+    strcpy(tensor->device, "cpu"); 
 }
 
 __host__ void free_cuda(float* data) {

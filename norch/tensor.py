@@ -26,10 +26,10 @@ class Tensor:
             
             self.shape = shape.copy()
             
-            self.data_ctype = (ctypes.c_float * len(data))(*data.copy())
-            self.shape_ctype = (ctypes.c_int * len(shape))(*shape.copy())
-            self.ndim_ctype = ctypes.c_int(len(shape))
-            self.device_ctype = device.encode('utf-8')
+            self._data_ctype = (ctypes.c_float * len(data))(*data.copy())
+            self._shape_ctype = (ctypes.c_int * len(shape))(*shape.copy())
+            self._ndim_ctype = ctypes.c_int(len(shape))
+            self._device_ctype = device.encode('utf-8')
 
             self.ndim = len(shape)
             self.device = device
@@ -47,15 +47,11 @@ class Tensor:
             Tensor._C.create_tensor.restype = ctypes.POINTER(CTensor)
             
             self.tensor = Tensor._C.create_tensor(
-                self.data_ctype,
-                self.shape_ctype,
-                self.ndim_ctype,
-                self.device_ctype
+                self._data_ctype,
+                self._shape_ctype,
+                self._ndim_ctype,
+                self._device_ctype
             )
-
-            del self.data_ctype
-            del self.shape_ctype
-            del self.device_ctype
         
         else:
             self.tensor = None,
@@ -85,7 +81,21 @@ class Tensor:
         return flat_data, shape
     
     def __del__(self):
-        if self.tensor is not None:
+            
+        if hasattr(self, '_data_ctype') and self._data_ctype is not None:
+            # tensor created by user (ctypes) will be deleted by python garbage collector
+            # only strides need to be deallocated manually because it is created inside C code
+            Tensor._C.delete_strides.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_strides.restype = None
+            Tensor._C.delete_strides(self.tensor)
+
+            Tensor._C.delete_device.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_device.restype = None
+            Tensor._C.delete_device(self.tensor)
+
+        elif self.tensor is not None:
+            # tensor created during operations must be deallocated
+
             Tensor._C.delete_tensor.argtypes = [ctypes.POINTER(CTensor)]
             Tensor._C.delete_tensor.restype = None
             Tensor._C.delete_tensor(self.tensor)

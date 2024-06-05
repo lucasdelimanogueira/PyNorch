@@ -9,6 +9,7 @@ class SGD(Optimizer):
         self.momentum = momentum
         self._cache = {'velocity': [p.zeros_like() for (_, _, p) in self.parameters]}
 
+    
     def step(self):
         for i, (module, name, _) in enumerate(self.parameters):
             parameter = getattr(module, name)

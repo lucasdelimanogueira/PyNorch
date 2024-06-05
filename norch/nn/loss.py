@@ -11,7 +11,7 @@ class Loss(Module, ABC):
 
     def forward(self, predictions, labels):
         raise NotImplementedError
-    
+            
     def __call__(self, *inputs):
         return self.forward(*inputs)
     
