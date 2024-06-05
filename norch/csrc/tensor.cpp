@@ -26,23 +26,29 @@ extern "C" {
         tensor->device = strdup(device);
         tensor->strides = (int*)malloc(ndim * sizeof(int));
         tensor->shape = (int*)malloc(ndim * sizeof(int));
-        tensor->data = (float*)malloc(tensor->size * sizeof(float));
 
-        if (tensor->device == NULL || tensor->strides == NULL || tensor->shape == NULL || tensor->data == NULL) {
+        if (tensor->device == NULL || tensor->strides == NULL || tensor->shape == NULL) {
             fprintf(stderr, "Memory allocation failed\n");
             exit(1);
         }
 
         memcpy(tensor->shape, shape, tensor->ndim * sizeof(int));
         strcpy(tensor->device, device);
-        memcpy(tensor->data, data, tensor->size * sizeof(float));
-
+        
+        if (strcmp(tensor->device, "cpu") == 0) {
+            tensor->data = (float*)malloc(tensor->size * sizeof(float));
+            memcpy(tensor->data, data, tensor->size * sizeof(float));
+        } else {
+            //already allocated on gpu
+            tensor->data = data;
+        }
+            
         int stride = 1;
         for (int i = ndim - 1; i >= 0; i--) {
             tensor->strides[i] = stride;
             stride *= shape[i];
         }
-        
+                
         return tensor;
     }
 

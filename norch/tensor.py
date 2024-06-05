@@ -46,13 +46,16 @@ class Tensor:
             Tensor._C.create_tensor.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.c_char_p]
             Tensor._C.create_tensor.restype = ctypes.POINTER(CTensor)
             
-
             self.tensor = Tensor._C.create_tensor(
                 self.data_ctype,
                 self.shape_ctype,
                 self.ndim_ctype,
                 self.device_ctype
             )
+
+            del self.data_ctype
+            del self.shape_ctype
+            del self.device_ctype
         
         else:
             self.tensor = None,

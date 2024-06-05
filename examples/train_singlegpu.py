@@ -24,6 +24,8 @@ def main():
         ]
     )
 
+
+    print("Loading data")
     train_data, test_data = norch.norchvision.datasets.MNIST.splits(transform=transform, target_transform=target_transform)
     train_loader = norch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE)
 
@@ -43,13 +45,22 @@ def main():
             
             return out
 
+    print("Creating model")
     model = MyModel().to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01)
     loss_list = []
 
-    for epoch in range(epochs):    
+    print("Starting training")
+    for epoch in range(epochs): 
+
+        avg_loss = 0  
+        num_steps = 0  
+        
         for idx, batch in enumerate(train_loader):
+
+            if idx % 100 == 0:
+                print(f"Epoch: {epoch}/{epochs} - Step: {idx} / {len(train_loader)}")
 
             inputs, target = batch
 
@@ -64,6 +75,13 @@ def main():
             loss.backward()
 
             optimizer.step()
+        
+            avg_loss += loss[0]
+            num_steps += 1
+
+        avg_loss = avg_loss / num_steps
+        print(f'Epoch [{epoch + 1}/{epochs}], Loss: {avg_loss:.4f}')
+        loss_list.append(avg_loss)
 
 
 if __name__ == "__main__":
