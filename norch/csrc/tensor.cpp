@@ -49,37 +49,30 @@ extern "C" {
 
     void delete_tensor(Tensor* tensor) {
         if (tensor != NULL) {
-            
-            if (tensor->shape != NULL) {
-                free(tensor->shape);
-                tensor->shape = NULL;
-            }
-            
-            if (tensor->data != NULL) {
-                if (strcmp(tensor->device, "cpu") == 0) {
-                    free(tensor->data);
-                } else {
-                    free_cuda(tensor->data);
-                }
-                tensor->data = NULL;
-            }
-
-            if (tensor->device != NULL) {
-                free(tensor->device);
-                tensor->device = NULL;
-            }
-
-            if (tensor->strides != NULL) {
-                free(tensor->strides);
-                tensor->strides = NULL;
-            }
-            
             free(tensor);
+            tensor = NULL;
+        }
+    }
+
+    void delete_shape(Tensor* tensor) {
+        if (tensor->shape != NULL) {
+            free(tensor->shape);
+            tensor->shape = NULL;
+        }
+    }
+
+    void delete_data(Tensor* tensor) {
+        if (tensor->data != NULL) {
+            if (strcmp(tensor->device, "cpu") == 0) {
+                free(tensor->data);
+            } else {
+                free_cuda(tensor->data);
+            }
+            tensor->data = NULL;
         }
     }
 
     void delete_strides(Tensor* tensor) {
-        // as strides always are allocated within C code, it must be handled separatedly
         if (tensor->strides != NULL) {
             free(tensor->strides);
             tensor->strides = NULL;
@@ -87,7 +80,6 @@ extern "C" {
     }
 
     void delete_device(Tensor* tensor) {
-        // as device always are allocated within C code, it must be handled separatedly
         if (tensor->device != NULL) {
             free(tensor->device);
             tensor->device = NULL;
@@ -114,20 +106,28 @@ extern "C" {
         int device_id = 0;
         char* endptr;
 
+        char* target_device_type;
+
         long num = strtol(target_device, &endptr, 10);
         if (*endptr == '\0') {
             device_id = (int)num;
-            target_device = new char[strlen("cuda") + 1];
-            strcpy(target_device, "cuda");
+            target_device_type = new char[strlen("cuda") + 1];
+            strcpy(target_device_type, "cuda");
+        }
+        else {
+            target_device_type = new char[strlen("cuda") + 1];
+            strcpy(target_device_type, "cpu");
         }
 
-        if ((strcmp(target_device, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
+        if ((strcmp(target_device_type, "cuda") == 0) && (strcmp(tensor->device, "cpu") == 0)) {
             cpu_to_cuda(tensor, device_id);
         }
 
-        else if ((strcmp(target_device, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
+        else if ((strcmp(target_device_type, "cpu") == 0) && (strcmp(tensor->device, "cuda") == 0)) {
             cuda_to_cpu(tensor);
         }
+
+        free(target_device_type);
     }
 
     Tensor* add_tensor(Tensor* tensor1, Tensor* tensor2) {

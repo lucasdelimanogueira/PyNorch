@@ -83,8 +83,7 @@ class Tensor:
     def __del__(self):
             
         if hasattr(self, '_data_ctype') and self._data_ctype is not None:
-            # tensor created by user (ctypes) will be deleted by python garbage collector
-            # only strides need to be deallocated manually because it is created inside C code
+        
             Tensor._C.delete_strides.argtypes = [ctypes.POINTER(CTensor)]
             Tensor._C.delete_strides.restype = None
             Tensor._C.delete_strides(self.tensor)
@@ -93,8 +92,26 @@ class Tensor:
             Tensor._C.delete_device.restype = None
             Tensor._C.delete_device(self.tensor)
 
+            Tensor._C.delete_tensor.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_tensor.restype = None
+            Tensor._C.delete_tensor(self.tensor)
+
         elif self.tensor is not None:
-            # tensor created during operations must be deallocated
+            Tensor._C.delete_strides.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_strides.restype = None
+            Tensor._C.delete_strides(self.tensor)
+
+            Tensor._C.delete_data.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_data.restype = None
+            Tensor._C.delete_data(self.tensor)
+
+            Tensor._C.delete_shape.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_shape.restype = None
+            Tensor._C.delete_shape(self.tensor)
+
+            Tensor._C.delete_device.argtypes = [ctypes.POINTER(CTensor)]
+            Tensor._C.delete_device.restype = None
+            Tensor._C.delete_device(self.tensor)
 
             Tensor._C.delete_tensor.argtypes = [ctypes.POINTER(CTensor)]
             Tensor._C.delete_tensor.restype = None
