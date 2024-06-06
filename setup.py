@@ -76,7 +76,7 @@ class CustomInstall(install):
 
 setuptools.setup(
     name="norch",
-    version="0.0.5",
+    version="0.0.7",
     author="Lucas de Lima",
     author_email="nogueiralucasdelima@gmail.com",
     description="A deep learning framework",
