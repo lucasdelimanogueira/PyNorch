@@ -1,7 +1,7 @@
 # PyNorch
 Recreating PyTorch from scratch (C/C++, CUDA and Python, with multi-GPU support and automatic differentiation!)
 
-Project details explanations can also be found on [medium](https://towardsdatascience.com/recreating-pytorch-from-scratch-with-gpu-support-and-automatic-differentiation-8f565122a3cc).
+Project details explanations can also be found on [medium](https://medium.com/data-science/recreating-pytorch-from-scratch-with-gpu-support-and-automatic-differentiation-8f565122a3cc).
 
 # 1 - About
 **PyNorch** is a deep learning framework constructed using C/C++, CUDA and Python. This is a personal project with educational purpose only! `Norch` means **NOT** PyTorch, and we have **NO** claims to rivaling the already established PyTorch. The main objective of **PyNorch** was to give a brief understanding of how a deep learning framework works internally. It implements the Tensor object, multi-GPU support and an automatic differentiation system. 
